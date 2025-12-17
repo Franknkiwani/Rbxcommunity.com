@@ -202,7 +202,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// Elements (safe)
+// Elements
 const hamburger = document.getElementById('hamburger');
 const menuOverlay = document.getElementById('menuOverlay');
 const headerProfile = document.getElementById('headerProfile');
@@ -229,6 +229,14 @@ const changePicBtn = document.getElementById('changePicBtn');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 const saveProfileSpinner = document.getElementById('saveProfileSpinner');
 const saveProfileStatus = document.getElementById('saveProfileStatus');
+
+// Utility for inline notifications
+function notify(element, message, success=true, duration=2000){
+  if(!element) return;
+  element.textContent = message;
+  element.style.color = success ? '#4caf50' : '#f44336';
+  setTimeout(()=>{element.textContent='';}, duration);
+}
 
 // Hamburger toggle
 if(hamburger && menuOverlay){
@@ -289,10 +297,9 @@ if(copyBtn && userLinkInput){
     if(userLinkInput.value && userLinkInput.value!=="Login to get link"){
       userLinkInput.select();
       navigator.clipboard.writeText(userLinkInput.value).then(()=>{
-        if(copyStatus) { copyStatus.textContent='Copied!'; copyStatus.style.color='#4caf50'; }
-        setTimeout(()=>{ if(copyStatus) copyStatus.textContent=''; },1500);
+        notify(copyStatus,'Copied!',true);
       }).catch(err=>{
-        if(copyStatus) { copyStatus.textContent='Copy failed!'; copyStatus.style.color='#f44336'; }
+        notify(copyStatus,'Copy failed!',false);
         console.error(err);
       });
       window.getSelection().removeAllRanges();
@@ -328,9 +335,10 @@ if(profileInput){
           if(headerProfile) headerProfile.style.backgroundImage=`url(${imgUrl})`;
           rotationActive=false;
           localStorage.setItem('userCustomPic','true');
+          notify(saveProfileStatus,'Profile picture updated!',true);
         }
-      } else alert('Upload failed');
-    }catch(err){console.error(err); alert('Upload error');}
+      } else notify(saveProfileStatus,'Upload failed!',false);
+    }catch(err){console.error(err); notify(saveProfileStatus,'Upload error!',false);}
     if(uploadSpinner) uploadSpinner.style.display='none';
   });
 }
@@ -376,37 +384,54 @@ onAuthStateChanged(auth,user=>{
     });
   }else{
     if(userLinkInput) userLinkInput.value="Login to get link";
-    if(userInfo){
-      const btn=document.createElement('button'); 
-      btn.textContent='LOGIN / REGISTER'; 
-      btn.classList.add('login-btn');
-      userInfo.appendChild(btn);
-    }
+
+    // LOGIN button
+    const loginBtn = document.createElement('button');
+    loginBtn.textContent = 'LOGIN';
+    loginBtn.style.background = 'cyan';
+    loginBtn.style.color = '#fff';
+    loginBtn.style.border = '2px solid #fff';
+    loginBtn.style.padding = '6px 16px';
+    loginBtn.style.borderRadius = '12px';
+    loginBtn.style.cursor = 'pointer';
+    loginBtn.style.fontWeight = 'bold';
+    loginBtn.addEventListener('click', ()=> window.location.href='/auth.html?mode=login');
+
+    // REGISTER button
+    const registerBtn = document.createElement('button');
+    registerBtn.textContent = 'REGISTER';
+    registerBtn.style.background = 'pink';
+    registerBtn.style.color = '#fff';
+    registerBtn.style.border = '2px solid #fff';
+    registerBtn.style.padding = '6px 16px';
+    registerBtn.style.borderRadius = '12px';
+    registerBtn.style.cursor = 'pointer';
+    registerBtn.style.fontWeight = 'bold';
+    registerBtn.addEventListener('click', ()=> window.location.href='/auth.html?mode=register');
+
+    userInfo.appendChild(loginBtn);
+    userInfo.appendChild(registerBtn);
   }
 });
-
-
-// Edit handle
-if(editProfileBtn && handleContainer && handleInput){
-  editProfileBtn.addEventListener('click', async ()=>{
-    const user=auth.currentUser; if(!user) return alert("Login first!");
-    handleContainer.style.display='flex'; handleInput.focus();
-  });
-}
 
 // Save handle
 if(saveHandleBtn && handleInput && handleStatus && userInfo){
   saveHandleBtn.addEventListener('click', async ()=>{
-    const user = auth.currentUser; if(!user) return alert("Login first!");
+    const user = auth.currentUser; 
+    if(!user){ notify(handleStatus,'Login first!',false); return; }
     const newHandle = handleInput.value.trim();
-    if(newHandle.length<3) return alert("Handle too short!");
+    if(newHandle.length<3){ notify(handleStatus,'Handle too short!',false); return; }
     await set(ref(db, `users/${user.uid}/handle`), newHandle);
-    handleStatus.textContent="Handle saved!"; handleStatus.style.color="#4caf50";
-    const followers=(await get(ref(db, `users/${user.uid}/followers`))).val()||0;
+    const followers = (await get(ref(db, `users/${user.uid}/followers`))).val()||0;
     const verified = followers>=1000;
     userInfo.innerHTML=`@${newHandle} (${followers})`;
-    if(verified){const badge=document.createElement('img'); badge.src='https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png'; badge.style.width='18px'; badge.style.height='18px'; userInfo.appendChild(badge);}
-    setTimeout(()=>{handleStatus.textContent='';},2000);
+    if(verified){
+      const badge=document.createElement('img'); 
+      badge.src='https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png'; 
+      badge.style.width='18px'; badge.style.height='18px'; 
+      userInfo.appendChild(badge);
+    }
+    notify(handleStatus,'Handle saved!',true);
   });
 }
 
@@ -414,21 +439,19 @@ if(saveHandleBtn && handleInput && handleStatus && userInfo){
 if(saveProfileBtn){
   saveProfileBtn.addEventListener('click', async () => {
     const user = auth.currentUser;
-    if(!user) return alert("Please log in first!");
+    if(!user){ notify(saveProfileStatus,'Login first!',false); return; }
     if(saveProfileSpinner) saveProfileSpinner.style.display = 'block';
-    if(saveProfileStatus) saveProfileStatus.textContent = '';
     try{
       if(userBioTextarea) await set(ref(db, `users/${user.uid}/bio`), userBioTextarea.value);
       if(handleInput && handleInput.value.trim().length >= 3){
         await set(ref(db, `users/${user.uid}/handle`), handleInput.value.trim());
       }
-      if(saveProfileStatus) { saveProfileStatus.textContent = 'Saved!'; saveProfileStatus.style.color = '#4caf50'; }
+      notify(saveProfileStatus,'Profile saved!',true);
     }catch(err){
       console.error(err);
-      if(saveProfileStatus){ saveProfileStatus.textContent = 'Save failed!'; saveProfileStatus.style.color = '#f44336'; }
+      notify(saveProfileStatus,'Save failed!',false);
     }finally{
       if(saveProfileSpinner) saveProfileSpinner.style.display = 'none';
-      setTimeout(()=>{if(saveProfileStatus) saveProfileStatus.textContent='';},2000);
     }
   });
 }
