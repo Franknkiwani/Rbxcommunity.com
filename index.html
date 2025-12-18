@@ -179,139 +179,17 @@ a:focus, a:active {
 
 <main style="padding:12px; background:#121212;">
   <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; font-weight:bold; color:white; font-size:14px;">
-    MOST POPULAR
+    FEATURED PROFILES
     <img width="24" height="24" src="https://img.icons8.com/stickers/100/verified-badge.png" alt="verified-badge"/>
   </div>
 
   <div id="userContainer" style="display:flex; overflow-x:auto; gap:12px; padding:8px 0; scrollbar-width:none;"></div>
-
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, set, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const auth = getAuth();
-
-  let currentUser = null;
-  const usersMap = new Map();
-  const container = document.getElementById("userContainer");
-
-  function randomColor(){
-    const colors=["#ff3f3f","#ff9f1c","#fffc1c","#3fff3f","#1cafff","#b13fff","#ff1cb1"];
-    return colors[Math.floor(Math.random()*colors.length)];
-  }
-
-  function createSpinner(){
-    const spinner=document.createElement('div');
-    spinner.style.cssText=`border:2px solid #fff; border-top:2px solid transparent; border-radius:50%;
-      width:12px; height:12px; animation:spin 0.7s linear infinite; margin:auto;`;
-    return spinner;
-  }
-
-  const style=document.createElement('style');
-  style.innerHTML=`@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}`;
-  document.head.appendChild(style);
-
-  async function loadTopUsers(){
-    const snapshot = await get(ref(db,'mostpopular'));
-    if(!snapshot.exists()){ container.innerHTML="<p style='color:#888;'>No users found.</p>"; return; }
-
-    const topUsers = Object.entries(snapshot.val()); // [ [uid, data], ... ]
-    container.innerHTML='';
-
-    topUsers.forEach(([uid,user])=>{
-      const div=document.createElement('div');
-      div.style.cssText="flex:0 0 auto; width:70px; display:flex; flex-direction:column; align-items:center;";
-
-      // Profile
-      const imgWrapper=document.createElement('div');
-      imgWrapper.style.cssText=`width:60px; height:60px; border-radius:50%; overflow:hidden; display:flex;
-        align-items:center; justify-content:center; border:3px solid #fff; transition:border-color 1s;`;
-      const img=document.createElement('img');
-      img.src=user.profileImage||'https://via.placeholder.com/60?text=?';
-      img.style.cssText="width:100%; height:100%; object-fit:cover;";
-      imgWrapper.appendChild(img);
-      div.appendChild(imgWrapper);
-      setInterval(()=>{ imgWrapper.style.borderColor=randomColor(); },1000);
-
-      // Username
-      const handle=document.createElement('div');
-      handle.textContent='@'+(user.username||'user');
-      handle.style.cssText="max-width:70px; font-size:10px; color:#fff; margin-top:4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;";
-      div.appendChild(handle);
-
-      // Followers
-      const followerCount=document.createElement('div');
-      followerCount.textContent=(user.followers||0)+' followers';
-      followerCount.style.cssText="font-size:9px; color:#bbb; text-align:center; margin-top:2px;";
-      div.appendChild(followerCount);
-
-      // Follow button
-      const button=document.createElement('button');
-      button.style.cssText="margin-top:4px; font-size:10px; padding:2px 6px; border-radius:4px; border:none; background:#2e89ff; color:#fff; cursor:pointer;";
-      div.appendChild(button);
-
-      const msg=document.createElement('span');
-      msg.style.cssText="color:#ff6b6b; font-size:10px; margin-top:2px; display:none; text-align:center;";
-      div.appendChild(msg);
-
-      async function updateButton(){
-        if(!currentUser){ button.textContent='Follow'; button.style.background='#2e89ff'; return; }
-        const snap = await get(ref(db, `following/${currentUser.uid}/${uid}`));
-        if(snap.exists()){ button.textContent='Following'; button.style.background='#4caf50'; }
-        else{ button.textContent='Follow'; button.style.background='#2e89ff'; }
-      }
-      updateButton();
-
-      button.addEventListener('click', async ()=>{
-        if(!currentUser){
-          msg.textContent="Only logged in users can follow"; msg.style.display='block';
-          setTimeout(()=> msg.style.display='none',2000); return;
-        }
-        const spinner=createSpinner();
-        button.innerHTML=''; button.appendChild(spinner); button.disabled=true;
-
-        const path=ref(db, `following/${currentUser.uid}/${uid}`);
-        const snap=await get(path);
-        if(!snap.exists()){
-          await set(path,true);
-          await runTransaction(ref(db, `users/${uid}/followers`), c=>(c||0)+1);
-        } else {
-          await set(path,null);
-          await runTransaction(ref(db, `users/${uid}/followers`), c=>Math.max((c||0)-1,0));
-        }
-        await updateButton();
-        button.disabled=false;
-      });
-
-      container.appendChild(div);
-      usersMap.set(uid,div);
-    });
-  }
-
-  loadTopUsers();
-  onAuthStateChanged(auth,user=>{ currentUser=user||null; });
-  </script>
-</main>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, get, child, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, get, child, set, runTransaction, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-// Firebase config
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
   authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -319,15 +197,14 @@ const firebaseConfig = {
   projectId: "itzhoyoo-f9f7e",
   storageBucket: "itzhoyoo-f9f7e.filestorage.app",
   messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// Elements
+/* ================= ELEMENTS ================= */
 const hamburger = document.getElementById('hamburger');
 const menuOverlay = document.getElementById('menuOverlay');
 const headerProfile = document.getElementById('headerProfile');
@@ -345,241 +222,248 @@ const bioCharCount = document.getElementById('bioCharCount');
 const statPosts = document.getElementById('statPosts');
 const statFollowers = document.getElementById('statFollowers');
 const statFollowing = document.getElementById('statFollowing');
-const editProfileBtn = document.getElementById('editProfileBtn');
-const handleContainer = document.getElementById('handleContainer');
 const handleInput = document.getElementById('handleInput');
 const saveHandleBtn = document.getElementById('saveHandleBtn');
 const handleStatus = document.getElementById('handleStatus');
-const changePicBtn = document.getElementById('changePicBtn');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 const saveProfileSpinner = document.getElementById('saveProfileSpinner');
 const saveProfileStatus = document.getElementById('saveProfileStatus');
+const featuredContainer = document.getElementById("userContainer");
 
-// Utility for inline notifications
-function notify(element, message, success=true, duration=2000){
-  if(!element) return;
-  element.textContent = message;
-  element.style.color = success ? '#4caf50' : '#f44336';
-  setTimeout(()=>{element.textContent='';}, duration);
+/* ================= UTILS ================= */
+function notify(el,msg,ok=true,t=2000){
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=ok?'#4caf50':'#f44336';
+  setTimeout(()=>el.textContent='',t);
 }
 
-// Hamburger toggle
-if(hamburger && menuOverlay){
-  hamburger.addEventListener('click',()=>{ 
-    const isActive = hamburger.classList.toggle('active'); 
-    menuOverlay.classList.toggle('active'); 
-    document.body.style.overflow = isActive ? 'hidden':'auto';
-  });
+function randomColor(){
+  return `hsl(${Math.random()*360},80%,60%)`;
 }
 
-// Profile panel open/close
-if(headerProfile && profilePanel){
-  headerProfile.addEventListener('click', ()=>{
-    profilePanel.classList.add('active'); 
-    document.body.style.overflow='hidden';
-  });
-}
-if(closeProfile && profilePanel){
-  closeProfile.addEventListener('click', ()=>{
-    profilePanel.classList.remove('active'); 
-    document.body.style.overflow='auto';
-  });
+function count(val){
+  if(!val) return 0;
+  if(typeof val === 'number') return val;
+  if(typeof val === 'object') return Object.keys(val).length;
+  return 0;
 }
 
-// Profile pics rotation
-const images = [
-  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJArE9ejALs7Gadwp7_lPG6ClZ1kGDFBfuqiLeEtkQhQ&s=10',
-  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5FTSG4Sir8pySUUwqztVtlUAGiDCSia6HzybVbaRRz3yh83Bkro-FLDSw&s=10',
-  'https://fiverr.cloudinary.com/images/q_auto,f_auto/gigs/344146044/original/31d16f71c7d233f9f55107e32f77eabde2e83dc7/do-roblox-gfx-profile-pictures.jpeg',
-  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZJaXc4y8Bmn0dMaS1TOasNx3mbAaAt1vZOHeFWMqPtN6a_bs6dpiT4gI&s=10',
-  'https://pbs.twimg.com/media/ESf5MWLWkAEv9Gf.jpg'
-];
-const loadedImages = [];
-images.forEach(src => { 
-  const img = new Image(); 
-  img.onload = ()=> loadedImages.push(src); 
-  img.src = src; 
+function createSpinner(){
+  const s=document.createElement('div');
+  s.style.cssText=`width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin:auto;`;
+  return s;
+}
+
+const style=document.createElement('style');
+style.innerHTML=`@keyframes spin{to{transform:rotate(360deg)}}`;
+document.head.appendChild(style);
+
+/* ================= UI ================= */
+hamburger?.addEventListener('click',()=>{
+  hamburger.classList.toggle('active');
+  menuOverlay.classList.toggle('active');
 });
-let index = 0; 
-let rotationActive = true;
-function randomColor(){return `hsl(${Math.floor(Math.random()*360)},80%,60%)`;}
-function changeProfile(){
-  if(!rotationActive || loadedImages.length===0) return;
-  index=(index+1)%loadedImages.length;
-  const nextImg=loadedImages[index];
-  if(headerProfile) headerProfile.style.opacity='0';
-  if(panelProfilePic) panelProfilePic.style.opacity='0';
-  setTimeout(()=>{
-    if(headerProfile) { headerProfile.style.backgroundImage=`url(${nextImg})`; headerProfile.style.borderColor=randomColor(); headerProfile.style.opacity='1'; }
-    if(panelProfilePic) { panelProfilePic.style.backgroundImage=`url(${nextImg})`; panelProfilePic.style.borderColor=randomColor(); panelProfilePic.style.opacity='1'; }
-  },300);
-}
-if(!localStorage.getItem('userCustomPic')) setInterval(changeProfile,5000); else rotationActive=false;
 
-// Copy link
-if(copyBtn && userLinkInput){
-  copyBtn.addEventListener('click', ()=>{
-    if(userLinkInput.value && userLinkInput.value!=="Login to get link"){
-      userLinkInput.select();
-      navigator.clipboard.writeText(userLinkInput.value).then(()=>{
-        notify(copyStatus,'Copied!',true);
-      }).catch(err=>{
-        notify(copyStatus,'Copy failed!',false);
-        console.error(err);
-      });
-      window.getSelection().removeAllRanges();
-    }
-  });
-}
+headerProfile?.addEventListener('click',()=>{
+  profilePanel.classList.add('active');
+  document.body.style.overflow='hidden';
+});
 
-// Profile picture update
-if(panelProfilePic && profileInput){
-  panelProfilePic.addEventListener('click',()=> profileInput.click());
-}
-if(changePicBtn && profileInput){
-  changePicBtn.addEventListener('click',()=> profileInput.click());
-}
-if(profileInput){
-  profileInput.addEventListener('change', async ()=>{
-    if(!profileInput.files[0]) return;
-    const file = profileInput.files[0];
-    if(uploadSpinner) uploadSpinner.style.display='block';
-    const formData = new FormData();
-    formData.append('image', file);
-    try{
-      const res = await fetch('https://api.imgur.com/3/image', {
-        method:'POST', headers:{Authorization:'Client-ID 891e5bb4aa94282'}, body: formData
-      });
-      const data = await res.json();
-      if(data.success){
-        const imgUrl = data.data.link;
-        const user = auth.currentUser;
-        if(user){
-          await set(ref(db, `users/${user.uid}/profilePic`), imgUrl);
-          if(panelProfilePic) panelProfilePic.style.backgroundImage=`url(${imgUrl})`;
-          if(headerProfile) headerProfile.style.backgroundImage=`url(${imgUrl})`;
-          rotationActive=false;
-          localStorage.setItem('userCustomPic','true');
-          notify(saveProfileStatus,'Profile picture updated!',true);
-        }
-      } else notify(saveProfileStatus,'Upload failed!',false);
-    }catch(err){console.error(err); notify(saveProfileStatus,'Upload error!',false);}
-    if(uploadSpinner) uploadSpinner.style.display='none';
-  });
-}
+closeProfile?.addEventListener('click',()=>{
+  profilePanel.classList.remove('active');
+  document.body.style.overflow='auto';
+});
 
-// Load user data
-onAuthStateChanged(auth,user=>{
-  if(userInfo) userInfo.innerHTML='';
-  if(userLinkInput) userLinkInput.value='';
-  if(user){
-    const uid=user.uid;
-    if(userLinkInput) userLinkInput.value=`${window.location.origin}/profile?useruid=${uid}`;
-    get(child(ref(db), `users/${uid}`)).then(snapshot=>{
-      const data = snapshot.exists()? snapshot.val() : {};
-      // Profile pic
-      if(data.profilePic){
-        if(panelProfilePic) panelProfilePic.style.backgroundImage=`url(${data.profilePic})`;
-        if(headerProfile) headerProfile.style.backgroundImage=`url(${data.profilePic})`;
-        rotationActive=false;
-      }
-      // Handle
-      const handle=data.handle||user.displayName||"User";
-      const followersCount=data.followers||0;
-      const verified = followersCount>=1000;
-      if(userInfo){
-        userInfo.innerHTML=`@${handle} (${followersCount})`;
-        if(verified){
-          const badge = document.createElement('img'); 
-          badge.src='https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png'; 
-          badge.style.width='18px'; badge.style.height='18px';
-          userInfo.appendChild(badge);
-        }
-      }
-      // Stats
-      if(statPosts) statPosts.textContent=data.posts||0;
-      if(statFollowers) statFollowers.textContent=data.followers||0;
-      if(statFollowing) statFollowing.textContent=data.following||0;
-      // Bio
-      if(userBioTextarea) {
-        userBioTextarea.value=data.bio||'';
-        if(bioCharCount) bioCharCount.textContent=`${userBioTextarea.value.length} / 100`;
-      }
-      if(handleInput) handleInput.value=handle;
-    });
-  }else{
-    if(userLinkInput) userLinkInput.value="Login to get link";
+/* ================= COPY PROFILE LINK ================= */
+copyBtn?.addEventListener('click',()=>{
+  if(!userLinkInput.value || userLinkInput.value.includes('Login')) return;
+  navigator.clipboard.writeText(userLinkInput.value);
+  notify(copyStatus,'Copied');
+});
 
-    // LOGIN button
-    const loginBtn = document.createElement('button');
-    loginBtn.textContent = 'LOGIN';
-    loginBtn.style.background = 'cyan';
-    loginBtn.style.color = '#fff';
-    loginBtn.style.border = '2px solid #fff';
-    loginBtn.style.padding = '6px 16px';
-    loginBtn.style.borderRadius = '12px';
-    loginBtn.style.cursor = 'pointer';
-    loginBtn.style.fontWeight = 'bold';
-    loginBtn.addEventListener('click', ()=> window.location.href='/auth.html?mode=login');
+/* ================= PROFILE PIC UPLOAD ================= */
+panelProfilePic?.addEventListener('click',()=>profileInput.click());
+profileInput?.addEventListener('change',async()=>{
+  if(!profileInput.files[0] || !auth.currentUser) return;
+  uploadSpinner.style.display='block';
+  const formData=new FormData();
+  formData.append('image',profileInput.files[0]);
+  try{
+    const res=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{Authorization:'Client-ID 891e5bb4aa94282'},body:formData});
+    const data=await res.json();
+    if(data.success){
+      await set(ref(db, `users/${auth.currentUser.uid}/profilePic`),data.data.link);
+      panelProfilePic.style.backgroundImage=`url(${data.data.link})`;
+      headerProfile.style.backgroundImage=`url(${data.data.link})`;
+      notify(saveProfileStatus,'Profile picture updated!');
+    } else notify(saveProfileStatus,'Upload failed!',false);
+  } catch(e){ console.error(e); notify(saveProfileStatus,'Upload error!',false);}
+  uploadSpinner.style.display='none';
+});
 
-    // REGISTER button
-    const registerBtn = document.createElement('button');
-    registerBtn.textContent = 'REGISTER';
-    registerBtn.style.background = 'pink';
-    registerBtn.style.color = '#fff';
-    registerBtn.style.border = '2px solid #fff';
-    registerBtn.style.padding = '6px 16px';
-    registerBtn.style.borderRadius = '12px';
-    registerBtn.style.cursor = 'pointer';
-    registerBtn.style.fontWeight = 'bold';
-    registerBtn.addEventListener('click', ()=> window.location.href='/auth.html?mode=register');
+/* ================= AUTH ================= */
+let currentUser=null;
 
-    userInfo.appendChild(loginBtn);
-    userInfo.appendChild(registerBtn);
+onAuthStateChanged(auth, async user=>{
+  currentUser=user||null;
+  if(!user){
+    userInfo.innerHTML='';
+    userLinkInput.value='Login to get link';
+    statPosts.textContent=0;
+    statFollowers.textContent=0;
+    statFollowing.textContent=0;
+    loadFeaturedUsers();
+    return;
   }
+
+  const uid=user.uid;
+  userLinkInput.value=`${location.origin}/profile?uid=${uid}`;
+  const snap=await get(ref(db,`users/${uid}`));
+  const data=snap.val()||{};
+  const handle=data.handle||'user';
+  const followers=count(data.followers);
+  const following=count(data.following);
+
+  userInfo.innerHTML=`@${handle} (${followers})`;
+  statFollowers.textContent=followers;
+  statFollowing.textContent=following;
+  statPosts.textContent=count(data.posts);
+
+  if(data.profilePic){
+    headerProfile.style.backgroundImage=`url(${data.profilePic})`;
+    panelProfilePic.style.backgroundImage=`url(${data.profilePic})`;
+  }
+
+  if(userBioTextarea){
+    userBioTextarea.value=data.bio||'';
+    bioCharCount.textContent=`${userBioTextarea.value.length} / 100`;
+  }
+
+  handleInput.value=handle;
+
+  loadFeaturedUsers();
 });
 
-// Save handle
-if(saveHandleBtn && handleInput && handleStatus && userInfo){
-  saveHandleBtn.addEventListener('click', async ()=>{
-    const user = auth.currentUser; 
-    if(!user){ notify(handleStatus,'Login first!',false); return; }
-    const newHandle = handleInput.value.trim();
-    if(newHandle.length<3){ notify(handleStatus,'Handle too short!',false); return; }
-    await set(ref(db, `users/${user.uid}/handle`), newHandle);
-    const followers = (await get(ref(db, `users/${user.uid}/followers`))).val()||0;
-    const verified = followers>=1000;
-    userInfo.innerHTML=`@${newHandle} (${followers})`;
-    if(verified){
-      const badge=document.createElement('img'); 
-      badge.src='https://static.vecteezy.com/system/resources/thumbnails/047/309/918/small_2x/verified-badge-profile-icon-png.png'; 
-      badge.style.width='18px'; badge.style.height='18px'; 
-      userInfo.appendChild(badge);
-    }
-    notify(handleStatus,'Handle saved!',true);
-  });
-}
+/* ================= SAVE HANDLE ================= */
+saveHandleBtn?.addEventListener('click',async()=>{
+  if(!currentUser) return notify(handleStatus,'Login first',false);
+  const h=handleInput.value.trim();
+  if(h.length<3) return notify(handleStatus,'Too short',false);
 
-// Save profile (bio + handle)
-if(saveProfileBtn){
-  saveProfileBtn.addEventListener('click', async () => {
-    const user = auth.currentUser;
-    if(!user){ notify(saveProfileStatus,'Login first!',false); return; }
-    if(saveProfileSpinner) saveProfileSpinner.style.display = 'block';
-    try{
-      if(userBioTextarea) await set(ref(db, `users/${user.uid}/bio`), userBioTextarea.value);
-      if(handleInput && handleInput.value.trim().length >= 3){
-        await set(ref(db, `users/${user.uid}/handle`), handleInput.value.trim());
+  // check uniqueness
+  const usersSnap = await get(ref(db,'users'));
+  const allUsers = usersSnap.val() || {};
+  const taken = Object.values(allUsers).some(u=>u.handle?.toLowerCase()===h.toLowerCase() && u!==allUsers[currentUser.uid]);
+  if(taken) return notify(handleStatus,'Handle already taken!',false);
+
+  await set(ref(db,`users/${currentUser.uid}/handle`),h);
+  notify(handleStatus,'Saved');
+});
+
+/* ================= SAVE PROFILE ================= */
+saveProfileBtn?.addEventListener('click',async()=>{
+  if(!currentUser) return;
+  saveProfileSpinner.style.display='block';
+  if(userBioTextarea) await set(ref(db,`users/${currentUser.uid}/bio`),userBioTextarea.value);
+  if(handleInput?.value.trim().length>=3) await set(ref(db,`users/${currentUser.uid}/handle`),handleInput.value.trim());
+  saveProfileSpinner.style.display='none';
+  notify(saveProfileStatus,'Saved');
+});
+
+/* ================= FEATURED USERS ================= */
+async function loadFeaturedUsers() {
+  if(!featuredContainer) return;
+  const snapshot = await get(ref(db,'users'));
+  if(!snapshot.exists()){ featuredContainer.innerHTML="<p style='color:#888;'>No users found.</p>"; return; }
+
+  let allUsers = Object.entries(snapshot.val());
+  allUsers.sort(() => 0.5 - Math.random());
+  const featured10 = allUsers.slice(0,10);
+  featuredContainer.innerHTML='';
+
+  featured10.forEach(([uid,user])=>{
+    const div = document.createElement('div');
+    div.style.cssText="flex:0 0 auto; width:70px; display:flex; flex-direction:column; align-items:center;";
+
+    const imgWrapper = document.createElement('div');
+    imgWrapper.style.cssText=`width:60px; height:60px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; border:3px solid #fff; transition:border-color 1s;`;
+    const img = document.createElement('img');
+    img.src = user.profilePic || 'https://via.placeholder.com/60?text=?';
+    img.style.cssText="width:100%; height:100%; object-fit:cover;";
+    imgWrapper.appendChild(img);
+    div.appendChild(imgWrapper);
+    setInterval(()=>{ imgWrapper.style.borderColor=randomColor(); },1000);
+
+    const handleDiv = document.createElement('div'); 
+    handleDiv.textContent = '@'+(user.handle||'user'); 
+    handleDiv.style.cssText="max-width:70px; font-size:10px; color:#fff; margin-top:4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"; 
+    div.appendChild(handleDiv);
+
+    const followerCountDiv = document.createElement('div');
+    followerCountDiv.style.cssText="font-size:9px; color:#bbb; text-align:center; margin-top:2px;";
+    div.appendChild(followerCountDiv);
+
+    const button = document.createElement('button'); 
+    button.style.cssText="margin-top:4px; font-size:10px; padding:2px 6px; border-radius:4px; border:none; background:#2e89ff; color:#fff; cursor:pointer; text-align:center;";
+    div.appendChild(button);
+
+    const msg = document.createElement('span'); 
+    msg.style.cssText="color:#ff6b6b; font-size:10px; margin-top:2px; display:none; text-align:center;"; 
+    div.appendChild(msg);
+
+    async function updateButton(){
+      const followersSnap = await get(ref(db, `users/${uid}/followers`));
+      followerCountDiv.textContent = (followersSnap.val()||0)+' followers';
+
+      if(!currentUser){ 
+        button.textContent='Follow'; 
+        button.style.background='#2e89ff'; 
+        return; 
       }
-      notify(saveProfileStatus,'Profile saved!',true);
-    }catch(err){
-      console.error(err);
-      notify(saveProfileStatus,'Save failed!',false);
-    }finally{
-      if(saveProfileSpinner) saveProfileSpinner.style.display = 'none';
+
+      const snap = await get(ref(db, `following/${currentUser.uid}/${uid}`));
+      if(snap.exists()){ 
+        button.textContent='Following'; 
+        button.style.background='#4caf50'; 
+      } else { 
+        button.textContent='Follow'; 
+        button.style.background='#2e89ff'; 
+      }
     }
+    updateButton();
+
+    button.addEventListener('click', async ()=>{
+      if(!currentUser){ 
+        msg.textContent="Only logged in users can follow"; 
+        msg.style.display='block'; 
+        setTimeout(()=> msg.style.display='none',2000); 
+        return; 
+      }
+      const spinner = createSpinner(); 
+      button.innerHTML=''; 
+      button.appendChild(spinner); 
+      button.disabled = true;
+
+      const path = ref(db, `following/${currentUser.uid}/${uid}`);
+      const snap = await get(path);
+      if(!snap.exists()){ 
+        await set(path,true); 
+        await runTransaction(ref(db, `users/${uid}/followers`), c=>(c||0)+1); 
+      } else { 
+        await set(path,null); 
+        await runTransaction(ref(db, `users/${uid}/followers`), c=>Math.max((c||0)-1,0)); 
+      }
+
+      await updateButton();
+      button.disabled=false;
+    });
+
+    featuredContainer.appendChild(div);
   });
 }
 </script>
+</main>
+
 </body>
 </html>
