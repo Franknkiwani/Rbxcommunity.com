@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Pro</title>
+    <title>Universe Ultra Final</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
@@ -13,14 +13,14 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
 
-        /* Custom Notifications */
+        /* Notifications */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
-        .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; }
+        .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .toast.success { background: var(--green); color: #000; }
         .toast.error { background: var(--red); color: #fff; }
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Card System */
+        /* Card Elements */
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; }
@@ -32,23 +32,24 @@
             position: relative; z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* Fixed Button Height to prevent shrinking */
+        /* Buttons Fix */
         .btn-action { 
             background: var(--accent); color: white; border: none; height: 38px; min-width: 100px; 
             border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; 
-            display: flex; align-items: center; justify-content: center; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 11px; transition: 0.2s;
         }
-        .btn-action.following { background: #3A3A3C; border-bottom-color: #1C1C1E; }
+        .btn-action.following { background: var(--green); border-bottom-color: #009e3a; color: #000; }
         .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Links & Previews */
-        .link-preview { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
-        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
-
-        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; }
+        /* Modals */
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s cubic-bezier(0,1,0,1); padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; border-top: 2px solid var(--border); }
         .modal.active { bottom: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 999; backdrop-filter: blur(5px); }
+        
+        /* Comment Link Previews */
+        .link-preview { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
+        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
     </style>
 </head>
 <body>
@@ -58,17 +59,18 @@
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
 <div class="modal" id="detailsModal">
-    <h2 id="detTitle" style="margin:0; font-weight: 900;"></h2>
+    <div style="width:40px; height:4px; background:#333; margin:-10px auto 20px auto; border-radius:10px;"></div>
+    <h2 id="detTitle" style="margin:0; font-weight: 900; color:var(--accent);"></h2>
     <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;"></div>
-    <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto;" id="detDesc"></div>
+    <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto; border:1px solid var(--border);" id="detDesc"></div>
 </div>
 
 <div class="modal" id="commentModal">
-    <h3 style="margin-top:0">Comments</h3>
+    <h3 style="margin:0 0 15px 0;">Universe Social</h3>
     <div id="commentList" style="flex-grow:1; overflow-y:auto;"></div>
-    <div style="display:flex; gap:10px; padding-top:15px;">
-        <input type="text" id="cInput" placeholder="Send link or message..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white;">
-        <button onclick="sendComment()" class="btn-action">SEND</button>
+    <div style="display:flex; gap:10px; padding-top:15px; border-top:1px solid var(--border);">
+        <input type="text" id="cInput" placeholder="Write something or paste link..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white; font-weight:600;">
+        <button onclick="sendComment()" class="btn-action" style="min-width:80px;">SEND</button>
     </div>
 </div>
 
@@ -119,6 +121,7 @@
                     card.id = `card-${id}`;
                     card.className = 'card';
                     feed.appendChild(card);
+                    runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
                 }
                 
                 const u = (await get(ref(db, `users/${post.uid}`))).val() || {};
@@ -150,33 +153,35 @@
                         <div style="display:flex; gap:18px;">
                             <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
                                 <svg viewBox="0 0 24 24" width="24" height="24" fill="${post.likes?.[auth.currentUser?.uid] ? '#FF4B4B' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <span>${post.likeCount || 0}</span>
+                                <span style="font-weight:900;">${post.likeCount || 0}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="openComments('${id}')">
                                 <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                <span>${post.comments ? Object.keys(post.comments).length : 0}</span>
+                                <span style="font-weight:900;">${post.comments ? Object.keys(post.comments).length : 0}</span>
                             </div>
                         </div>
-                        <span style="color:var(--text-dim); font-size:12px; font-weight:800;">${timeAgo(post.timestamp)}</span>
+                        <span style="color:var(--text-dim); font-size:12px; font-weight:900;">${timeAgo(post.timestamp)}</span>
                     </div>
 
-                    <div style="padding:0 15px 15px 15px; font-size:14px;">
-                        <span>${post.description}</span><span style="color:var(--accent); font-weight:800; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
+                    <div style="padding:0 15px 15px 15px; font-size:14px; line-height:1.4;">
+                        <span>${post.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
                     </div>`;
             }
         });
     }
 
     window.doFollow = async (uid, btn) => {
-        if (!auth.currentUser) return notify("Login required", "error");
+        if (!auth.currentUser) return notify("Login Required", "error");
         btn.innerHTML = '<div class="spinner"></div>';
         const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
         const snap = await get(followRef);
-        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: snap.exists() ? null : true });
-        notify(snap.exists() ? "Unfollowed" : "Following!");
+        const exists = snap.exists();
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: exists ? null : true });
+        notify(exists ? "Unfollowed" : "Following!", exists ? "error" : "success");
     };
 
     window.doLike = (id) => {
+        if (!auth.currentUser) return notify("Login Required", "error");
         runTransaction(ref(db, `post/${id}`), (p) => {
             if (p) {
                 p.likes = p.likes || {};
@@ -190,6 +195,19 @@
             }
             return p;
         });
+    };
+
+    window.openReadMore = async (id) => {
+        const snap = await get(ref(db, `post/${id}`));
+        const post = snap.val();
+        document.getElementById('detTitle').innerText = post.title;
+        document.getElementById('detDesc').innerText = post.description;
+        document.getElementById('detStats').innerHTML = `
+            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div>
+            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${post.likeCount || 0} Likes</div>
+        `;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('detailsModal').classList.add('active');
     };
 
     window.openComments = (id) => {
@@ -209,24 +227,24 @@
                 if (c.text.includes("http")) {
                     const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
                     linkUI = `<div class="link-preview">
-                        <span class="risk-tag">⚠️ CLICK AT YOUR OWN RISK</span>
-                        <div style="height:120px; overflow:hidden;"><iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe></div>
-                        <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:10px; font-weight:900; text-decoration:none;">SECURE VISIT</a>
+                        <span class="risk-tag">⚠️ SECURE PREVIEW</span>
+                        <div style="height:140px; overflow:hidden;"><iframe src="${url}" width="100%" height="100%" style="border:none; background:#fff;"></iframe></div>
+                        <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:12px; font-weight:900; text-decoration:none;">VISIT SECURELY</a>
                     </div>`;
                 }
 
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                        <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px; border:1px solid #333;">
                         <div style="flex-grow:1;">
                             <div style="font-weight:900; font-size:13px;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
                             <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                         </div>
-                        <button class="btn-action ${isF ? 'following' : ''}" style="min-width:70px; height:30px; font-size:10px;" onclick="doFollow('${c.uid}', this)">${isF ? '✓' : 'FOLLOW'}</button>
-                        <button onclick="notify('Reported','error')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px;">REPORT</button>
+                        <button class="btn-action ${isF ? 'following' : ''}" style="min-width:75px; height:30px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                        <button onclick="notify('Reported','error')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px; margin-left:5px;">REPORT</button>
                     </div>
-                    <div style="padding-left:45px; font-size:14px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
-                    <div style="padding-left:45px;">${linkUI}</div>
+                    <div style="padding-left:48px; font-size:14px; color:#eee;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    <div style="padding-left:48px;">${linkUI}</div>
                 </div>`;
             }
         });
@@ -239,9 +257,10 @@
 
     window.sendComment = async () => {
         const input = document.getElementById('cInput');
-        if (!input.value.trim() || !auth.currentUser) return notify("Message empty", "error");
+        if (!input.value.trim() || !auth.currentUser) return notify("Type something first!", "error");
         await push(ref(db, `post/${activeId}/comments`), { uid: auth.currentUser.uid, text: input.value, timestamp: Date.now() });
         input.value = "";
+        notify("Comment Shared!");
     };
 
     auth.onAuthStateChanged(() => startApp());
