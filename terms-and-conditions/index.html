@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Final</title>
+    <title>Universe Ultra Absolute</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
@@ -14,7 +14,7 @@
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
 
         /* Notifications */
-        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; pointer-events: none; }
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; pointer-events: none; }
         .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .toast.success { background: var(--green); color: #000; }
         .toast.error { background: var(--red); color: #fff; }
@@ -23,7 +23,7 @@
         /* Card Elements */
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; }
+        .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; cursor: pointer; }
         
         /* Glassy Title Row */
         .glass-title-row { 
@@ -32,22 +32,22 @@
             position: relative; z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        /* Buttons Fix */
         .btn-action { 
             background: var(--accent); color: white; border: none; height: 38px; min-width: 100px; 
             border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; 
-            display: flex; align-items: center; justify-content: center; font-size: 11px; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; font-size: 11px;
         }
         .btn-action.following { background: var(--green); border-bottom-color: #009e3a; color: #000; }
-        .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
+        
         /* Modals */
         .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s cubic-bezier(0,1,0,1); padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; border-top: 2px solid var(--border); }
         .modal.active { bottom: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 999; backdrop-filter: blur(5px); }
         
-        /* Comment Link Previews */
+        /* Full Image Modal */
+        #fullImageModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10001; display: none; align-items: center; justify-content: center; }
+        #fullImageModal img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
         .link-preview { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
         .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
     </style>
@@ -58,10 +58,17 @@
 <div id="feed"></div>
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
+<div id="fullImageModal" onclick="this.style.display='none'">
+    <img id="fullImgSrc" src="">
+</div>
+
 <div class="modal" id="detailsModal">
-    <div style="width:40px; height:4px; background:#333; margin:-10px auto 20px auto; border-radius:10px;"></div>
-    <h2 id="detTitle" style="margin:0; font-weight: 900; color:var(--accent);"></h2>
-    <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;"></div>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 id="detTitle" style="margin:0; font-weight: 900; color:var(--accent);"></h2>
+        <button onclick="notify('Post Reported','error')" style="background:none; border:none; color:var(--red); font-weight:900; font-size:12px;">REPORT</button>
+    </div>
+    <div id="detCategory" style="color: var(--text-dim); font-size: 11px; font-weight: 900; margin-bottom: 10px;"></div>
+    <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
     <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto; border:1px solid var(--border);" id="detDesc"></div>
 </div>
 
@@ -69,7 +76,7 @@
     <h3 style="margin:0 0 15px 0;">Universe Social</h3>
     <div id="commentList" style="flex-grow:1; overflow-y:auto;"></div>
     <div style="display:flex; gap:10px; padding-top:15px; border-top:1px solid var(--border);">
-        <input type="text" id="cInput" placeholder="Write something or paste link..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white; font-weight:600;">
+        <input type="text" id="cInput" placeholder="Write or paste link..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white; font-weight:600;">
         <button onclick="sendComment()" class="btn-action" style="min-width:80px;">SEND</button>
     </div>
 </div>
@@ -108,6 +115,15 @@
         return Math.floor(s/86400) + "d ago";
     };
 
+    window.goToProfile = (uid) => {
+        window.location.href = `/profile?user=${uid}`;
+    };
+
+    window.openImage = (src) => {
+        document.getElementById('fullImgSrc').src = src;
+        document.getElementById('fullImageModal').style.display = 'flex';
+    };
+
     function startApp() {
         onValue(ref(db, 'post'), async (snap) => {
             const feed = document.getElementById('feed');
@@ -130,8 +146,8 @@
 
                 card.innerHTML = `
                     <div class="header">
-                        <img src="${u.profilePic}" class="avatar">
-                        <div style="flex-grow:1">
+                        <img src="${u.profilePic}" class="avatar" onclick="goToProfile('${post.uid}')">
+                        <div style="flex-grow:1" onclick="goToProfile('${post.uid}')" style="cursor:pointer">
                             <div style="display:flex; align-items:center; gap:5px;">
                                 <span style="font-weight:900;">@${u.handle}</span>
                                 ${fc >= 1000 ? '✅' : ''}
@@ -143,7 +159,7 @@
                         </button>
                     </div>
 
-                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover;" ondblclick="doLike('${id}')">
+                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover; cursor:zoom-in;" onclick="openImage('${post.image}')" ondblclick="doLike('${id}')">
                     
                     <div class="glass-title-row">
                         <h3 style="margin:0; font-size:17px; font-weight:900;">${post.title}</h3>
@@ -163,7 +179,8 @@
                         <span style="color:var(--text-dim); font-size:12px; font-weight:900;">${timeAgo(post.timestamp)}</span>
                     </div>
 
-                    <div style="padding:0 15px 15px 15px; font-size:14px; line-height:1.4;">
+                    <div style="padding:0 15px 15px 15px; font-size:14px;">
+                        <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${post.views || 0} VIEWS • ${post.category?.toUpperCase() || 'POST'}</div>
                         <span>${post.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
                     </div>`;
             }
@@ -172,7 +189,7 @@
 
     window.doFollow = async (uid, btn) => {
         if (!auth.currentUser) return notify("Login Required", "error");
-        btn.innerHTML = '<div class="spinner"></div>';
+        btn.innerHTML = '<div style="width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite;"></div>';
         const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
         const snap = await get(followRef);
         const exists = snap.exists();
@@ -201,6 +218,7 @@
         const snap = await get(ref(db, `post/${id}`));
         const post = snap.val();
         document.getElementById('detTitle').innerText = post.title;
+        document.getElementById('detCategory').innerText = `CATEGORY: ${post.category?.toUpperCase() || 'GENERAL'}`;
         document.getElementById('detDesc').innerText = post.description;
         document.getElementById('detStats').innerHTML = `
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div>
@@ -235,15 +253,14 @@
 
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px; border:1px solid #333;">
+                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px; cursor:pointer;" onclick="goToProfile('${c.uid}')">
                         <div style="flex-grow:1;">
-                            <div style="font-weight:900; font-size:13px;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
+                            <div style="font-weight:900; font-size:13px;" onclick="goToProfile('${c.uid}')">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
                             <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                         </div>
                         <button class="btn-action ${isF ? 'following' : ''}" style="min-width:75px; height:30px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
-                        <button onclick="notify('Reported','error')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px; margin-left:5px;">REPORT</button>
                     </div>
-                    <div style="padding-left:48px; font-size:14px; color:#eee;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    <div style="padding-left:48px; font-size:14px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
                     <div style="padding-left:48px;">${linkUI}</div>
                 </div>`;
             }
@@ -257,13 +274,13 @@
 
     window.sendComment = async () => {
         const input = document.getElementById('cInput');
-        if (!input.value.trim() || !auth.currentUser) return notify("Type something first!", "error");
+        if (!input.value.trim() || !auth.currentUser) return notify("Message empty", "error");
         await push(ref(db, `post/${activeId}/comments`), { uid: auth.currentUser.uid, text: input.value, timestamp: Date.now() });
         input.value = "";
-        notify("Comment Shared!");
     };
 
     auth.onAuthStateChanged(() => startApp());
 </script>
+<style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
