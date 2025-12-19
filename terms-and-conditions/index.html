@@ -10,91 +10,49 @@
             --accent: #00A2FF; --green: #00E052; --red: #FF4B4B; --text: #FFFFFF;
             --text-dim: #8E8E93; --border: #242426;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Card & Header */
-        .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
+        .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; }
-        .user-meta { flex-grow: 1; }
-        .follower-row { font-size: 11px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+        .verified { width: 14px; height: 14px; margin-left: 4px; }
         
-        .follow-btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; transition: 0.1s; }
-        .follow-btn:active { transform: translateY(2px); border-bottom-width: 0px; }
+        /* Buttons & Spinners */
+        .btn-action { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 10px; font-weight: 900; font-size: 11px; cursor: pointer; border-bottom: 3px solid #0072B3; }
+        .btn-action.following { background: #3A3A3C; border-bottom-color: #1C1C1E; }
+        .spinner { width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Media & Glassy Title */
-        .img-container { position: relative; width: 100%; }
-        .main-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
-        .glass-title-box { 
-            position: absolute; bottom: 15px; left: 15px; right: 15px;
-            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass); padding: 12px; border-radius: 18px;
-        }
-        .post-title { margin: 0; font-size: 18px; font-weight: 800; }
-
-        /* Stats & Interaction */
-        .interaction-area { padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .left-actions { display: flex; gap: 18px; }
+        /* Interaction Bar */
+        .action-bar { padding: 12px 16px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); }
         .action-item { display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; }
-        .action-item svg { width: 24px; height: 24px; fill: white; }
+        .action-item svg { width: 24px; height: 24px; fill: white; pointer-events: none; }
         .action-item.liked svg { fill: var(--red); }
-        .time-ago-label { color: var(--text-dim); font-size: 12px; font-weight: 700; }
 
-        /* Content */
-        .content-body { padding: 0 15px 15px 15px; font-size: 14px; }
-        .read-more-btn { color: var(--accent); font-weight: 700; cursor: pointer; margin-left: 5px; }
+        /* Comment Link Preview */
+        .link-preview { background: #000; border: 1px solid var(--border); border-radius: 12px; margin-top: 8px; overflow: hidden; }
+        .risk-text { font-size: 10px; color: var(--red); font-weight: 800; padding: 5px; text-align: center; background: rgba(255,75,75,0.1); display: block; }
+        .iframe-container { width: 100%; height: 120px; position: relative; }
+        .iframe-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
 
-        /* Bottom Sheet Modals */
-        .modal { 
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; 
-            background: #111112; border-radius: 30px 30px 0 0; z-index: 1000; 
-            transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); padding: 25px; box-sizing: border-box;
-            border-top: 1px solid var(--border);
-        }
+        /* Modal */
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
         .modal.active { bottom: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 999; }
-        
-        /* Comment Link UI */
-        .link-preview-box { 
-            margin-top: 10px; border: 2px solid var(--border); border-radius: 15px; overflow: hidden; 
-            background: #000; position: relative; height: 180px;
-        }
-        .iframe-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-        .visit-link-btn { 
-            background: var(--green); color: #000; font-weight: 900; text-align: center; 
-            padding: 8px; font-size: 12px; display: block; text-decoration: none;
-        }
-
-        .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: rot 0.6s linear infinite; }
-        @keyframes rot { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div id="feed"></div>
 
-<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
-<div class="modal" id="detailsModal">
-    <h2 id="mTitle" style="font-weight: 900; margin-bottom: 5px;"></h2>
-    <span id="mCategory" style="color: var(--accent); font-weight: 800; font-size: 12px; text-transform: uppercase;"></span>
-    <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
-    <p id="mDesc" style="color: var(--text-dim); line-height: 1.6;"></p>
-    <div id="mStats" style="background: var(--glass); padding: 15px; border-radius: 20px; font-size: 13px; font-weight: 600;"></div>
-    <div id="mLinkArea"></div>
-</div>
-
-<div class="modal" id="commentModal" style="display: flex; flex-direction: column;">
-    <h3 style="margin-top:0">Universe Comments</h3>
-    <div id="commentList" style="flex-grow: 1; overflow-y: auto; margin-bottom: 15px;"></div>
-    <div style="background: #1c1c1e; padding: 12px; border-radius: 20px; font-size: 11px; color: var(--red); margin-bottom: 10px;">
-        ⚠️ SAFETY: No bullying. Links are monitored.
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <input type="text" id="cInput" placeholder="Add a comment or link..." style="flex-grow:1; background:#2c2c2e; border:none; padding:15px; border-radius:15px; color:white;">
-        <button onclick="sendComment()" class="follow-btn">SEND</button>
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="commentModal">
+    <h3 style="margin:0 0 15px 0;">Universe Comments</h3>
+    <div id="commentList" style="flex-grow:1; overflow-y:auto;"></div>
+    <div style="display:flex; gap:10px; padding-top:10px;">
+        <input type="text" id="cInput" placeholder="Message or Link..." style="flex-grow:1; background:#222; border:none; padding:12px; border-radius:12px; color:white;">
+        <button onclick="sendComment()" class="btn-action" style="padding:12px 20px;">SEND</button>
     </div>
 </div>
 
@@ -103,90 +61,70 @@
     import { getDatabase, ref, get, update, runTransaction, onValue, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
+    const config = {
         apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
         authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
         databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
         projectId: "itzhoyoo-f9f7e"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
     let activePostId = null;
 
-    const timeAgo = (t) => {
-        const s = Math.floor((Date.now() - t) / 1000);
-        if (s < 60) return "Just now";
-        if (s < 3600) return Math.floor(s/60) + "m";
-        if (s < 86400) return Math.floor(s/3600) + "h";
-        return Math.floor(s/86400) + "d";
-    };
-
-    function renderFeed() {
+    // --- Core Logic: No-Refresh DOM Update ---
+    function initFeed() {
         const feed = document.getElementById('feed');
-        onValue(ref(db, 'post'), async (snapshot) => {
-            if (!snapshot.exists()) return;
-            const posts = Object.entries(snapshot.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
-            feed.innerHTML = "";
-
-            for (const [id, post] of posts) {
+        onValue(ref(db, 'post'), async (snap) => {
+            if (!snap.exists()) return;
+            const posts = Object.entries(snap.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
+            
+            // Map existing IDs to avoid total re-renders
+            posts.forEach(async ([id, post]) => {
+                let card = document.getElementById(`card-${id}`);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `card-${id}`;
+                    card.className = 'card';
+                    feed.appendChild(card);
+                }
+                
                 const userSnap = await get(ref(db, `users/${post.uid}`));
                 const user = userSnap.val() || {};
-                const followerCount = user.followers ? Object.keys(user.followers).length : 0;
+                const fCount = user.followers ? Object.keys(user.followers).length : 0;
                 const isFollowing = auth.currentUser && user.followers?.[auth.currentUser.uid];
-                const likeCount = post.likeCount || 0;
-                const commentCount = post.comments ? Object.keys(post.comments).length : 0;
 
-                const card = document.createElement('div');
-                card.className = 'card';
                 card.innerHTML = `
                     <div class="header">
                         <img src="${user.profilePic}" class="avatar">
-                        <div class="user-meta">
-                            <div style="display:flex; align-items:center; gap:5px;">
-                                <span class="handle">@${user.handle}</span>
-                                ${followerCount >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" style="width:16px;">` : ''}
+                        <div style="flex-grow:1">
+                            <div style="display:flex; align-items:center;">
+                                <span style="font-weight:900;">@${user.handle}</span>
+                                ${fCount >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" class="verified">` : ''}
                             </div>
-                            <div class="follower-row">${followerCount} Followers</div>
+                            <div style="font-size:11px; color:var(--accent); font-weight:800;">${fCount} Followers</div>
                         </div>
-                        <button class="follow-btn ${isFollowing ? 'following' : ''}" onclick="event.stopPropagation(); handleFollow('${post.uid}', this)">
+                        <button class="btn-action ${isFollowing ? 'following' : ''}" onclick="handleFollow('${post.uid}', this)">
                             ${isFollowing ? 'FOLLOWING' : 'FOLLOW'}
                         </button>
                     </div>
-
-                    <div class="img-container" ondblclick="handleLike('${id}')">
-                        <img src="${post.image}" class="main-img">
-                        <div class="glass-title-box">
-                            <h3 class="post-title">${post.title}</h3>
+                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover;">
+                    <div class="action-bar">
+                        <div class="action-item ${post.likes?.[auth.currentUser?.uid] ? 'liked' : ''}" onclick="handleLike('${id}')">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>${post.likeCount || 0}</span>
                         </div>
-                    </div>
-
-                    <div class="interaction-area">
-                        <div class="left-actions">
-                            <div class="action-item ${post.likes?.[auth.currentUser?.uid] ? 'liked' : ''}" onclick="handleLike('${id}')">
-                                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <span>${likeCount}</span>
-                            </div>
-                            <div class="action-item" onclick="openComments('${id}')">
-                                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                <span>${commentCount}</span>
-                            </div>
+                        <div class="action-item" onclick="openComments('${id}')">
+                            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span>${post.comments ? Object.keys(post.comments).length : 0}</span>
                         </div>
-                        <div class="time-ago-label">${timeAgo(post.timestamp)}</div>
-                    </div>
-
-                    <div class="content-body">
-                        <span>${post.description.substring(0, 30)}</span>
-                        ${post.description.length > 30 ? `<span class="read-more-btn" onclick="openDetails('${id}')">...Read More</span>` : ''}
                     </div>
                 `;
-                feed.appendChild(card);
-            }
+            });
         });
     }
 
-    // --- Interaction Logic (Instant, No Refresh) ---
     window.handleLike = (id) => {
         if (!auth.currentUser) return;
         runTransaction(ref(db, `post/${id}`), (post) => {
@@ -194,7 +132,7 @@
                 if (!post.likes) post.likes = {};
                 if (post.likes[auth.currentUser.uid]) {
                     delete post.likes[auth.currentUser.uid];
-                    post.likeCount = (post.likeCount || 1) - 1;
+                    post.likeCount = Math.max(0, (post.likeCount || 1) - 1);
                 } else {
                     post.likes[auth.currentUser.uid] = true;
                     post.likeCount = (post.likeCount || 0) + 1;
@@ -212,65 +150,53 @@
         await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: snap.exists() ? null : true });
     };
 
-    // --- Modal Control ---
-    window.openDetails = async (id) => {
-        const snap = await get(ref(db, `post/${id}`));
-        const post = snap.val();
-        document.getElementById('mTitle').innerText = post.title;
-        document.getElementById('mCategory').innerText = post.category || "General";
-        document.getElementById('mDesc').innerText = post.description;
-        document.getElementById('mStats').innerHTML = `
-            🕒 Posted: ${new Date(post.timestamp).toLocaleString()}<br>
-            👁️ Views: ${post.views || 0} | ❤️ Likes: ${post.likeCount || 0}<br>
-            🚀 Type: ${post.sponsored ? 'Sponsored Content' : 'Organic Post'}
-        `;
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('detailsModal').classList.add('active');
-    };
-
     window.openComments = (id) => {
         activePostId = id;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('commentModal').classList.add('active');
+        const list = document.getElementById('commentList');
+        
         onValue(ref(db, `post/${id}/comments`), async (snap) => {
-            const list = document.getElementById('commentList');
             list.innerHTML = "";
-            if (snap.exists()) {
-                for (const [cid, c] of Object.entries(snap.val())) {
-                    const uSnap = await get(ref(db, `users/${c.uid}`));
-                    const u = uSnap.val() || {};
-                    const fCount = u.followers ? Object.keys(u.followers).length : 0;
-                    
-                    let linkHtml = "";
-                    if (c.text.includes("http")) {
-                        const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
-                        linkHtml = `
-                            <div class="link-preview-box">
-                                <div class="iframe-mask" onclick="window.open('${url}', '_blank')"></div>
+            if (!snap.exists()) return;
+            for (const [cid, c] of Object.entries(snap.val())) {
+                const uSnap = await get(ref(db, `users/${c.uid}`));
+                const u = uSnap.val() || {};
+                const fCount = u.followers ? Object.keys(u.followers).length : 0;
+                const isFollowing = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                
+                let linkUI = "";
+                if (c.text.includes("http")) {
+                    const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
+                    linkUI = `
+                        <div class="link-preview">
+                            <span class="risk-text">⚠️ CLICK AT YOUR OWN RISK</span>
+                            <div class="iframe-container">
+                                <div class="iframe-overlay" onclick="window.open('${url}', '_blank')"></div>
                                 <iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe>
-                                <a href="https://otieu.com/4/7950037" target="_blank" class="visit-link-btn">VISIT SECURE LINK</a>
                             </div>
-                        `;
-                    }
-
-                    list.innerHTML += `
-                        <div style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid #222; padding-bottom:10px;">
-                            <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px;">
-                            <div style="flex-grow:1;">
-                                <div style="font-weight:900; font-size:13px;">@${u.handle} <span style="color:var(--accent); font-size:10px;">${fCount} Followers</span></div>
-                                <div style="font-size:14px; margin-top:3px;">${c.text}</div>
-                                ${linkHtml}
-                            </div>
+                            <a href="https://otieu.com/4/7950037" target="_blank" class="visit-link-btn" style="background:var(--green); color:black; text-align:center; display:block; padding:8px; font-weight:900; text-decoration:none;">SECURE VISIT</a>
                         </div>
                     `;
                 }
+
+                list.innerHTML += `
+                    <div style="padding:15px 0; border-bottom:1px solid #222;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <img src="${u.profilePic}" style="width:32px; height:32px; border-radius:8px;">
+                            <div style="flex-grow:1">
+                                <div style="font-weight:900; font-size:13px;">@${u.handle} ${fCount >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" style="width:12px">` : ''}</div>
+                                <div style="font-size:10px; color:var(--accent); font-weight:800;">${fCount} Followers</div>
+                            </div>
+                            <button class="btn-action ${isFollowing ? 'following' : ''}" onclick="handleFollow('${c.uid}', this)">${isFollowing ? '✓' : 'FOLLOW'}</button>
+                            <button onclick="report('${cid}')" style="background:none; border:none; color:var(--red); font-size:10px; font-weight:900; cursor:pointer;">REPORT</button>
+                        </div>
+                        <div style="font-size:14px; padding-left:42px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                        <div style="padding-left:42px;">${linkUI}</div>
+                    </div>
+                `;
             }
         });
-    };
-
-    window.closeAllModals = () => {
-        document.getElementById('overlay').style.display = 'none';
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
     };
 
     window.sendComment = async () => {
@@ -284,7 +210,17 @@
         input.value = "";
     };
 
-    auth.onAuthStateChanged(() => renderFeed());
+    window.report = (cid) => {
+        alert("Report Sent! Moderation will review this comment.");
+        // Logic: You could push to a 'reports' node in Firebase
+    };
+
+    window.closeModal = () => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('commentModal').classList.remove('active');
+    };
+
+    auth.onAuthStateChanged(() => initFeed());
 </script>
 </body>
 </html>
