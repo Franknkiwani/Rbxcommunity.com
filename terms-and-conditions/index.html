@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Algorithm</title>
+    <title>Universe Ultra Absolute</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
@@ -44,6 +44,9 @@
         
         #fullImageModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10001; display: none; align-items: center; justify-content: center; }
         #fullImageModal img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .link-preview { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
+        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
     </style>
 </head>
 <body>
@@ -59,7 +62,7 @@
 <div class="modal" id="detailsModal">
     <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2 id="detTitle" style="margin:0; font-weight: 900; color:var(--accent);"></h2>
-        <button id="reportBtnMain" class="btn-action" style="background:var(--red); border-bottom-color:#b30000; min-width:80px; height:30px;">REPORT</button>
+        <button id="repBtnMain" class="btn-action" style="min-width:70px; height:30px; background:var(--red); border-bottom-color:#b30000;">REPORT</button>
     </div>
     <div id="detCategory" style="color: var(--text-dim); font-size: 11px; font-weight: 900; margin-bottom: 10px;"></div>
     <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
@@ -77,7 +80,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update, runTransaction, onValue, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, runTransaction, onValue, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const config = {
@@ -90,6 +93,7 @@
     const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    let activeId = null;
 
     function notify(msg, type = 'success') {
         const container = document.getElementById('toast-container');
@@ -108,41 +112,36 @@
         return Math.floor(s/86400) + "d ago";
     };
 
-    // --- REAL REPORT FUNCTION ---
-    window.submitReport = async (type, targetId, reason = "Inappropriate Content") => {
-        if (!auth.currentUser) return notify("Login to report", "error");
-        const reportRef = ref(db, 'reports');
-        await push(reportRef, {
+    window.goToProfile = (uid) => { window.location.href = `/profile?user=${uid}`; };
+    window.openImage = (src) => { document.getElementById('fullImgSrc').src = src; document.getElementById('fullImageModal').style.display = 'flex'; };
+
+    // Real Report Function
+    window.submitReport = async (targetId, type) => {
+        if(!auth.currentUser) return notify("Login to report", "error");
+        const reportRef = push(ref(db, 'reports'));
+        await set(reportRef, {
             reporter: auth.currentUser.uid,
             targetId: targetId,
-            type: type, // 'post' or 'comment'
-            reason: reason,
+            type: type,
             timestamp: Date.now()
         });
-        notify("Report submitted to mods", "error");
+        notify("Report submitted to staff", "error");
     };
-
-    // --- ALGORITHM: WEIGHTED SHUFFLE ---
-    function universeAlgorithm(posts) {
-        return posts.map(p => {
-            // Score = Likes (x2) + Views (x1) + Randomness factor
-            const score = ((p[1].likeCount || 0) * 2) + (p[1].views || 0) + (Math.random() * 50);
-            return { ...p, algoScore: score };
-        }).sort((a, b) => b.algoScore - a.algoScore);
-    }
 
     function startApp() {
         onValue(ref(db, 'post'), async (snap) => {
             const feed = document.getElementById('feed');
             if (!snap.exists()) return;
             
-            // Apply Algorithm
-            const rawPosts = Object.entries(snap.val());
-            const sortedPosts = universeAlgorithm(rawPosts);
+            // SHUFFLE LOGIC
+            let postEntries = Object.entries(snap.val());
+            for (let i = postEntries.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [postEntries[i], postEntries[j]] = [postEntries[j], postEntries[i]];
+            }
             
-            feed.innerHTML = ""; // Refresh feed for shuffle
-            
-            for (const [id, post] of sortedPosts) {
+            feed.innerHTML = ""; // Clear for shuffle re-render
+            for (const [id, post] of postEntries) {
                 const card = document.createElement('div');
                 card.id = `card-${id}`;
                 card.className = 'card';
@@ -154,8 +153,8 @@
 
                 card.innerHTML = `
                     <div class="header">
-                        <img src="${u.profilePic}" class="avatar" onclick="location.href='/profile?user=${post.uid}'">
-                        <div style="flex-grow:1" onclick="location.href='/profile?user=${post.uid}'">
+                        <img src="${u.profilePic}" class="avatar" onclick="goToProfile('${post.uid}')">
+                        <div style="flex-grow:1" onclick="goToProfile('${post.uid}')" style="cursor:pointer">
                             <div style="display:flex; align-items:center; gap:5px;">
                                 <span style="font-weight:900;">@${u.handle}</span>
                                 ${fc >= 1000 ? '✅' : ''}
@@ -166,13 +165,8 @@
                             ${isF ? 'FOLLOWING' : 'FOLLOW'}
                         </button>
                     </div>
-
-                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover;" onclick="openImage('${post.image}')" ondblclick="doLike('${id}')">
-                    
-                    <div class="glass-title-row">
-                        <h3 style="margin:0; font-size:17px; font-weight:900;">${post.title}</h3>
-                    </div>
-
+                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover; cursor:zoom-in;" onclick="openImage('${post.image}')" ondblclick="doLike('${id}')">
+                    <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900;">${post.title}</h3></div>
                     <div style="padding:0 16px 12px 16px; display:flex; justify-content:space-between; align-items:center;">
                         <div style="display:flex; gap:18px;">
                             <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
@@ -184,65 +178,23 @@
                                 <span style="font-weight:900;">${post.comments ? Object.keys(post.comments).length : 0}</span>
                             </div>
                         </div>
-                        <button onclick="submitReport('post', '${id}')" style="background:none; border:none; color:var(--red); font-weight:900; font-size:10px;">REPORT</button>
+                        <span style="color:var(--text-dim); font-size:12px; font-weight:900;">${timeAgo(post.timestamp)}</span>
                     </div>
-
                     <div style="padding:0 15px 15px 15px; font-size:14px;">
                         <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${post.views || 0} VIEWS • ${post.category?.toUpperCase() || 'POST'}</div>
                         <span>${post.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
                     </div>`;
             }
-        });
+        }, { onlyOnce: true }); // Shuffle only on initial load to prevent jumping
     }
-
-    window.openImage = (src) => {
-        document.getElementById('fullImgSrc').src = src;
-        document.getElementById('fullImageModal').style.display = 'flex';
-    };
-
-    window.openReadMore = async (id) => {
-        const snap = await get(ref(db, `post/${id}`));
-        const post = snap.val();
-        document.getElementById('detTitle').innerText = post.title;
-        document.getElementById('detCategory').innerText = `CATEGORY: ${post.category?.toUpperCase() || 'GENERAL'}`;
-        document.getElementById('detDesc').innerText = post.description;
-        document.getElementById('detStats').innerHTML = `
-            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div>
-            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${post.likeCount || 0} Likes</div>`;
-        document.getElementById('reportBtnMain').onclick = () => submitReport('post', id);
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('detailsModal').classList.add('active');
-    };
-
-    window.openComments = (id) => {
-        activeId = id;
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('commentModal').classList.add('active');
-        onValue(ref(db, `post/${id}/comments`), async (snap) => {
-            const list = document.getElementById('commentList'); list.innerHTML = "";
-            if (!snap.exists()) return;
-            for (const [cid, c] of Object.entries(snap.val())) {
-                const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
-                list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px;">
-                        <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;">@${u.handle}</div></div>
-                        <button onclick="submitReport('comment', '${cid}')" style="background:none; border:none; color:var(--red); font-size:10px; font-weight:900;">REPORT</button>
-                    </div>
-                    <div style="padding-left:45px; font-size:14px; margin-top:5px;">${c.text}</div>
-                </div>`;
-            }
-        });
-    };
 
     window.doFollow = async (uid, btn) => {
         if (!auth.currentUser) return notify("Login Required", "error");
         btn.innerHTML = '<div style="width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite;"></div>';
         const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
         const snap = await get(followRef);
-        const exists = snap.exists();
-        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: exists ? null : true });
-        notify(exists ? "Unfollowed" : "Following!", exists ? "error" : "success");
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: snap.exists() ? null : true });
+        notify(snap.exists() ? "Unfollowed" : "Following!", snap.exists() ? "error" : "success");
     };
 
     window.doLike = (id) => {
@@ -253,18 +205,63 @@
                 if (p.likes[auth.currentUser.uid]) {
                     delete p.likes[auth.currentUser.uid];
                     p.likeCount = Math.max(0, (p.likeCount || 1) - 1);
-                } else {
-                    p.likes[auth.currentUser.uid] = true;
-                    p.likeCount = (p.likeCount || 0) + 1;
-                }
+                } else { p.likes[auth.currentUser.uid] = true; p.likeCount = (p.likeCount || 0) + 1; }
             }
             return p;
         });
     };
 
-    window.closeAllModals = () => {
-        document.getElementById('overlay').style.display = 'none';
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    window.openReadMore = async (id) => {
+        const snap = await get(ref(db, `post/${id}`));
+        const post = snap.val();
+        document.getElementById('detTitle').innerText = post.title;
+        document.getElementById('detCategory').innerText = `CATEGORY: ${post.category?.toUpperCase() || 'GENERAL'}`;
+        document.getElementById('detDesc').innerText = post.description;
+        document.getElementById('detStats').innerHTML = `<div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div><div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${post.likeCount || 0} Likes</div>`;
+        document.getElementById('repBtnMain').onclick = () => submitReport(id, 'post');
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('detailsModal').classList.add('active');
+    };
+
+    window.openComments = (id) => {
+        activeId = id;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('commentModal').classList.add('active');
+        onValue(ref(db, `post/${id}/comments`), async (snap) => {
+            const list = document.getElementById('commentList');
+            list.innerHTML = "";
+            if (!snap.exists()) return;
+            for (const [cid, c] of Object.entries(snap.val())) {
+                const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
+                const fc = u.followers ? Object.keys(u.followers).length : 0;
+                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                
+                let linkUI = "";
+                if (c.text.includes("http")) {
+                    const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
+                    linkUI = `<div class="link-preview"><span class="risk-tag">⚠️ SECURE PREVIEW</span><div style="height:140px; overflow:hidden;"><iframe src="${url}" width="100%" height="100%" style="border:none; background:#fff;"></iframe></div><a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:12px; font-weight:900; text-decoration:none;">VISIT SECURELY</a></div>`;
+                }
+
+                list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px; cursor:pointer;" onclick="goToProfile('${c.uid}')">
+                        <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;" onclick="goToProfile('${c.uid}')">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div><div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div></div>
+                        <button class="btn-action ${isF ? 'following' : ''}" style="min-width:75px; height:30px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                        <button onclick="submitReport('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px; margin-left:5px;">REPORT</button>
+                    </div>
+                    <div style="padding-left:48px; font-size:14px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    <div style="padding-left:48px;">${linkUI}</div>
+                </div>`;
+            }
+        });
+    };
+
+    window.closeAllModals = () => { document.getElementById('overlay').style.display = 'none'; document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); };
+    window.sendComment = async () => {
+        const input = document.getElementById('cInput');
+        if (!input.value.trim() || !auth.currentUser) return notify("Message empty", "error");
+        await push(ref(db, `post/${activeId}/comments`), { uid: auth.currentUser.uid, text: input.value, timestamp: Date.now() });
+        input.value = "";
     };
 
     auth.onAuthStateChanged(() => startApp());
