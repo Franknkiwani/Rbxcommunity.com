@@ -13,39 +13,55 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
 
+        /* Custom Toast Notifications */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; pointer-events: none; }
+        .toast { padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 14px; animation: slideDown 0.4s ease forwards, fadeOut 0.4s ease 2.5s forwards; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .toast.success { background: var(--green); color: #000; }
+        .toast.error { background: var(--red); color: #fff; }
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+        /* Card System */
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; position: relative; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; }
         
-        .action-bar { padding: 12px 16px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); align-items: center;}
-        .action-item { display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        /* New Glassy Title Under Image */
+        .post-image { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+        .glass-title-row { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            margin: -25px 15px 10px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--glass);
+            position: relative; z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .action-bar { padding: 5px 16px 12px 16px; display: flex; justify-content: space-between; align-items: center;}
+        .action-item { display: flex; align-items: center; gap: 6px; font-weight: 800; cursor: pointer; }
         .action-item svg { width: 24px; height: 24px; fill: white; }
-        .action-item.liked svg { fill: var(--red); transform: scale(1.1); }
+        .action-item.liked svg { fill: var(--red); }
 
-        .btn-action { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; min-width: 90px; display: flex; justify-content: center; align-items: center; }
-        .btn-action.following { background: #3A3A3C; border-bottom-color: #1C1C1E; }
-        
-        .spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-action { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; min-width: 90px; }
+        .report-btn { color: var(--text-dim); font-size: 10px; font-weight: 800; background: none; border: none; cursor: pointer; }
 
-        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); padding: 25px; box-sizing: border-box; border-top: 2px solid var(--border); display: flex; flex-direction: column; }
+        /* Modals */
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #111; border-radius: 30px 30px 0 0; z-index: 1000; transition: 0.4s; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; border-top: 2px solid var(--border); }
         .modal.active { bottom: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 999; backdrop-filter: blur(5px); }
-        
-        .link-card { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
-        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
     </style>
 </head>
 <body>
 
+<div id="toast-container"></div>
 <div id="feed"></div>
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
 <div class="modal" id="detailsModal">
-    <h2 id="detTitle" style="margin:0; font-weight: 900;"></h2>
-    <p id="detCategory" style="color: var(--accent); font-weight: 800; font-size: 12px; margin: 5px 0 15px 0;"></p>
+    <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+        <h2 id="detTitle" style="margin:0; font-weight: 900;"></h2>
+        <button onclick="reportPost()" class="report-btn" style="color:var(--red); font-size: 12px;">REPORT POST</button>
+    </div>
+    <p id="detCategory" style="color: var(--accent); font-weight: 800; font-size: 12px; margin: 10px 0;"></p>
     <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
-    <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; line-height: 1.6; color: #ddd;" id="detDesc"></div>
+    <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto;" id="detDesc"></div>
 </div>
 
 <div class="modal" id="commentModal">
@@ -74,6 +90,16 @@
     const auth = getAuth(app);
     let activeId = null;
 
+    // --- Custom Notification System ---
+    function notify(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
     const timeAgo = (t) => {
         const s = Math.floor((Date.now() - t) / 1000);
         if (s < 60) return "Just now";
@@ -83,8 +109,8 @@
     };
 
     function startApp() {
-        const feed = document.getElementById('feed');
         onValue(ref(db, 'post'), async (snap) => {
+            const feed = document.getElementById('feed');
             if (!snap.exists()) return;
             const postEntries = Object.entries(snap.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
             
@@ -99,7 +125,7 @@
                 }
                 
                 const u = (await get(ref(db, `users/${post.uid}`))).val() || {};
-                const fCount = u.followers ? Object.keys(u.followers).length : 0;
+                const fc = u.followers ? Object.keys(u.followers).length : 0;
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
 
                 card.innerHTML = `
@@ -108,20 +134,19 @@
                         <div style="flex-grow:1">
                             <div style="display:flex; align-items:center; gap:5px;">
                                 <span style="font-weight:900;">@${u.handle}</span>
-                                ${fCount >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" style="width:14px">` : ''}
+                                ${fc >= 1000 ? '✅' : ''}
                             </div>
-                            <div style="font-size:11px; color:var(--accent); font-weight:800;">${fCount} Followers</div>
+                            <div style="font-size:11px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                         </div>
                         <button class="btn-action ${isF ? 'following' : ''}" onclick="doFollow('${post.uid}', this)">
                             ${isF ? 'FOLLOWING' : 'FOLLOW'}
                         </button>
                     </div>
 
-                    <div style="position:relative;" ondblclick="doLike('${id}')">
-                        <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover;">
-                        <div style="position:absolute; bottom:12px; left:12px; right:12px; background:rgba(0,0,0,0.5); backdrop-filter:blur(10px); padding:12px; border-radius:18px; border:1px solid var(--glass);">
-                            <h3 style="margin:0; font-size:17px; font-weight:900;">${post.title}</h3>
-                        </div>
+                    <img src="${post.image}" class="post-image" ondblclick="doLike('${id}')">
+                    
+                    <div class="glass-title-row">
+                        <h3 style="margin:0; font-size:17px; font-weight:900;">${post.title}</h3>
                     </div>
 
                     <div class="action-bar">
@@ -135,11 +160,14 @@
                                 <span>${post.comments ? Object.keys(post.comments).length : 0}</span>
                             </div>
                         </div>
-                        <div style="color:var(--text-dim); font-size:12px; font-weight:800;">${timeAgo(post.timestamp)}</div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="color:var(--text-dim); font-size:12px; font-weight:800;">${timeAgo(post.timestamp)}</span>
+                            <button onclick="reportPost('${id}')" class="report-btn">REPORT</button>
+                        </div>
                     </div>
 
                     <div style="padding:0 15px 15px 15px; font-size:14px;">
-                        <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${post.views || 0} VIEWS • ${post.category?.toUpperCase() || 'POST'}</div>
+                        <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${post.views || 0} VIEWS • ${post.category?.toUpperCase()}</div>
                         <span>${post.description}</span><span style="color:var(--accent); font-weight:800; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
                     </div>`;
             }
@@ -147,19 +175,22 @@
     }
 
     window.doFollow = async (uid, btn) => {
-        if (!auth.currentUser) return;
+        if (!auth.currentUser) return notify("Login to follow", "error");
         btn.innerHTML = '<div class="spinner"></div>';
         const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
         const snap = await get(followRef);
-        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: snap.exists() ? null : true });
+        const following = snap.exists();
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: following ? null : true });
+        notify(following ? "Unfollowed User" : "Following User", following ? "error" : "success");
     };
 
     window.doLike = (id) => {
-        if (!auth.currentUser) return;
+        if (!auth.currentUser) return notify("Login to like", "error");
         runTransaction(ref(db, `post/${id}`), (p) => {
             if (p) {
                 p.likes = p.likes || {};
-                if (p.likes[auth.currentUser.uid]) {
+                const liked = p.likes[auth.currentUser.uid];
+                if (liked) {
                     delete p.likes[auth.currentUser.uid];
                     p.likeCount = Math.max(0, (p.likeCount || 1) - 1);
                 } else {
@@ -172,6 +203,7 @@
     };
 
     window.openReadMore = async (id) => {
+        activeId = id;
         const post = (await get(ref(db, `post/${id}`))).val();
         document.getElementById('detTitle').innerText = post.title;
         document.getElementById('detCategory').innerText = post.category || "General";
@@ -187,55 +219,36 @@
         activeId = id;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('commentModal').classList.add('active');
-        const list = document.getElementById('commentList');
         onValue(ref(db, `post/${id}/comments`), async (snap) => {
+            const list = document.getElementById('commentList');
             list.innerHTML = "";
             if (!snap.exists()) return;
             for (const [cid, c] of Object.entries(snap.val())) {
                 const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
-                const fc = u.followers ? Object.keys(u.followers).length : 0;
-                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
-                
-                let linkUI = "";
-                if (c.text.includes("http")) {
-                    const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
-                    linkUI = `<div class="link-card">
-                        <span class="risk-tag">⚠️ RISK WARNING: SECURE LINK</span>
-                        <div style="height:120px; overflow:hidden;"><iframe src="${url}" width="100%" height="100%" style="border:none;"></iframe></div>
-                        <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:10px; font-weight:900; text-decoration:none;">VISIT</a>
-                    </div>`;
-                }
-
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
                         <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px;">
-                        <div style="flex-grow:1;">
-                            <div style="font-weight:900; font-size:13px;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
-                            <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
-                        </div>
-                        <button class="btn-action ${isF ? 'following' : ''}" style="min-width:60px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? '✓' : 'FOLLOW'}</button>
+                        <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;">@${u.handle}</div></div>
+                        <button onclick="notify('Comment Reported','error')" class="report-btn" style="color:var(--red)">REPORT</button>
                     </div>
-                    <div style="padding-left:45px; font-size:14px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
-                    <div style="padding-left:45px;">${linkUI}</div>
+                    <div style="padding-left:45px; font-size:14px;">${c.text}</div>
                 </div>`;
             }
         });
     };
 
-    window.sendComment = async () => {
-        const input = document.getElementById('cInput');
-        if (!input.value.trim() || !auth.currentUser) return;
-        await push(ref(db, `post/${activeId}/comments`), {
-            uid: auth.currentUser.uid,
-            text: input.value,
-            timestamp: Date.now()
-        });
-        input.value = "";
-    };
-
+    window.reportPost = (id) => notify("Post reported to moderation", "error");
     window.closeAllModals = () => {
         document.getElementById('overlay').style.display = 'none';
         document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    };
+
+    window.sendComment = async () => {
+        const input = document.getElementById('cInput');
+        if (!input.value.trim() || !auth.currentUser) return notify("Comment is empty", "error");
+        await push(ref(db, `post/${activeId}/comments`), { uid: auth.currentUser.uid, text: input.value, timestamp: Date.now() });
+        input.value = "";
+        notify("Comment Posted!");
     };
 
     auth.onAuthStateChanged(() => startApp());
