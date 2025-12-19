@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Pro</title>
+    <title>Universe Ultra Infinite</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
@@ -11,22 +11,19 @@
             --text-dim: #8E8E93; --border: #242426;
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
+        #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;}
 
-        /* Notifications */
+        /* Toast & Card Styles */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; pointer-events: none; }
         .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .toast.success { background: var(--green); color: #000; }
         .toast.error { background: var(--red); color: #fff; }
-
-        /* Card System */
+        
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; position: relative; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; cursor: pointer; }
         
-        .post-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: zoom-in; background: #222; transition: opacity 0.5s; opacity: 0; }
-        .post-img.loaded { opacity: 1; }
-
+        .post-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: zoom-in; background: #222; }
         .glass-title-row { 
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             margin: -25px 15px 10px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--glass);
@@ -47,8 +44,9 @@
         
         #fullImageModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10001; display: none; flex-direction: column; align-items: center; justify-content: center; }
         #fullImgSrc { max-width: 100%; max-height: 85%; object-fit: contain; }
-        .back-btn { position: absolute; top: 40px; left: 20px; background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #0072B3; }
+        .back-btn { position: absolute; top: 40px; left: 20px; background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #0072B3; z-index: 10002; }
 
+        #end-msg { text-align: center; padding: 40px; color: var(--text-dim); font-weight: 900; font-size: 14px; display: none; }
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
@@ -56,6 +54,7 @@
 
 <div id="toast-container"></div>
 <div id="feed"></div>
+<div id="end-msg">✨ You've reached the end of the Universe.</div>
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
 <div id="fullImageModal">
@@ -84,7 +83,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update, runTransaction, onValue, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, runTransaction, onValue, push, set, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const config = {
@@ -97,6 +96,10 @@
     const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    
+    let allPosts = [];
+    let displayedCount = 0;
+    const pageSize = 5;
     let activeId = null;
 
     function notify(msg, type = 'success') {
@@ -116,77 +119,79 @@
         return Math.floor(s/86400) + "d ago";
     };
 
-    // Lazy Loading Observer
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.onload = () => img.classList.add('loaded');
-                observer.unobserve(img);
-            }
-        });
-    });
-
-    function startApp() {
-        onValue(ref(db, 'post'), async (snap) => {
-            const feed = document.getElementById('feed');
-            if (!snap.exists()) return;
-            
-            // Shuffle and Convert to Array
-            let posts = Object.entries(snap.val());
-            posts = posts.sort(() => Math.random() - 0.5);
-            
-            feed.innerHTML = "";
-            for (const [id, post] of posts) {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.id = `card-${id}`;
-                feed.appendChild(card);
-                
-                // Real-time listener for LIKES and VIEWS (Instant Update)
-                onValue(ref(db, `post/${id}`), async (pSnap) => {
-                    const p = pSnap.val();
-                    const uSnap = await get(ref(db, `users/${p.uid}`));
-                    const u = uSnap.val() || {};
-                    const fc = u.followers ? Object.keys(u.followers).length : 0;
-                    const isLiked = auth.currentUser && p.likes?.[auth.currentUser.uid];
-                    const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
-
-                    card.innerHTML = `
-                        <div class="header">
-                            <img src="${u.profilePic}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
-                            <div style="flex-grow:1">
-                                <div style="display:flex; align-items:center; gap:5px; font-weight:900;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
-                                <div style="font-size:11px; color:var(--accent); font-weight:800;">${fc} Followers</div>
-                            </div>
-                            <button class="btn-action ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
-                        </div>
-                        <img data-src="${p.image}" class="post-img" onclick="openImage('${p.image}')" ondblclick="doLike('${id}')">
-                        <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900;">${p.title}</h3></div>
-                        <div style="padding:0 16px 12px 16px; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display:flex; gap:18px;">
-                                <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="${isLiked ? '#FF4B4B' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                    <span style="font-weight:900;">${p.likeCount || 0}</span>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="openComments('${id}')">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                    <span style="font-weight:900;">${p.comments ? Object.keys(p.comments).length : 0}</span>
-                                </div>
-                            </div>
-                            <span style="color:var(--text-dim); font-size:11px; font-weight:900;">${timeAgo(p.timestamp)}</span>
-                        </div>
-                        <div style="padding:0 15px 15px 15px; font-size:14px;">
-                            <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase() || 'POST'}</div>
-                            <span>${p.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
-                        </div>`;
-                    
-                    observer.observe(card.querySelector('.post-img'));
-                }, { onlyOnce: false }); // False allows instant update on like
-            }
-        }, { onlyOnce: true });
+    async function loadFeed() {
+        const snap = await get(ref(db, 'post'));
+        if (!snap.exists()) return;
+        
+        allPosts = Object.entries(snap.val()).sort(() => Math.random() - 0.5); // Shuffle once
+        renderNextBatch();
     }
+
+    function renderNextBatch() {
+        const feed = document.getElementById('feed');
+        const endMsg = document.getElementById('end-msg');
+        
+        if (displayedCount >= allPosts.length) {
+            endMsg.style.display = "block";
+            return;
+        }
+
+        const nextBatch = allPosts.slice(displayedCount, displayedCount + pageSize);
+        nextBatch.forEach(([id, post]) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${id}`;
+            feed.appendChild(card);
+            
+            // Instant Listener for Likes/Views
+            onValue(ref(db, `post/${id}`), async (pSnap) => {
+                const p = pSnap.val();
+                if (!p) return;
+                const uSnap = await get(ref(db, `users/${p.uid}`));
+                const u = uSnap.val() || {};
+                const fc = u.followers ? Object.keys(u.followers).length : 0;
+                const isLiked = auth.currentUser && p.likes?.[auth.currentUser.uid];
+                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+
+                card.innerHTML = `
+                    <div class="header">
+                        <img src="${u.profilePic}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
+                        <div style="flex-grow:1" onclick="window.location.href='/profile?user=${p.uid}'">
+                            <div style="display:flex; align-items:center; gap:5px; font-weight:900;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
+                            <div style="font-size:11px; color:var(--accent); font-weight:800;">${fc} Followers</div>
+                        </div>
+                        <button class="btn-action ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                    </div>
+                    <img src="${p.image}" class="post-img" onclick="openImage('${p.image}')" ondblclick="doLike('${id}')">
+                    <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900;">${p.title}</h3></div>
+                    <div style="padding:0 16px 12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; gap:18px;">
+                            <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="${isLiked ? '#FF4B4B' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <span style="font-weight:900;">${p.likeCount || 0}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="openComments('${id}')">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <span style="font-weight:900;">${p.comments ? Object.keys(p.comments).length : 0}</span>
+                            </div>
+                        </div>
+                        <span style="color:var(--text-dim); font-size:11px; font-weight:900;">${timeAgo(p.timestamp)}</span>
+                    </div>
+                    <div style="padding:0 15px 15px 15px; font-size:14px;">
+                        <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase() || 'POST'}</div>
+                        <span>${p.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
+                    </div>`;
+            });
+        });
+        displayedCount += pageSize;
+    }
+
+    // Scroll Listener for Lazy Loading
+    window.onscroll = () => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+            renderNextBatch();
+        }
+    };
 
     window.doLike = (id) => {
         if (!auth.currentUser) return notify("Login Required", "error");
@@ -245,20 +250,20 @@
             for (const [cid, c] of Object.entries(snap.val())) {
                 const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
                 const fc = u.followers ? Object.keys(u.followers).length : 0;
-                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
                 let linkUI = "";
                 if (c.text.includes("http")) {
                     const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
-                    linkUI = `<div style="background:#000; border-radius:15px; margin-top:10px; overflow:hidden;">
+                    linkUI = `<div style="background:#000; border:1px solid var(--border); border-radius:15px; margin-top:10px; overflow:hidden;">
+                        <span style="font-size:10px; color:var(--red); font-weight:900; background:rgba(255,75,75,0.1); padding:5px; text-align:center; display:block;">⚠️ CLICK AT YOUR OWN RISK</span>
                         <iframe src="${url}" width="100%" height="140px" style="border:none; background:#fff;"></iframe>
-                        <a href="${url}" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:10px; font-weight:900; text-decoration:none;">VISIT LINK</a>
+                        <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:12px; font-weight:900; text-decoration:none;">VISIT SECURELY</a>
                     </div>`;
                 }
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                         <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px;">
                         <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;">@${u.handle}</div><div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div></div>
-                        <button class="btn-action ${isF ? 'following' : ''}" style="min-width:75px; height:30px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                        <button onclick="submitReport('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px;">REPORT</button>
                     </div>
                     <div style="padding-left:48px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
                     ${linkUI}
@@ -285,7 +290,7 @@
         input.value = "";
     };
 
-    auth.onAuthStateChanged(() => startApp());
+    auth.onAuthStateChanged(() => loadFeed());
 </script>
 </body>
 </html>
