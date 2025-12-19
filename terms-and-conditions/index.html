@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Absolute</title>
+    <title>Universe Ultra Pro</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
             --accent: #00A2FF; --green: #00E052; --red: #FF4B4B; --text: #FFFFFF;
             --text-dim: #8E8E93; --border: #242426;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
 
         /* Notifications */
@@ -18,17 +18,19 @@
         .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .toast.success { background: var(--green); color: #000; }
         .toast.error { background: var(--red); color: #fff; }
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Card Elements */
+        /* Card System */
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; position: relative; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; cursor: pointer; }
         
+        .post-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: zoom-in; background: #222; transition: opacity 0.5s; opacity: 0; }
+        .post-img.loaded { opacity: 1; }
+
         .glass-title-row { 
             background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             margin: -25px 15px 10px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--glass);
-            position: relative; z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.3); pointer-events: none;
+            position: relative; z-index: 10; pointer-events: none;
         }
 
         .btn-action { 
@@ -43,13 +45,11 @@
         .modal.active { bottom: 0; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 999; backdrop-filter: blur(5px); }
         
-        /* Full Image Modal with Back Button */
         #fullImageModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10001; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #fullImageModal img { max-width: 100%; max-height: 80%; object-fit: contain; }
-        .back-btn-float { position: absolute; top: 40px; left: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: 800; backdrop-filter: blur(10px); cursor: pointer; }
+        #fullImgSrc { max-width: 100%; max-height: 85%; object-fit: contain; }
+        .back-btn { position: absolute; top: 40px; left: 20px; background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #0072B3; }
 
-        .link-preview { background: #000; border: 1px solid var(--border); border-radius: 15px; margin-top: 10px; overflow: hidden; }
-        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -59,7 +59,7 @@
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
 <div id="fullImageModal">
-    <button class="back-btn-float" onclick="document.getElementById('fullImageModal').style.display='none'">← BACK</button>
+    <button class="back-btn" onclick="document.getElementById('fullImageModal').style.display='none'">← BACK</button>
     <img id="fullImgSrc" src="">
 </div>
 
@@ -70,17 +70,14 @@
     </div>
     <div id="detCategory" style="color: var(--text-dim); font-size: 11px; font-weight: 900; margin-bottom: 10px;"></div>
     <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-    <div style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto; border:1px solid var(--border);" id="detDesc"></div>
+    <div id="detDesc" style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto;"></div>
 </div>
 
 <div class="modal" id="commentModal">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">Comments</h3>
-        <button onclick="closeAllModals()" style="background:none; border:none; color:var(--text-dim); font-weight:900;">CLOSE</button>
-    </div>
+    <h3 style="margin-top:0">Universe Social</h3>
     <div id="commentList" style="flex-grow:1; overflow-y:auto;"></div>
     <div style="display:flex; gap:10px; padding-top:15px; border-top:1px solid var(--border);">
-        <input type="text" id="cInput" placeholder="Write or paste link..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white; font-weight:600;">
+        <input type="text" id="cInput" placeholder="Write message..." style="flex-grow:1; background:#222; border:none; padding:15px; border-radius:15px; color:white;">
         <button onclick="sendComment()" class="btn-action" style="min-width:80px;">SEND</button>
     </div>
 </div>
@@ -119,87 +116,77 @@
         return Math.floor(s/86400) + "d ago";
     };
 
-    window.goToProfile = (uid) => { window.location.href = `/profile?user=${uid}`; };
-    window.openImage = (src) => { document.getElementById('fullImgSrc').src = src; document.getElementById('fullImageModal').style.display = 'flex'; };
-
-    window.submitReport = async (targetId, type) => {
-        if(!auth.currentUser) return notify("Login to report", "error");
-        await push(ref(db, 'reports'), {
-            reporter: auth.currentUser.uid,
-            targetId: targetId,
-            type: type,
-            timestamp: Date.now()
+    // Lazy Loading Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.onload = () => img.classList.add('loaded');
+                observer.unobserve(img);
+            }
         });
-        notify("Reported to staff", "error");
-    };
+    });
 
     function startApp() {
         onValue(ref(db, 'post'), async (snap) => {
-            if (!snap.exists()) return;
             const feed = document.getElementById('feed');
+            if (!snap.exists()) return;
             
-            // SHUFFLE POSTS
-            let postEntries = Object.entries(snap.val());
-            postEntries = postEntries.sort(() => Math.random() - 0.5);
+            // Shuffle and Convert to Array
+            let posts = Object.entries(snap.val());
+            posts = posts.sort(() => Math.random() - 0.5);
             
-            feed.innerHTML = ""; 
-            for (const [id, post] of postEntries) {
+            feed.innerHTML = "";
+            for (const [id, post] of posts) {
                 const card = document.createElement('div');
-                card.id = `card-${id}`;
                 card.className = 'card';
+                card.id = `card-${id}`;
                 feed.appendChild(card);
                 
-                const uSnap = await get(ref(db, `users/${post.uid}`));
-                const u = uSnap.val() || {};
-                const fc = u.followers ? Object.keys(u.followers).length : 0;
-                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                // Real-time listener for LIKES and VIEWS (Instant Update)
+                onValue(ref(db, `post/${id}`), async (pSnap) => {
+                    const p = pSnap.val();
+                    const uSnap = await get(ref(db, `users/${p.uid}`));
+                    const u = uSnap.val() || {};
+                    const fc = u.followers ? Object.keys(u.followers).length : 0;
+                    const isLiked = auth.currentUser && p.likes?.[auth.currentUser.uid];
+                    const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
 
-                card.innerHTML = `
-                    <div class="header">
-                        <img src="${u.profilePic}" class="avatar" onclick="goToProfile('${post.uid}')">
-                        <div style="flex-grow:1" onclick="goToProfile('${post.uid}')" style="cursor:pointer">
-                            <div style="display:flex; align-items:center; gap:5px;">
-                                <span style="font-weight:900;">@${u.handle}</span>
-                                ${fc >= 1000 ? '✅' : ''}
+                    card.innerHTML = `
+                        <div class="header">
+                            <img src="${u.profilePic}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
+                            <div style="flex-grow:1">
+                                <div style="display:flex; align-items:center; gap:5px; font-weight:900;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
+                                <div style="font-size:11px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                             </div>
-                            <div style="font-size:11px; color:var(--accent); font-weight:800;">${fc} Followers</div>
+                            <button class="btn-action ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
                         </div>
-                        <button class="btn-action ${isF ? 'following' : ''}" onclick="doFollow('${post.uid}', this)">
-                            ${isF ? 'FOLLOWING' : 'FOLLOW'}
-                        </button>
-                    </div>
-                    <img src="${post.image}" style="width:100%; aspect-ratio:1/1; object-fit:cover; cursor:zoom-in;" onclick="openImage('${post.image}')" ondblclick="doLike('${id}')">
-                    <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${post.title}</h3></div>
-                    <div style="padding:0 16px 12px 16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; gap:18px;">
-                            <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
-                                <svg viewBox="0 0 24 24" width="24" height="24" fill="${(post.likes && auth.currentUser && post.likes[auth.currentUser.uid]) ? '#FF4B4B' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                <span style="font-weight:900;">${post.likeCount || 0}</span>
+                        <img data-src="${p.image}" class="post-img" onclick="openImage('${p.image}')" ondblclick="doLike('${id}')">
+                        <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900;">${p.title}</h3></div>
+                        <div style="padding:0 16px 12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; gap:18px;">
+                                <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="doLike('${id}')">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="${isLiked ? '#FF4B4B' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <span style="font-weight:900;">${p.likeCount || 0}</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="openComments('${id}')">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    <span style="font-weight:900;">${p.comments ? Object.keys(p.comments).length : 0}</span>
+                                </div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:6px; cursor:pointer;" onclick="openComments('${id}')">
-                                <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                <span style="font-weight:900;">${post.comments ? Object.keys(post.comments).length : 0}</span>
-                            </div>
+                            <span style="color:var(--text-dim); font-size:11px; font-weight:900;">${timeAgo(p.timestamp)}</span>
                         </div>
-                        <span style="color:var(--text-dim); font-size:12px; font-weight:900;">${timeAgo(post.timestamp)}</span>
-                    </div>
-                    <div style="padding:0 15px 15px 15px; font-size:14px;">
-                        <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${post.views || 0} VIEWS • ${post.category?.toUpperCase() || 'POST'}</div>
-                        <span>${post.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
-                    </div>`;
+                        <div style="padding:0 15px 15px 15px; font-size:14px;">
+                            <div style="color:var(--accent); font-size:10px; font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase() || 'POST'}</div>
+                            <span>${p.description}</span><span style="color:var(--accent); font-weight:900; cursor:pointer; margin-left:4px;" onclick="openReadMore('${id}')">Read More</span>
+                        </div>`;
+                    
+                    observer.observe(card.querySelector('.post-img'));
+                }, { onlyOnce: false }); // False allows instant update on like
             }
         }, { onlyOnce: true });
     }
-
-    window.doFollow = async (uid, btn) => {
-        if (!auth.currentUser) return notify("Login Required", "error");
-        btn.innerHTML = '<div class="spinner"></div>';
-        const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
-        const snap = await get(followRef);
-        const exists = snap.exists();
-        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: exists ? null : true });
-        notify(exists ? "Unfollowed" : "Following!", exists ? "error" : "success");
-    };
 
     window.doLike = (id) => {
         if (!auth.currentUser) return notify("Login Required", "error");
@@ -209,13 +196,27 @@
                 if (p.likes[auth.currentUser.uid]) {
                     delete p.likes[auth.currentUser.uid];
                     p.likeCount = Math.max(0, (p.likeCount || 1) - 1);
-                } else { 
-                    p.likes[auth.currentUser.uid] = true; 
-                    p.likeCount = (p.likeCount || 0) + 1; 
+                } else {
+                    p.likes[auth.currentUser.uid] = true;
+                    p.likeCount = (p.likeCount || 0) + 1;
                 }
             }
             return p;
         });
+    };
+
+    window.openImage = (src) => {
+        document.getElementById('fullImgSrc').src = src;
+        document.getElementById('fullImageModal').style.display = 'flex';
+    };
+
+    window.doFollow = async (uid, btn) => {
+        if (!auth.currentUser) return notify("Login Required", "error");
+        const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
+        const snap = await get(followRef);
+        const exists = snap.exists();
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: exists ? null : true });
+        notify(exists ? "Unfollowed" : "Following!", exists ? "error" : "success");
     };
 
     window.openReadMore = async (id) => {
@@ -224,7 +225,9 @@
         document.getElementById('detTitle').innerText = post.title;
         document.getElementById('detCategory').innerText = `CATEGORY: ${post.category?.toUpperCase() || 'GENERAL'}`;
         document.getElementById('detDesc').innerText = post.description;
-        document.getElementById('detStats').innerHTML = `<div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div><div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${post.likeCount || 0} Likes</div>`;
+        document.getElementById('detStats').innerHTML = `
+            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${post.views || 0} Views</div>
+            <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${post.likeCount || 0} Likes</div>`;
         document.getElementById('repBtnMain').onclick = () => submitReport(id, 'post');
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('detailsModal').classList.add('active');
@@ -240,40 +243,49 @@
             list.innerHTML = "";
             if (!snap.exists()) return;
             for (const [cid, c] of Object.entries(snap.val())) {
-                const uSnap = await get(ref(db, `users/${c.uid}`));
-                const u = uSnap.val() || {};
+                const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
                 const fc = u.followers ? Object.keys(u.followers).length : 0;
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
                 let linkUI = "";
                 if (c.text.includes("http")) {
                     const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
-                    linkUI = `<div class="link-preview"><span class="risk-tag">⚠️ SECURE PREVIEW</span><div style="height:140px; overflow:hidden;"><iframe src="${url}" width="100%" height="100%" style="border:none; background:#fff;"></iframe></div><a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:12px; font-weight:900; text-decoration:none;">VISIT SECURELY</a></div>`;
+                    linkUI = `<div style="background:#000; border-radius:15px; margin-top:10px; overflow:hidden;">
+                        <iframe src="${url}" width="100%" height="140px" style="border:none; background:#fff;"></iframe>
+                        <a href="${url}" target="_blank" style="background:var(--green); color:#000; text-align:center; display:block; padding:10px; font-weight:900; text-decoration:none;">VISIT LINK</a>
+                    </div>`;
                 }
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px;" onclick="goToProfile('${c.uid}')">
-                        <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;" onclick="goToProfile('${c.uid}')">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div><div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div></div>
+                        <img src="${u.profilePic}" style="width:38px; height:38px; border-radius:12px;">
+                        <div style="flex-grow:1;"><div style="font-weight:900; font-size:13px;">@${u.handle}</div><div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div></div>
                         <button class="btn-action ${isF ? 'following' : ''}" style="min-width:75px; height:30px; font-size:9px;" onclick="doFollow('${c.uid}', this)">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
-                        <button onclick="submitReport('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:800; font-size:10px; margin-left:5px;">REPORT</button>
                     </div>
-                    <div style="padding-left:48px; font-size:14px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
-                    <div style="padding-left:48px;">${linkUI}</div>
+                    <div style="padding-left:48px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    ${linkUI}
                 </div>`;
             }
         });
     };
 
-    window.closeAllModals = () => { document.getElementById('overlay').style.display = 'none'; document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); };
-    
+    window.submitReport = async (targetId, type) => {
+        if(!auth.currentUser) return notify("Login Required", "error");
+        await push(ref(db, 'reports'), { reporter: auth.currentUser.uid, targetId, type, timestamp: Date.now() });
+        notify("Reported to staff", "error");
+    };
+
+    window.closeAllModals = () => {
+        document.getElementById('overlay').style.display = 'none';
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    };
+
     window.sendComment = async () => {
         const input = document.getElementById('cInput');
-        if (!input.value.trim() || !auth.currentUser) return notify("Message empty", "error");
+        if (!input.value.trim() || !auth.currentUser) return;
         await push(ref(db, `post/${activeId}/comments`), { uid: auth.currentUser.uid, text: input.value, timestamp: Date.now() });
         input.value = "";
     };
 
     auth.onAuthStateChanged(() => startApp());
 </script>
-<style> .spinner { width: 14px; height: 14px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
