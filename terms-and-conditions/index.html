@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Ultra Infinite</title>
+    <title>Universe Ultra Absolute</title>
     <style>
         :root {
             --bg: #050505; --card: #121214; --glass: rgba(255, 255, 255, 0.08);
@@ -11,17 +11,29 @@
             --text-dim: #8E8E93; --border: #242426;
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 80px;}
+        #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;}
 
-        /* Global UI */
+        /* Toasts */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 350px; pointer-events: none; }
+        .toast { padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-bottom: 8px; animation: slideDown 0.4s ease forwards; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .toast.success { background: var(--green); color: #000; }
+        .toast.error { background: var(--red); color: #fff; }
+
+        /* Card Elements */
         .card { background: var(--card); border-radius: 30px; border: 2px solid var(--border); overflow: hidden; position: relative; }
         .header { padding: 15px; display: flex; align-items: center; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 15px; border: 2px solid var(--border); object-fit: cover; cursor: pointer; }
         .post-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: zoom-in; background: #222; }
         
+        .glass-title-row { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            margin: -25px 15px 10px 15px; padding: 15px; border-radius: 20px; border: 1px solid var(--glass);
+            position: relative; z-index: 10; pointer-events: none;
+        }
+
         .btn-action { 
-            background: var(--accent); color: white; border: none; height: 32px; min-width: 90px; 
-            border-radius: 10px; font-weight: 900; cursor: pointer; border-bottom: 3px solid #0072B3; 
+            background: var(--accent); color: white; border: none; height: 35px; min-width: 95px; 
+            border-radius: 12px; font-weight: 900; cursor: pointer; border-bottom: 4px solid #0072B3; 
             display: flex; align-items: center; justify-content: center; font-size: 10px;
         }
         .btn-action.following { background: var(--green); border-bottom-color: #009e3a; color: #000; }
@@ -34,30 +46,35 @@
         #fullImageModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10001; display: none; align-items: center; justify-content: center; }
         #fullImgSrc { max-width: 100%; max-height: 85%; object-fit: contain; }
 
-        /* End of Universe Fixed Red Bar */
-        #end-msg { 
-            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--red); 
-            color: white; text-align: center; padding: 12px; font-weight: 900; 
-            font-size: 13px; z-index: 998; display: none; text-transform: uppercase;
-        }
-        .risk-tag { font-size: 10px; color: var(--red); font-weight: 900; background: rgba(255,75,75,0.1); padding: 5px; text-align: center; display: block; }
+        #end-msg { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--red); color: white; text-align: center; padding: 10px; font-weight: 900; z-index: 998; display: none; font-size: 12px; }
+        
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
 <div id="feed"></div>
-<div id="end-msg">✨ You've reached the end of the Universe</div>
+<div id="end-msg">🛑 YOU'VE REACHED THE END OF THE UNIVERSE</div>
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 
 <div id="fullImageModal" onclick="this.style.display='none'">
-    <button style="position:absolute; top:40px; left:20px; background:var(--accent); color:white; border:none; padding:10px; border-radius:10px; font-weight:900;">← BACK</button>
+    <button style="position:absolute; top:40px; left:20px; background:var(--accent); color:white; border:none; padding:12px; border-radius:12px; font-weight:900;">← BACK</button>
     <img id="fullImgSrc" src="">
 </div>
 
-<div class="modal" id="detailsModal"></div>
+<div class="modal" id="detailsModal">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 id="detTitle" style="margin:0; font-weight: 900; color:var(--accent);"></h2>
+        <button id="repBtnMain" class="btn-action" style="min-width:70px; height:30px; background:var(--red); border-bottom-color:#b30000;">REPORT</button>
+    </div>
+    <div id="detCategory" style="color: var(--text-dim); font-size: 11px; font-weight: 900; margin-bottom: 10px;"></div>
+    <div id="detStats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+    <div id="detDesc" style="background: #1c1c1e; padding: 20px; border-radius: 20px; margin-top: 20px; line-height: 1.6; color: #ddd; flex-grow: 1; overflow-y: auto; border: 1px solid var(--border);"></div>
+</div>
+
 <div class="modal" id="commentModal">
-    <div id="commentHeader" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h3 style="margin:0;">Comments</h3>
         <button onclick="closeAllModals()" style="background:none; border:none; color:var(--text-dim); font-weight:900;">CLOSE</button>
     </div>
@@ -83,29 +100,33 @@
     const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    
+
     let allPostIds = [];
     let displayedCount = 0;
     const batchSize = 5;
-    let activePostId = null;
+    let currentActiveId = null;
 
-    // Helper: Global Follow/Following State Sync
-    function syncFollowButtons(userId, isFollowing) {
-        const buttons = document.querySelectorAll(`.follow-btn-${userId}`);
-        buttons.forEach(btn => {
-            if (isFollowing) {
-                btn.classList.add('following');
-                btn.innerText = 'FOLLOWING';
-            } else {
-                btn.classList.remove('following');
-                btn.innerText = 'FOLLOW';
-            }
+    function notify(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Sync all follow buttons for a specific user ID
+    function syncUserFollow(uid, state) {
+        document.querySelectorAll(`.follow-btn-${uid}`).forEach(btn => {
+            btn.classList.toggle('following', state);
+            btn.innerText = state ? 'FOLLOWING' : 'FOLLOW';
         });
     }
 
-    async function initFeed() {
+    async function startUniverse() {
         const snap = await get(ref(db, 'post'));
         if (!snap.exists()) return;
+        // SHUFFLE ALGORITHM
         allPostIds = Object.entries(snap.val()).sort(() => Math.random() - 0.5);
         renderBatch();
     }
@@ -123,12 +144,12 @@
             card.className = 'card';
             feed.appendChild(card);
 
-            // Real-time listener for Likes & Metadata
-            onValue(ref(db, `post/${id}`), async (pSnap) => {
+            // REAL-TIME POST DATA
+            onValue(ref(db, `post/${id}`), (pSnap) => {
                 const p = pSnap.val();
-                if(!p) return;
-                
-                // Real-time listener for User (Followers/Badges)
+                if (!p) return;
+
+                // REAL-TIME USER DATA (SYNC)
                 onValue(ref(db, `users/${p.uid}`), (uSnap) => {
                     const u = uSnap.val() || {};
                     const fc = u.followers ? Object.keys(u.followers).length : 0;
@@ -141,27 +162,28 @@
                                 <div style="font-weight:900; display:flex; align-items:center; gap:4px;">@${u.handle} ${fc >= 1000 ? '✅' : ''}</div>
                                 <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                             </div>
-                            <button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="toggleFollow('${p.uid}')">
+                            <button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">
                                 ${isF ? 'FOLLOWING' : 'FOLLOW'}
                             </button>
                         </div>
-                        <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="handleLike('${id}')">
-                        <div style="padding:15px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <div style="display:flex; gap:15px; align-items:center;">
-                                    <div onclick="handleLike('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:900;">
+                        <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
+                        <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${p.title}</h3></div>
+                        <div style="padding:0 16px 15px 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <div style="display:flex; gap:20px;">
+                                    <div onclick="doLike('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:900;">
                                         <svg viewBox="0 0 24 24" width="22" height="22" fill="${(p.likes && auth.currentUser && p.likes[auth.currentUser.uid]) ? 'var(--red)' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                         ${p.likeCount || 0}
                                     </div>
-                                    <div onclick="showComments('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:900;">
+                                    <div onclick="openComments('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:900;">
                                         <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                         ${p.comments ? Object.keys(p.comments).length : 0}
                                     </div>
                                 </div>
-                                <span style="font-size:10px; color:var(--text-dim); font-weight:900;">${calcTime(p.timestamp)}</span>
+                                <span style="font-size:10px; color:var(--text-dim); font-weight:900;">${timeAgo(p.timestamp)}</span>
                             </div>
-                            <div style="font-size:10px; color:var(--accent); font-weight:900; margin-bottom:4px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
-                            <div style="font-size:14px;">${p.description.substring(0,60)}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="showReadMore('${id}')">Read More</span></div>
+                            <div style="font-size:10px; color:var(--accent); font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
+                            <div style="font-size:14px; line-height:1.4;">${p.description.substring(0, 70)}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="openReadMore('${id}')">Read More</span></div>
                         </div>
                     `;
                 });
@@ -170,35 +192,43 @@
         displayedCount += batchSize;
     }
 
-    // Global Follow Handler
-    window.toggleFollow = async (targetUid) => {
-        if (!auth.currentUser) return alert("Login required");
-        const refPath = ref(db, `users/${targetUid}/followers/${auth.currentUser.uid}`);
-        const snap = await get(refPath);
-        const newState = snap.exists() ? null : true;
-        await update(ref(db, `users/${targetUid}/followers`), { [auth.currentUser.uid]: newState });
-        syncFollowButtons(targetUid, !!newState);
+    window.doFollow = async (uid) => {
+        if (!auth.currentUser) return notify("Login required", "error");
+        const fRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
+        const snap = await get(fRef);
+        const active = snap.exists();
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: active ? null : true });
+        syncUserFollow(uid, !active);
+        notify(active ? "Unfollowed" : "Following!", active ? "error" : "success");
     };
 
-    window.handleLike = (id) => {
-        if (!auth.currentUser) return;
+    window.doLike = (id) => {
+        if (!auth.currentUser) return notify("Login required", "error");
         runTransaction(ref(db, `post/${id}`), (p) => {
             if (p) {
                 p.likes = p.likes || {};
                 if (p.likes[auth.currentUser.uid]) {
                     delete p.likes[auth.currentUser.uid];
                     p.likeCount = Math.max(0, (p.likeCount || 1) - 1);
-                } else {
-                    p.likes[auth.currentUser.uid] = true;
-                    p.likeCount = (p.likeCount || 0) + 1;
-                }
-            }
-            return p;
+                } else { p.likes[auth.currentUser.uid] = true; p.likeCount = (p.likeCount || 0) + 1; }
+            } return p;
         });
     };
 
-    window.showComments = (id) => {
-        activePostId = id;
+    window.openReadMore = async (id) => {
+        const p = (await get(ref(db, `post/${id}`))).val();
+        document.getElementById('detTitle').innerText = p.title;
+        document.getElementById('detCategory').innerText = `CATEGORY: ${p.category?.toUpperCase()}`;
+        document.getElementById('detStats').innerHTML = `<div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${p.views || 0} Views</div><div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${p.likeCount || 0} Likes</div>`;
+        document.getElementById('detDesc').innerText = p.description;
+        document.getElementById('repBtnMain').onclick = () => submitReport(id, 'post');
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('detailsModal').classList.add('active');
+        runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
+    };
+
+    window.openComments = (id) => {
+        currentActiveId = id;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('commentModal').classList.add('active');
         onValue(ref(db, `post/${id}/comments`), async (snap) => {
@@ -206,21 +236,18 @@
             list.innerHTML = "";
             if (!snap.exists()) return;
             for (const [cid, c] of Object.entries(snap.val())) {
-                const uSnap = await get(ref(db, `users/${c.uid}`));
-                const u = uSnap.val() || {};
+                const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
                 const fc = u.followers ? Object.keys(u.followers).length : 0;
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
-
-                let linkHtml = "";
+                let linkUI = "";
                 if (c.text.includes("http")) {
                     const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
-                    linkHtml = `<div style="margin-top:10px; border:1px solid var(--border); border-radius:15px; overflow:hidden;">
-                        <span class="risk-tag">⚠️ CLICK AT YOUR OWN RISK</span>
+                    linkUI = `<div style="margin-top:10px; border:1px solid var(--border); border-radius:15px; overflow:hidden;">
+                        <span style="font-size:10px; color:var(--red); font-weight:900; background:rgba(255,75,75,0.1); padding:5px; text-align:center; display:block;">⚠️ CLICK AT YOUR OWN RISK</span>
                         <iframe src="${url}" width="100%" height="120px" style="border:none; background:white;"></iframe>
                         <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); display:block; text-align:center; padding:10px; color:black; font-weight:900; text-decoration:none;">VISIT SECURELY</a>
                     </div>`;
                 }
-
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
                         <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px; cursor:pointer;" onclick="window.location.href='/profile?user=${c.uid}'">
@@ -228,51 +255,34 @@
                             <div style="font-weight:900; font-size:12px;">@${u.handle}</div>
                             <div style="font-size:9px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                         </div>
-                        <button class="btn-action follow-btn-${c.uid} ${isF ? 'following' : ''}" style="min-width:70px; height:26px; font-size:8px;" onclick="toggleFollow('${c.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
-                        <button onclick="report('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:900; font-size:10px;">REPORT</button>
+                        <button class="btn-action follow-btn-${c.uid} ${isF ? 'following' : ''}" style="min-width:75px; height:28px; font-size:8px;" onclick="doFollow('${c.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                        <button onclick="submitReport('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:900; font-size:10px;">REPORT</button>
                     </div>
-                    <div style="padding-left:45px; font-size:13px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link]')}</div>
-                    <div style="padding-left:45px;">${linkHtml}</div>
+                    <div style="padding-left:45px; font-size:13px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    <div style="padding-left:45px;">${linkUI}</div>
                 </div>`;
             }
         });
     };
 
-    window.showReadMore = async (id) => {
-        const p = (await get(ref(db, `post/${id}`))).val();
-        const modal = document.getElementById('detailsModal');
-        modal.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0; color:var(--accent);">${p.title}</h2>
-                <button onclick="report('${id}','post')" style="background:var(--red); border:none; color:white; padding:5px 10px; border-radius:8px; font-weight:900; font-size:10px;">REPORT</button>
-            </div>
-            <div style="font-size:11px; color:var(--text-dim); font-weight:900; margin-bottom:15px;">CATEGORY: ${p.category?.toUpperCase()} | 👁️ ${p.views || 0} | ❤️ ${p.likeCount || 0}</div>
-            <div style="background:#1c1c1e; padding:20px; border-radius:20px; flex-grow:1; overflow-y:auto; line-height:1.6;">${p.description}</div>
-            <button onclick="closeAllModals()" class="btn-action" style="margin-top:15px; width:100%;">CLOSE</button>
-        `;
-        document.getElementById('overlay').style.display = 'block';
-        modal.classList.add('active');
-        runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
+    window.submitReport = async (tid, type) => {
+        if(!auth.currentUser) return notify("Login required", "error");
+        await push(ref(db, 'reports'), { tid, type, reporter: auth.currentUser.uid, time: Date.now() });
+        notify("Report submitted", "error");
     };
 
     window.sendComment = async () => {
         const val = document.getElementById('cInput').value;
         if(!val || !auth.currentUser) return;
-        await push(ref(db, `post/${activePostId}/comments`), { uid: auth.currentUser.uid, text: val, timestamp: Date.now() });
+        await push(ref(db, `post/${currentActiveId}/comments`), { uid: auth.currentUser.uid, text: val, timestamp: Date.now() });
         document.getElementById('cInput').value = "";
-    };
-
-    window.report = (tid, type) => {
-        push(ref(db, 'reports'), { tid, type, reporter: auth.currentUser?.uid, time: Date.now() });
-        alert("Reported successfully");
     };
 
     window.viewFull = (src) => { document.getElementById('fullImgSrc').src = src; document.getElementById('fullImageModal').style.display = 'flex'; };
     window.closeAllModals = () => { document.getElementById('overlay').style.display = 'none'; document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); };
-    const calcTime = (t) => { const s = Math.floor((Date.now()-t)/1000); return s<60?'Just now':s<3600?Math.floor(s/60)+'m ago':s<86400?Math.floor(s/3600)+'h ago':Math.floor(s/86400)+'d ago'; };
-
-    window.onscroll = () => { if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) renderBatch(); };
-    auth.onAuthStateChanged(() => initFeed());
+    const timeAgo = (t) => { const s = Math.floor((Date.now()-t)/1000); return s<60?'Just now':s<3600?Math.floor(s/60)+'m ago':s<86400?Math.floor(s/3600)+'h ago':Math.floor(s/86400)+'d ago'; };
+    window.onscroll = () => { if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) renderBatch(); };
+    auth.onAuthStateChanged(() => startUniverse());
 </script>
 </body>
 </html>
