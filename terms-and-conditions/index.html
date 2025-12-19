@@ -3,206 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universe Social</title>
+    <title>Universe Social Pro</title>
     <style>
         :root {
-            --bg: #08090A;
-            --card: #16171B;
-            --accent: #00A2FF;
-            --green: #00E052;
-            --red: #FF4B4B;
-            --text: #FFFFFF;
-            --text-dim: #8E8E93;
-            --border: #2C2C2E;
+            --bg: #08090A; --card: #16171B; --accent: #00A2FF;
+            --green: #00E052; --red: #FF4B4B; --text: #FFFFFF;
+            --text-dim: #8E8E93; --border: #2C2C2E;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 10px;
-            display: flex; justify-content: center;
-        }
-
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; justify-content: center; }
         #feed { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Card Styling */
-        .card {
-            background: var(--card);
-            border-radius: 28px;
-            border: 2px solid var(--border);
-            box-shadow: 0 8px 0px rgba(0,0,0,0.4);
-            overflow: hidden;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-        /* Header & Follow System */
+        /* Card & Header */
+        .card { background: var(--card); border-radius: 28px; border: 2px solid var(--border); overflow: hidden; position: relative; }
         .header { padding: 14px; display: flex; align-items: center; gap: 10px; }
         .avatar { width: 44px; height: 44px; border-radius: 14px; border: 2px solid var(--border); object-fit: cover; }
-        
-        .user-meta { flex-grow: 1; display: flex; flex-direction: column; }
+        .user-meta { flex-grow: 1; }
         .name-row { display: flex; align-items: center; gap: 4px; }
         .handle { font-weight: 800; font-size: 15px; }
         .verified { width: 16px; height: 16px; }
-        .time-ago { font-size: 11px; color: var(--text-dim); font-weight: 600; }
-
-        .follow-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-weight: 900;
-            font-size: 12px;
-            border-bottom: 3px solid #0072B3;
-            cursor: pointer;
-        }
+        .follower-count { font-size: 11px; color: var(--accent); font-weight: 700; display: block; }
+        
+        /* Buttons & Spinners */
+        .follow-btn { background: var(--accent); color: white; border: none; padding: 6px 14px; border-radius: 10px; font-weight: 900; cursor: pointer; border-bottom: 3px solid #0072B3; min-width: 80px; position: relative; }
         .follow-btn.following { background: #3A3A3C; border-bottom-color: #1C1C1E; }
+        .spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Media */
-        .main-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; border-top: 1px solid var(--border); }
-
-        /* Interaction Bar */
+        /* Media & Interaction */
+        .main-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-top: 1px solid var(--border); }
         .action-bar { padding: 12px 16px; display: flex; gap: 20px; border-top: 1px solid var(--border); }
-        .action-item { display: flex; align-items: center; gap: 6px; color: var(--text-dim); font-weight: 700; font-size: 14px; cursor: pointer; }
-        .action-item svg { width: 22px; height: 22px; fill: currentColor; transition: transform 0.2s; }
-        .action-item:hover svg { transform: scale(1.2); }
-        .action-item.liked { color: var(--red); }
-
-        /* Content */
-        .content { padding: 0 16px 16px 16px; }
-        .title { font-size: 20px; font-weight: 900; margin: 0 0 5px 0; }
-        .desc { font-size: 14px; color: var(--text-dim); line-height: 1.4; }
-
-        .visit-btn {
-            background: var(--green);
-            color: white;
-            text-align: center;
-            padding: 12px;
-            border-radius: 14px;
-            text-decoration: none;
-            font-weight: 900;
-            display: block;
-            margin-top: 10px;
-            border-bottom: 4px solid #008F35;
-        }
-
-        .view-count { font-size: 11px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .action-item { display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700; cursor: pointer; }
+        .action-item svg { width: 24px; height: 24px; fill: white; transition: 0.2s; }
+        .action-item.liked svg { fill: var(--red); }
+        
+        /* Modal Style */
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 80%; background: #1c1c1e; border-radius: 25px 25px 0 0; z-index: 1000; transition: 0.3s ease; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .modal.active { bottom: 0; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 999; }
+        .comment-list { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
+        .comment-item { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .comment-input-row { display: flex; gap: 10px; }
+        .comment-input { flex-grow: 1; padding: 12px; border-radius: 15px; border: none; background: #2c2c2e; color: white; }
     </style>
 </head>
 <body>
 
 <div id="feed"></div>
 
+<div class="modal-overlay" id="overlay" onclick="closeComments()"></div>
+<div class="modal" id="commentModal">
+    <h3 style="margin-top:0">Comments</h3>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-input-row">
+        <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment...">
+        <button class="follow-btn" onclick="submitComment()">POST</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, update, runTransaction, onValue, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e"
+        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+        projectId: "itzhoyoo-f9f7e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    let currentPostId = null;
 
-    // --- Helper: Time Ago ---
-    function timeAgo(timestamp) {
-        const seconds = Math.floor((new Date() - timestamp) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + "y ago";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + "mo ago";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + "d ago";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + "h ago";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + "m ago";
-        return "Just now";
+    function timeAgo(t) {
+        const s = Math.floor((Date.now() - t) / 1000);
+        if (s < 60) return "Just now";
+        if (s < 3600) return Math.floor(s/60) + "m ago";
+        if (s < 86400) return Math.floor(s/3600) + "h ago";
+        return Math.floor(s/86400) + "d ago";
     }
 
     async function loadFeed() {
         const feedEl = document.getElementById('feed');
-        const snap = await get(ref(db, 'post'));
-        if (!snap.exists()) return;
-
-        const posts = Object.entries(snap.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
-        feedEl.innerHTML = "";
-
-        for (const [postId, post] of posts) {
-            const userSnap = await get(ref(db, `users/${post.uid}`));
-            const user = userSnap.val() || {};
-            const followerCount = user.followers ? Object.keys(user.followers).length : 0;
+        onValue(ref(db, 'post'), async (snap) => {
+            if (!snap.exists()) return;
+            const posts = Object.entries(snap.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
+            feedEl.innerHTML = "";
             
-            // Increment Views logic
-            runTransaction(ref(db, `post/${postId}/views`), (current) => (current || 0) + 1);
+            for (const [id, post] of posts) {
+                const userSnap = await get(ref(db, `users/${post.uid}`));
+                const user = userSnap.val() || {};
+                const followers = user.followers ? Object.keys(user.followers).length : 0;
+                const isFollowing = auth.currentUser && user.followers?.[auth.currentUser.uid];
+                const commentsCount = post.comments ? Object.keys(post.comments).length : 0;
 
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="header">
-                    <img src="${user.profilePic || ''}" class="avatar">
-                    <div class="user-meta">
-                        <div class="name-row">
-                            <span class="handle">@${user.handle}</span>
-                            ${followerCount >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" class="verified">` : ''}
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="header">
+                        <img src="${user.profilePic}" class="avatar">
+                        <div class="user-meta">
+                            <div class="name-row">
+                                <span class="handle">@${user.handle}</span>
+                                ${followers >= 1000 ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" class="verified">` : ''}
+                            </div>
+                            <span class="follower-count">${followers} Followers</span>
                         </div>
-                        <span class="time-ago">${timeAgo(post.timestamp)}</span>
+                        <button class="follow-btn ${isFollowing ? 'following' : ''}" onclick="toggleFollow('${post.uid}', this)">
+                            ${isFollowing ? 'FOLLOWING' : 'FOLLOW'}
+                        </button>
                     </div>
-                    <button class="follow-btn" onclick="toggleFollow('${post.uid}', this)">FOLLOW</button>
-                </div>
-
-                <img src="${post.image}" class="main-img">
-
-                <div class="action-bar">
-                    <div class="action-item" onclick="toggleLike('${postId}', this)">
-                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                        <span>${post.likes || 0}</span>
+                    <img src="${post.image}" class="main-img" ondblclick="toggleLike('${id}', this)">
+                    <div class="action-bar">
+                        <div class="action-item ${post.likes?.[auth.currentUser?.uid] ? 'liked' : ''}" onclick="toggleLike('${id}', this)">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>${post.likeCount || 0}</span>
+                        </div>
+                        <div class="action-item" onclick="openComments('${id}')">
+                            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span>${commentsCount}</span>
+                        </div>
                     </div>
-                    <div class="action-item">
-                        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span>Comment</span>
+                    <div class="content">
+                        <h3 class="title">${post.title}</h3>
+                        <p class="desc">${post.description}</p>
+                        <span class="time-ago" style="color:var(--text-dim)">${timeAgo(post.timestamp)}</span>
                     </div>
-                </div>
-
-                <div class="content">
-                    <span class="view-count">${post.views || 0} Views</span>
-                    ${post.sponsored ? `<span class="sponsored-pill">Sponsored</span>` : ''}
-                    <h3 class="title">${post.title}</h3>
-                    <p class="desc">${post.description}</p>
-                    ${(post.sponsored && post.link) ? `<a href="${post.link}" target="_blank" class="visit-btn">VISIT NOW</a>` : ''}
-                </div>
-            `;
-            feedEl.appendChild(card);
-        }
+                `;
+                feedEl.appendChild(card);
+            }
+        });
     }
 
-    // --- Social Functions ---
-    window.toggleFollow = async (targetUid, btn) => {
-        const myUid = auth.currentUser?.uid;
-        if (!myUid) return alert("Login to follow!");
-        const followRef = ref(db, `users/${targetUid}/followers/${myUid}`);
-        const check = await get(followRef);
-        
-        if (check.exists()) {
-            await update(ref(db, `users/${targetUid}/followers`), { [myUid]: null });
-            btn.innerText = "FOLLOW";
-            btn.classList.remove('following');
-        } else {
-            await update(ref(db, `users/${targetUid}/followers`), { [myUid]: true });
-            btn.innerText = "FOLLOWING";
-            btn.classList.add('following');
-        }
+    window.toggleFollow = async (uid, btn) => {
+        if (!auth.currentUser) return alert("Login first");
+        const originalText = btn.innerText;
+        btn.innerHTML = '<span class="spinner"></span>';
+        const followRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
+        const snap = await get(followRef);
+        await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: snap.exists() ? null : true });
+        // UI updates via onValue listener in loadFeed automatically
     };
 
-    loadFeed();
+    window.toggleLike = async (postId, el) => {
+        if (!auth.currentUser) return;
+        const postRef = ref(db, `post/${postId}`);
+        await runTransaction(postRef, (post) => {
+            if (post) {
+                if (!post.likes) post.likes = {};
+                if (post.likes[auth.currentUser.uid]) {
+                    delete post.likes[auth.currentUser.uid];
+                    post.likeCount = (post.likeCount || 1) - 1;
+                } else {
+                    post.likes[auth.currentUser.uid] = true;
+                    post.likeCount = (post.likeCount || 0) + 1;
+                }
+            }
+            return post;
+        });
+    };
+
+    window.openComments = (id) => {
+        currentPostId = id;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('commentModal').classList.add('active');
+        const list = document.getElementById('commentList');
+        onValue(ref(db, `post/${id}/comments`), (snap) => {
+            list.innerHTML = "";
+            if (snap.exists()) {
+                Object.values(snap.val()).forEach(c => {
+                    list.innerHTML += `<div class="comment-item"><strong>@${c.user}</strong>: ${c.text}</div>`;
+                });
+            }
+        });
+    };
+
+    window.closeComments = () => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('commentModal').classList.remove('active');
+    };
+
+    window.submitComment = async () => {
+        const input = document.getElementById('commentInput');
+        if (!input.value.trim() || !auth.currentUser) return;
+        const userSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
+        const handle = userSnap.val()?.handle || "User";
+        await push(ref(db, `post/${currentPostId}/comments`), {
+            user: handle,
+            text: input.value,
+            timestamp: Date.now()
+        });
+        input.value = "";
+    };
+
+    onAuthStateChanged(auth, user => loadFeed());
 </script>
 </body>
 </html>
