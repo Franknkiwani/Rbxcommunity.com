@@ -337,6 +337,51 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
         
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
+<div id="ios-loader" style="position:fixed; inset:0; background:#000; z-index:100000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.8s ease; font-family: -apple-system, sans-serif;">
+    
+    <style>
+        /* Lock background scroll while loader exists */
+        body { overflow: hidden !important; }
+        
+        .ios-tick-spinner { position: relative; width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; }
+        .ios-tick-spinner .bar {
+            width: 3px; height: 10px; background: #636366; position: absolute;
+            left: 50%; top: 50%; transform-origin: 50% 100%; border-radius: 2px;
+            animation: ios-fade 1s linear infinite;
+        }
+        /* Radial positioning for 12 bars */
+        .bar:nth-child(1) { transform: translate(-50%, -150%) rotate(0deg); animation-delay: 0s; }
+        .bar:nth-child(2) { transform: translate(-50%, -150%) rotate(30deg); animation-delay: -0.916s; }
+        .bar:nth-child(3) { transform: translate(-50%, -150%) rotate(60deg); animation-delay: -0.833s; }
+        .bar:nth-child(4) { transform: translate(-50%, -150%) rotate(90deg); animation-delay: -0.75s; }
+        .bar:nth-child(5) { transform: translate(-50%, -150%) rotate(120deg); animation-delay: -0.666s; }
+        .bar:nth-child(6) { transform: translate(-50%, -150%) rotate(150deg); animation-delay: -0.583s; }
+        .bar:nth-child(7) { transform: translate(-50%, -150%) rotate(180deg); animation-delay: -0.5s; }
+        .bar:nth-child(8) { transform: translate(-50%, -150%) rotate(210deg); animation-delay: -0.416s; }
+        .bar:nth-child(9) { transform: translate(-50%, -150%) rotate(240deg); animation-delay: -0.333s; }
+        .bar:nth-child(10) { transform: translate(-50%, -150%) rotate(270deg); animation-delay: -0.25s; }
+        .bar:nth-child(11) { transform: translate(-50%, -150%) rotate(300deg); animation-delay: -0.166s; }
+        .bar:nth-child(12) { transform: translate(-50%, -150%) rotate(330deg); animation-delay: -0.083s; }
+
+        @keyframes ios-fade { from { background: #fff; } to { background: #2c2c2e; } }
+    </style>
+
+    <div style="margin-bottom:30px;">
+        <img src="https://i.imgur.com/cM3Givj.jpeg" style="max-width: 130px; height: auto; border-radius: 25px;">
+    </div>
+
+    <div class="ios-tick-spinner">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        
+        <span id="load-pct" style="color: #fff; font-size: 10px; font-weight: 700; position: absolute; top: 50%; transform: translateY(-50%);">0%</span>
+    </div>
+</div>
+
+
+
+
 <header>
   <img src="https://i.imgur.com/cM3Givj.jpeg" alt="RBX Community" class="logo">
   <div class="header-right">
@@ -1238,44 +1283,95 @@ window.closeAllModals = () => {
     document.body.style.overflow = 'auto';
 };
 
-
-
 /* ================= AUTH & INITIAL LOAD ================= */
 onAuthStateChanged(auth, async user => {
-    currentUser = user || null;
-    if (user) {
-        const uid = user.uid;
-        userLinkInput.value = `${location.origin}/profile?uid=${uid}`;
-        
-        // --- 1. START SECURITY & ANNOUNCEMENT WATCHER ---
-        // This checks if the user is banned or blacklisted in real-time
-        checkUserSecurity(user); 
-        
-        refreshStats();
-        
-        // Load social tab data early
-        showSocialTab('followers'); 
-        
-        const snap = await get(ref(db, `users/${uid}`));
-        const data = snap.val() || {};
-        handleInput.value = data.handle || 'user';
-        userBioTextarea.value = data.bio || '';
-        
-        if (data.profilePic) { 
-            headerProfile.style.backgroundImage = `url(${data.profilePic})`; 
-            panelProfilePic.style.backgroundImage = `url(${data.profilePic})`; 
+    // --- LOADING INITIALIZATION ---
+    const pctLabel = document.getElementById('load-pct');
+    const loader = document.getElementById('ios-loader');
+    const updatePct = (val) => { if(pctLabel) pctLabel.innerText = val + '%'; };
+
+    // 15-second Rescue Timer (Failsafe)
+    const rescueTimer = setTimeout(() => {
+        if (loader) {
+            updatePct(100);
+            loader.style.opacity = '0';
+            document.body.style.overflow = 'auto';
+            setTimeout(() => loader.remove(), 800);
         }
-    } else {
-        userLinkInput.value = 'Login to get link';
-        const list = document.getElementById('socialList');
-        if(list) list.innerHTML = '';
-        // Reset blacklist status if logged out
-        window.isBlacklisted = false;
+    }, 15000);
+
+    try {
+        updatePct(10); // Start
+        
+        currentUser = user || null;
+        if (user) {
+            const uid = user.uid;
+            userLinkInput.value = `${location.origin}/profile?uid=${uid}`;
+            
+            // --- 1. START SECURITY & ANNOUNCEMENT WATCHER ---
+            checkUserSecurity(user); 
+            updatePct(25);
+            
+            refreshStats();
+            
+            // Load social tab data early
+            showSocialTab('followers'); 
+            
+            const snap = await get(ref(db, `users/${uid}`));
+            const data = snap.val() || {};
+            handleInput.value = data.handle || 'user';
+            userBioTextarea.value = data.bio || '';
+            
+            if (data.profilePic) { 
+                headerProfile.style.backgroundImage = `url(${data.profilePic})`; 
+                panelProfilePic.style.backgroundImage = `url(${data.profilePic})`; 
+            }
+            updatePct(45);
+        } else {
+            userLinkInput.value = 'Login to get link';
+            const list = document.getElementById('socialList');
+            if(list) list.innerHTML = '';
+            window.isBlacklisted = false;
+            updatePct(45);
+        }
+
+        // --- FETCH CONTENT (PERCENTAGE UPDATES) ---
+        await loadFeaturedUsers();
+        updatePct(65);
+        
+        await loadPolls();
+        updatePct(85);
+        
+        await startUniverse();
+        updatePct(100);
+
+        // --- SUCCESS & EXIT ---
+        clearTimeout(rescueTimer);
+
+        // 3 SECOND DELAY (iOS premium feel)
+        setTimeout(() => {
+            if (loader) {
+                loader.style.opacity = '0';
+                // Restore scroll
+                document.body.style.overflow = 'auto';
+                document.body.style.setProperty('overflow', 'auto', 'important');
+                
+                setTimeout(() => {
+                    loader.remove();
+                }, 800);
+            }
+        }, 3000);
+
+    } catch (error) {
+        console.error("Loading Error:", error);
+        // Force unlock if something breaks
+        if (loader) loader.remove();
+        document.body.style.overflow = 'auto';
     }
-    loadFeaturedUsers();
-    loadPolls();
-    startUniverse();
 });
+
+
+
 
 
 // Confirm Popups
@@ -1501,38 +1597,112 @@ async function checkUserSecurity(user) {
     });
 }
 
-function showBanModal(reason) {
-    // We use document.write or a full-body replacement to ensure 
-    // the user cannot "inspect element" and delete the modal to keep using the site.
+async function showBanModal(reason) {
+    const user = auth.currentUser;
+    let appealStatus = null;
+
+    try {
+        const snapshot = await get(ref(db, `users/${user.uid}/appealStatus`));
+        appealStatus = snapshot.val();
+    } catch (e) {
+        console.error("Error fetching appeal status:", e);
+    }
+
+    let appealHTML = '';
+    if (appealStatus === "pending") {
+        appealHTML = `
+            <p style="color:#00E052; font-weight:900; background:rgba(0,224,82,0.1); padding:15px; border-radius:12px; border: 1px solid #00E052;">
+                APPEAL UNDER REVIEW<br>
+                <span style="font-size:11px; font-weight:400; color:#aaa;">Check back later for a decision.</span>
+            </p>`;
+    } else {
+        appealHTML = `
+            <button id="submitAppealBtn" 
+                    style="background:#fff; color:#000; border:none; width:100%; padding:15px; border-radius:15px; font-weight:900; cursor:pointer; transition: 0.2s;">
+                SUBMIT APPEAL
+            </button>`;
+    }
+
     document.body.innerHTML = `
         <div style="position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:99999; color:white; text-align:center; padding:20px; font-family:sans-serif;">
-            <div style="position:absolute; inset:0; background:url('https://i.imgur.com/your-bg.jpg') center/cover; opacity:0.2; filter:blur(10px);"></div>
-            <div style="position:relative; max-width:400px; background:rgba(20,20,20,0.8); backdrop-filter:blur(20px); padding:40px; border-radius:30px; border:1px solid #ff4b4b; box-shadow:0 0 50px rgba(255,75,75,0.2);">
+            <div style="position:relative; max-width:400px; width:100%; background:#000; padding:40px; border-radius:30px; border:2px solid #fff; box-shadow:0 0 50px rgba(255,255,255,0.1);">
+                
+                <img src="https://i.imgur.com/cM3Givj.jpeg" 
+                     alt="RBX Community" 
+                     style="height:40px; width:auto; max-width:100%; object-fit:contain; margin-bottom:20px; display:block; margin-left:auto; margin-right:auto;">
+
                 <div style="font-size:50px; margin-bottom:10px;">🚫</div>
-                <h1 style="color:#ff4b4b; font-size:24px; font-weight:900; letter-spacing:1px;">ACCESS REVOKED</h1>
-                <p style="margin:20px 0; color:#bbb; line-height:1.6;">You have been banned for:<br>
-                <strong style="color:#fff; display:block; margin-top:10px; font-size:16px;">${reason}</strong></p>
-                <button onclick="window.location.href='mailto:appeal@itzhoyoo.com?subject=Ban Appeal: ${auth.currentUser.uid}'" 
-                        style="background:#ff4b4b; color:white; border:none; width:100%; padding:15px; border-radius:15px; font-weight:900; cursor:pointer; transition:0.3s;">
-                    APPEAL THIS DECISION
-                </button>
+                <h1 style="color:#fff; font-size:24px; font-weight:900; letter-spacing:1px;">ACCESS REVOKED</h1>
+                <p style="margin:20px 0; color:#aaa; line-height:1.6;">Your account has been suspended for:<br>
+                <strong style="color:#fff; display:block; margin-top:10px; font-size:16px; text-transform:uppercase;">${reason}</strong></p>
+                
+                <div id="appealArea">
+                    ${appealHTML}
+                </div>
+                
+                <p style="font-size:10px; color:#555; margin-top:20px; letter-spacing:2px;">RBX COMMUNITY SECURITY SYSTEM</p>
             </div>
         </div>`;
-    // Stop all other background processes
+
+    const btn = document.getElementById('submitAppealBtn');
+    if (btn) {
+        btn.onclick = async () => {
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+            try {
+                await update(ref(db, `users/${user.uid}`), {
+                    appealStatus: "pending",
+                    appealTimestamp: Date.now()
+                });
+                document.getElementById('appealArea').innerHTML = `
+                    <p style="color:#00E052; font-weight:900; background:rgba(0,224,82,0.1); padding:15px; border-radius:12px; border: 1px solid #00E052;">
+                        APPEAL SUBMITTED.<br><span style="font-size:11px; font-weight:400; color:#aaa;">Our admins will review your request.</span>
+                    </p>`;
+            } catch (e) {
+                btn.innerText = "ERROR - TRY AGAIN";
+                btn.disabled = false;
+            }
+        };
+    }
+
     window.stop(); 
 }
 
+
+
+
+
+
+
 function showAnnouncement(data, id) {
     const notifyDiv = document.createElement('div');
-    // Using var(--accent) for consistency with your existing theme
-    notifyDiv.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--accent, #2e89ff); color:black; padding:15px; border-radius:20px; z-index:10000; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-weight:900; display:flex; flex-direction:column; animation:slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);";
+    // Styling: Black background, white border, white text
+    notifyDiv.style.cssText = `
+        position: fixed; 
+        top: 20px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 90%; 
+        max-width: 400px; 
+        background: #000; 
+        color: #fff; 
+        padding: 15px; 
+        border-radius: 20px; 
+        z-index: 10000; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+        border: 2px solid #fff; 
+        font-weight: 900; 
+        display: flex; 
+        flex-direction: column; 
+        animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    `;
     
     notifyDiv.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.1); padding-bottom:5px; margin-bottom:8px;">
-            <span style="font-size:10px; letter-spacing:1px;">📢 ITZHOYOO UPDATE</span>
-            <button id="close-announce-${id}" style="background:none; border:none; font-size:20px; cursor:pointer; font-weight:bold;">&times;</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:8px;">
+            <span style="font-size:10px; letter-spacing:1px; color:#fff;">📢 RBX COMMUNITY UPDATE</span>
+            <button id="close-announce-${id}" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; font-weight:bold;">&times;</button>
         </div>
-        <p style="margin:0; font-size:13px; font-weight:700; line-height:1.4;">${data.message}</p>
+        <p style="margin:0; font-size:13px; font-weight:700; line-height:1.4; color:#ccc;">${data.message}</p>
     `;
     
     document.body.appendChild(notifyDiv);
@@ -1542,11 +1712,11 @@ function showAnnouncement(data, id) {
         notifyDiv.style.opacity = "0";
         setTimeout(() => {
             notifyDiv.remove();
-            // Mark as seen so it doesn't reappear until the next login/session
             sessionStorage.setItem(`seen_announce_${id}`, 'true');
         }, 400);
     };
 }
+
 
 </script>
 
