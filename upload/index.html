@@ -208,6 +208,12 @@
 
     /* --- UTILS --- */
     .hidden { display: none; }
+    body.no-scroll {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
   </style>
 </head>
 <body>
@@ -354,8 +360,8 @@ let selectedType = 'post';
 let currentUser = null;
 const createBtn = document.getElementById('createBtn');
 
-// Stop scroll immediately on load
-document.body.classList.add('no-scroll');
+// UI Lock
+document.body.style.overflow = 'hidden';
 
 const sponsoredLinks = [
     "https://otieu.com/4/7197807", "https://otieu.com/4/8784016",
@@ -369,6 +375,7 @@ function showPopup(msg, isError = false) {
     const popup = document.getElementById('ios-popup');
     const icon = document.getElementById('popup-icon');
     const text = document.getElementById('popup-text');
+    if(!popup) return;
     text.innerText = msg;
     icon.style.background = isError ? "#ff453a" : "#30d158";
     icon.innerText = isError ? "✕" : "✓";
@@ -378,7 +385,6 @@ function showPopup(msg, isError = false) {
 
 /* --- UI Interactions --- */
 
-// Tab Toggling
 document.querySelectorAll('section.selector button').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('section.selector button').forEach(b => b.classList.remove('active'));
@@ -386,13 +392,11 @@ document.querySelectorAll('section.selector button').forEach(btn => {
         selectedType = btn.getAttribute('data-type');
         document.querySelectorAll('.type-fields').forEach(f => {
             f.style.display = f.getAttribute('data-type') === selectedType ? 'block' : 'none';
-            f.classList.toggle('active', f.getAttribute('data-type') === selectedType);
         });
     });
 });
 
-// Dynamic Poll Options
-document.getElementById('addPollOption').addEventListener('click', () => {
+document.getElementById('addPollOption')?.addEventListener('click', () => {
     const container = document.getElementById('pollOptionsContainer');
     const input = document.createElement('input');
     input.type = "text";
@@ -402,9 +406,9 @@ document.getElementById('addPollOption').addEventListener('click', () => {
     container.appendChild(input);
 });
 
-// Media Previews
 function setupPreview(inputId, previewId) {
     const input = document.getElementById(inputId);
+    if(!input) return;
     input.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -422,31 +426,33 @@ onAuthStateChanged(auth, async user => {
     if (user) {
         currentUser = user;
         
-        // 1. Get Profile Info
+        // 1. Load Profile
         const userRef = ref(db, `users/${user.uid}`);
         const snap = await get(userRef);
         const data = snap.val() || {};
         
-        document.getElementById('userHandle').innerText = `@${data.handle || 'User'}`;
+        if(document.getElementById('userHandle')) document.getElementById('userHandle').innerText = `@${data.handle || 'User'}`;
         if(data.profilePic) document.getElementById('userProfilePic').src = data.profilePic;
 
-        // 2. Real-time Post Counter (Fixed: Added onValue)
+        // 2. Real-time Post Counter (FIXED ID: postCountDisplay)
         const postCountRef = ref(db, `users/${user.uid}/posts`);
         onValue(postCountRef, (snapshot) => {
             const count = snapshot.val() || 0;
-            const display = document.getElementById('followersCount'); // Using existing ID to match your HTML
-            if(display) display.innerText = `${count} Posts`;
+            const display = document.getElementById('postCountDisplay');
+            if(display) {
+                display.innerText = `${count} Posts`;
+            }
         });
     }
 
-    // Hide Loader & Enable Scroll
+    // Hide Loader
     setTimeout(() => { 
         const loader = document.getElementById('ios-loader');
         if(loader) {
             loader.style.opacity = "0"; 
             setTimeout(() => {
                 loader.remove();
-                document.body.classList.remove('no-scroll');
+                document.body.style.overflow = 'auto';
             }, 800);
         }
     }, 1200);
@@ -498,9 +504,7 @@ createBtn.addEventListener('click', async () => {
             const title = document.getElementById('storyTitle').value.trim();
             const file = document.getElementById('storyImageInput').files[0];
             const isSpon = document.getElementById('storySponsored').checked;
-
             if (!title || !file) throw "Title and Image required!";
-            
             payload.title = title;
             payload.image = await uploadToImgur(file);
             if(!payload.image) throw "Upload failed!";
@@ -516,10 +520,17 @@ createBtn.addEventListener('click', async () => {
             payload.options = options;
         }
 
+        // 1. Save Post
         await push(ref(db, selectedType), payload);
-        await runTransaction(ref(db, `users/${currentUser.uid}/posts`), c => (c || 0) + 1);
+        
+        // 2. Increment Counter
+        await runTransaction(ref(db, `users/${currentUser.uid}/posts`), (curr) => {
+            return (curr || 0) + 1;
+        });
         
         showPopup("Created Successfully!");
+        
+        // Wait 1.5s then reload
         setTimeout(() => location.reload(), 1500);
 
     } catch (e) {
@@ -529,6 +540,7 @@ createBtn.addEventListener('click', async () => {
     }
 });
 </script>
+
 
 
 </body>
