@@ -438,6 +438,587 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
         <button onclick="sendComment()" class="btn-action" style="min-width:80px;">SEND</button>
     </div>
 </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getDatabase, ref, get, set, push, update, runTransaction, onValue, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+/* ================= CONFIG & INITIALIZATION ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+/* ================= STATE & FEED VARIABLES ================= */
+let currentUser = null;
+let allPostIds = [];
+let displayedCount = 0;
+const batchSize = 5;
+let currentActiveId = null;
+let deletePollId = null;
+
+/* ================= ELEMENTS ================= */
+const hamburger = document.getElementById('hamburger');
+const menuOverlay = document.getElementById('menuOverlay');
+const headerProfile = document.getElementById('headerProfile');
+const profilePanel = document.getElementById('profilePanel');
+const closeProfile = document.getElementById('closeProfile');
+const panelProfilePic = document.getElementById('panelProfilePic');
+const userInfo = document.getElementById('userInfo');
+const userLinkInput = document.getElementById('userLink');
+const copyBtn = document.getElementById('copyLinkBtn');
+const copyStatus = document.getElementById('copyStatus');
+const uploadSpinner = document.getElementById('uploadSpinner');
+const profileInput = document.getElementById('profileInput');
+const userBioTextarea = document.getElementById('userBioTextarea');
+const bioCharCount = document.getElementById('bioCharCount');
+const statPosts = document.getElementById('statPosts');
+const statFollowers = document.getElementById('statFollowers');
+const statFollowing = document.getElementById('statFollowing');
+const handleInput = document.getElementById('handleInput');
+const saveHandleBtn = document.getElementById('saveHandleBtn');
+const handleStatus = document.getElementById('handleStatus');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+const saveProfileSpinner = document.getElementById('saveProfileSpinner');
+const saveProfileStatus = document.getElementById('saveProfileStatus');
+const featuredContainer = document.getElementById("userContainer");
+const pollFeed = document.getElementById('pollFeed');
+const spinner = document.getElementById('spinner');
+const statusMsg = document.getElementById('statusMsg');
+const confirmPopup = document.getElementById('confirmPopup');
+const confirmYes = document.getElementById('confirmYes');
+const confirmNo = document.getElementById('confirmNo');
+
+/* ================= UTILS ================= */
+function notify(elOrMsg, msgOrType = 'success', ok = true, t = 3000) {
+    if (typeof elOrMsg === 'string') {
+        const container = document.getElementById('toast-container');
+        if (container) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${msgOrType}`;
+            toast.innerText = elOrMsg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), t);
+            return;
+        }
+    }
+    const el = elOrMsg;
+    const msg = msgOrType;
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = ok ? '#4caf50' : '#f44336';
+    setTimeout(() => el.textContent = '', t);
+}
+
+function showStatus(msg, type = 'success') { notify(statusMsg, msg, type === 'success'); }
+function randomColor() { return `hsl(${Math.random() * 360},80%,60%)`; }
+function count(val) { if (!val) return 0; if (typeof val === 'number') return val; if (typeof val === 'object') return Object.keys(val).length; return 0; }
+function createSpinner() { const s = document.createElement('div'); s.style.cssText = `width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin:auto;`; return s; }
+function timeAgo(ts) { const now = Date.now(); const diff = now - ts; const sec = Math.floor(diff / 1000), min = Math.floor(sec / 60), hr = Math.floor(min / 60), day = Math.floor(hr / 24); if (day > 0) return `${day} day${day > 1 ? 's' : ''} ago`; if (hr > 0) return `${hr} hour${hr > 1 ? 's' : ''} ago`; if (min > 0) return `${min} min${min > 1 ? 's' : ''} ago`; return 'just now'; }
+function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+/* ================= RATE LIMIT & STAT HELPERS ================= */
+async function checkWeeklyLimit(type) {
+    if (!currentUser) return null;
+    const historyRef = ref(db, `users/${currentUser.uid}/updateHistory/${type}`);
+    const snap = await get(historyRef);
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    
+    // Filter history to last 7 days
+    const recentChanges = (snap.val() || []).filter(ts => (now - ts) < oneWeek);
+    
+    if (recentChanges.length >= 2) return null; 
+    return [...recentChanges, now]; 
+}
+
+async function refreshStats() {
+    if (!currentUser) return;
+    const snap = await get(ref(db, `users/${currentUser.uid}`));
+    const data = snap.val() || {};
+    if (statPosts) statPosts.textContent = count(data.posts);
+    if (statFollowers) statFollowers.textContent = count(data.followers);
+    
+    // For "Following", we check the dedicated path
+    const followSnap = await get(ref(db, `following/${currentUser.uid}`));
+    if (statFollowing) statFollowing.textContent = count(followSnap.val());
+}
+
+/* ================= PROFILE ACTIONS ================= */
+hamburger?.addEventListener('click', () => { hamburger.classList.toggle('active'); menuOverlay.classList.toggle('active'); });
+headerProfile?.addEventListener('click', () => { profilePanel.classList.add('active'); document.body.style.overflow = 'hidden'; });
+closeProfile?.addEventListener('click', () => { profilePanel.classList.remove('active'); document.body.style.overflow = 'auto'; });
+copyBtn?.addEventListener('click', () => { if (!userLinkInput.value || userLinkInput.value.includes('Login')) return; navigator.clipboard.writeText(userLinkInput.value); notify(copyStatus, 'Copied'); });
+
+// Handle Input: Enforce 12-character limit
+handleInput?.addEventListener('input', () => {
+    if (handleInput.value.length > 12) {
+        handleInput.value = handleInput.value.substring(0, 12);
+        notify(handleStatus, 'Max 12 characters', false);
+    }
+});
+
+// Profile Picture Upload
+panelProfilePic?.addEventListener('click', () => profileInput.click());
+profileInput?.addEventListener('change', async () => {
+    if (!profileInput.files[0] || !currentUser) return;
+
+    const newHistory = await checkWeeklyLimit('profilePic');
+    if (!newHistory) return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+
+    uploadSpinner.style.display = 'block';
+    const formData = new FormData();
+    formData.append('image', profileInput.files[0]);
+
+    try {
+        const res = await fetch('https://api.imgur.com/3/image', { 
+            method: 'POST', 
+            headers: { Authorization: 'Client-ID 891e5bb4aa94282' }, 
+            body: formData 
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            const updates = {};
+            updates[`users/${currentUser.uid}/profilePic`] = data.data.link;
+            updates[`users/${currentUser.uid}/updateHistory/profilePic`] = newHistory;
+            
+            await update(ref(db), updates);
+            panelProfilePic.style.backgroundImage = `url(${data.data.link})`;
+            headerProfile.style.backgroundImage = `url(${data.data.link})`;
+            notify(saveProfileStatus, 'Profile picture updated!');
+        } else {
+            notify(saveProfileStatus, 'Upload failed!', false);
+        }
+    } catch (e) {
+        console.error(e);
+        notify(saveProfileStatus, 'Upload error!', false);
+    }
+    uploadSpinner.style.display = 'none';
+});
+
+// Consolidated Profile Save
+saveProfileBtn?.addEventListener('click', async () => {
+    if (!currentUser) return;
+
+    const h = handleInput.value.trim();
+    const b = userBioTextarea.value;
+
+    if (h.length < 3) return notify(saveProfileStatus, 'Handle too short', false);
+    if (h.length > 12) return notify(saveProfileStatus, 'Handle max 12 chars', false);
+
+    saveProfileSpinner.style.display = 'block';
+
+    try {
+        const newHistory = await checkWeeklyLimit('profileInfo');
+        if (!newHistory) {
+            saveProfileSpinner.style.display = 'none';
+            return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+        }
+
+        const allSnap = await get(ref(db, 'users'));
+        const allUsers = allSnap.val() || {};
+        const taken = Object.entries(allUsers).some(([uid, u]) => 
+            u.handle?.toLowerCase() === h.toLowerCase() && uid !== currentUser.uid
+        );
+
+        if (taken) {
+            saveProfileSpinner.style.display = 'none';
+            return notify(saveProfileStatus, 'Handle already taken!', false);
+        }
+
+        const updates = {};
+        updates[`users/${currentUser.uid}/handle`] = h;
+        updates[`users/${currentUser.uid}/bio`] = b;
+        updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+
+        await update(ref(db), updates);
+        await refreshStats();
+        notify(saveProfileStatus, 'Profile saved!');
+    } catch (e) {
+        console.error(e);
+        notify(saveProfileStatus, 'Save error!', false);
+    }
+    saveProfileSpinner.style.display = 'none';
+});
+
+saveHandleBtn?.addEventListener('click', () => saveProfileBtn.click());
+
+/* ================= FEATURED USERS & POLLS ================= */
+async function loadFeaturedUsers() {
+    if (!featuredContainer) return;
+    try {
+        const snap = await get(ref(db, 'users'));
+        if (!snap.exists()) { featuredContainer.innerHTML = "<p style='color:#888;'>No users found.</p>"; return; }
+        let allUsers = Object.entries(snap.val());
+        allUsers.sort(() => 0.5 - Math.random());
+        const featured10 = allUsers.slice(0, 10);
+        featuredContainer.innerHTML = '';
+        let myFollowing = new Set();
+        if (currentUser) {
+            const fSnap = await get(ref(db, `following/${currentUser.uid}`));
+            if (fSnap.exists()) myFollowing = new Set(Object.keys(fSnap.val()));
+        }
+        featured10.forEach(([uid, user]) => {
+            const div = document.createElement('div');
+            div.style.cssText = "flex:0 0 auto; width:70px; display:flex; flex-direction:column; align-items:center;";
+            const imgWrapper = document.createElement('div');
+            imgWrapper.style.cssText = `width:60px;height:60px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #fff;transition:border-color 1s;`;
+            const img = document.createElement('img');
+            img.src = user.profilePic || 'https://via.placeholder.com/60?text=?';
+            img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+            imgWrapper.appendChild(img); div.appendChild(imgWrapper);
+            setInterval(() => { imgWrapper.style.borderColor = randomColor(); }, 1000);
+            const handleDiv = document.createElement('div');
+            handleDiv.textContent = '@' + (user.handle || 'user');
+            handleDiv.style.cssText = "max-width:70px;font-size:10px;color:#fff;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+            div.appendChild(handleDiv);
+            const followerDiv = document.createElement('div');
+            followerDiv.style.cssText = "font-size:9px;color:#bbb;text-align:center;margin-top:2px;";
+            div.appendChild(followerDiv);
+            const button = document.createElement('button');
+            button.style.cssText = "margin-top:4px;font-size:10px;padding:2px 6px;border-radius:4px;border:none;background:#2e89ff;color:#fff;cursor:pointer;text-align:center;";
+            div.appendChild(button);
+            const msg = document.createElement('span');
+            msg.style.cssText = "color:#ff6b6b;font-size:10px;margin-top:2px;display:none;text-align:center;";
+            div.appendChild(msg);
+
+            async function updateButton() {
+                const fSnap = await get(ref(db, `users/${uid}/followers`));
+                followerDiv.textContent = count(fSnap.val()) + ' followers';
+                if (!currentUser) { button.textContent = 'Follow'; button.style.background = '#2e89ff'; return; }
+                const isFollowing = myFollowing.has(uid);
+                button.textContent = isFollowing ? 'Following' : 'Follow';
+                button.style.background = isFollowing ? '#4caf50' : '#2e89ff';
+            }
+            updateButton();
+
+            button.addEventListener('click', async () => {
+                if (!currentUser) { msg.textContent = "Only logged in users can follow"; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); return; }
+                const spinnerIcon = createSpinner(); button.innerHTML = ''; button.appendChild(spinnerIcon); button.disabled = true;
+                const path = ref(db, `following/${currentUser.uid}/${uid}`);
+                const snapF = await get(path);
+                if (!snapF.exists()) {
+                    await set(path, true);
+                    await runTransaction(ref(db, `users/${uid}/followers`), c => (c || 0) + 1);
+                    myFollowing.add(uid);
+                } else {
+                    await set(path, null);
+                    await runTransaction(ref(db, `users/${uid}/followers`), c => Math.max((c || 0) - 1, 0));
+                    myFollowing.delete(uid);
+                }
+                if (statFollowing) statFollowing.textContent = myFollowing.size;
+                updateButton(); button.disabled = false;
+            });
+            featuredContainer.appendChild(div);
+        });
+    } catch (e) { console.error(e); }
+}
+
+async function loadPolls() {
+    if (!pollFeed) return;
+    if (spinner) spinner.style.display = 'block';
+    try {
+        const snap = await get(ref(db, '/poll'));
+        if (!snap.exists()) return;
+        let polls = Object.entries(snap.val());
+        polls = shuffleArray(polls);
+        let following = [];
+        if (currentUser) {
+            const followingSnap = await get(ref(db, `/following/${currentUser.uid}`));
+            if (followingSnap.exists()) following = Object.keys(followingSnap.val());
+        }
+        pollFeed.innerHTML = '';
+        for (const [id, data] of polls) renderPoll(id, data, following);
+    } catch (e) { console.error(e); showStatus('Error loading polls', 'error'); }
+    finally { if (spinner) spinner.style.display = 'none'; }
+}
+
+async function renderPoll(pollId, data, following = []) {
+    const card = document.createElement('div'); card.className = 'poll-card'; card.dataset.uid = data.uid;
+    const authorSection = document.createElement('div'); authorSection.className = 'poll-author';
+    const authorLeft = document.createElement('div'); authorLeft.className = 'author-left';
+    const profileImg = document.createElement('img'); profileImg.src = 'default-avatar.png';
+    const authorHandle = document.createElement('span'); authorHandle.textContent = '@user';
+    authorLeft.append(profileImg, authorHandle); authorSection.append(authorLeft);
+
+    const actionBtn = document.createElement('button');
+    if (currentUser?.uid === data.uid) {
+        actionBtn.className = 'delete-btn'; actionBtn.textContent = 'Delete';
+        actionBtn.addEventListener('click', () => { deletePollId = pollId; confirmPopup.style.display = 'flex'; });
+    } else {
+        actionBtn.className = 'follow-btn';
+        const isFollowing = following.includes(data.uid);
+        actionBtn.textContent = isFollowing ? 'Following' : 'Follow';
+        if (isFollowing) actionBtn.classList.add('following');
+        actionBtn.addEventListener('click', async () => {
+            if (!currentUser) { showStatus('Login required', 'error'); return; }
+            const followRef = ref(db, `/users/${data.uid}/followers/${currentUser.uid}`);
+            const followingRef = ref(db, `/following/${currentUser.uid}/${data.uid}`);
+            const snap = await get(followRef);
+            let state = !snap.exists();
+            if (state) { await update(followRef, { timestamp: Date.now() }); await update(followingRef, { timestamp: Date.now() }); }
+            else { await remove(followRef); await remove(followingRef); }
+            document.querySelectorAll(`.poll-card[data-uid="${data.uid}"] .follow-btn`).forEach(btn => {
+                btn.textContent = state ? 'Following' : 'Follow';
+                btn.classList.toggle('following', state);
+            });
+        });
+    }
+    authorSection.append(actionBtn); card.appendChild(authorSection);
+    get(ref(db, `/users/${data.uid}`)).then(uSnap => {
+        const u = uSnap.val() || {}; profileImg.src = u.profilePic || 'default-avatar.png'; authorHandle.textContent = '@' + (u.handle || 'user');
+        if (u.followers && Object.keys(u.followers).length >= 1000) {
+            const badge = document.createElement('img'); badge.src = 'https://img.icons8.com/stickers/100/verified-badge.png';
+            badge.className = 'verified-badge'; badge.style.cssText = 'width:16px;height:16px;margin-left:4px;'; authorHandle.appendChild(badge);
+        }
+    });
+
+    const title = document.createElement('h2'); title.textContent = data.question; card.appendChild(title);
+    const footer = document.createElement('div'); footer.style.cssText = 'display:flex;justify-content:space-between;font-size:12px;opacity:0.7;';
+    const timeSpan = document.createElement('span'); timeSpan.textContent = timeAgo(data.timestamp || Date.now());
+    const viewsSpan = document.createElement('span'); viewsSpan.textContent = 'Views: 0';
+    footer.append(timeSpan, viewsSpan); card.appendChild(footer);
+    runTransaction(ref(db, `/pollViews/${pollId}`), v => (v || 0) + 1).then(tx => { viewsSpan.textContent = `Views: ${tx.snapshot.val()}`; });
+
+    const ul = document.createElement('ul'); card.appendChild(ul);
+    data.options.forEach((opt, idx) => {
+        const li = document.createElement('li'); li.innerHTML = `<div class="vote-bar"></div><div class="vote-label"><span>${opt}</span><span>0 votes</span></div>`;
+        ul.appendChild(li);
+        li.addEventListener('click', async () => {
+            if (!currentUser) { showStatus('Login required', 'error'); return; }
+            const userVoteRef = ref(db, `/pollVotes/${pollId}/${currentUser.uid}`);
+            const votedSnap = await get(userVoteRef);
+            if (votedSnap.exists()) { showStatus('You already voted', 'error'); return; }
+            await runTransaction(ref(db, `/poll/${pollId}/votes/${idx}`), v => (v || 0) + 1);
+            await update(userVoteRef, { option: idx });
+            showStatus('Vote submitted', 'success');
+        });
+    });
+
+    onValue(ref(db, `/poll/${pollId}/votes`), snap => {
+        const votes = snap.val() || {}; const total = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
+        card.querySelectorAll('li').forEach((li, i) => {
+            const c = votes[i] || 0; const p = Math.round((c / total) * 100);
+            li.querySelector('.vote-bar').style.width = p + '%';
+            li.querySelector('.vote-label span:last-child').textContent = `${c} votes (${p}%)`;
+        });
+    });
+
+    const commentsDiv = document.createElement('div'); commentsDiv.className = 'comments'; commentsDiv.style.cssText = 'display:flex;flex-direction:column;height:110px;';
+    const counter = document.createElement('div'); counter.className = 'comment-counter'; counter.textContent = 'Comments: 0';
+    const list = document.createElement('div'); list.className = 'comments-list'; list.style.cssText = 'flex:1;overflow-y:auto;';
+    commentsDiv.append(counter, list); card.appendChild(commentsDiv);
+
+    const form = document.createElement('form'); form.className = 'comment-form';
+    form.innerHTML = `<input type="text" placeholder="Add comment" required><button type="submit">Post</button>`;
+    card.appendChild(form);
+
+    onValue(ref(db, `/pollComments/${pollId}`), async snap => {
+        const comments = snap.val() || {}; list.innerHTML = '';
+        const sorted = Object.entries(comments).sort((a, b) => a[1].timestamp - b[1].timestamp);
+        counter.textContent = `Comments: ${sorted.length}`;
+        for (const [key, c] of sorted) {
+            const userSnap = await get(ref(db, `/users/${c.uid}`));
+            const u = userSnap.val() || {};
+            const div = document.createElement('div'); div.className = 'comment';
+            div.innerHTML = `<img src="${u.profilePic || 'default-avatar.png'}" alt="avatar"><span><strong>@${u.handle || 'user'}</strong> (${timeAgo(c.timestamp)}): ${c.text}</span>`;
+            list.appendChild(div);
+        }
+    });
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault(); const inp = form.querySelector('input'); if (!currentUser || !inp.value.trim()) return;
+        await push(ref(db, `/pollComments/${pollId}`), { text: inp.value.trim(), uid: currentUser.uid, timestamp: Date.now() });
+        inp.value = '';
+    });
+    pollFeed.appendChild(card);
+}
+
+/* ================= FEED (POSTS) LOGIC ================= */
+async function startUniverse() {
+    const snap = await get(ref(db, 'post'));
+    if (!snap.exists()) return;
+    allPostIds = Object.entries(snap.val()).sort(() => Math.random() - 0.5);
+    const feed = document.getElementById('feed'); if (feed) feed.innerHTML = '';
+    displayedCount = 0; renderBatch();
+}
+
+function renderBatch() {
+    const feed = document.getElementById('feed'); if (!feed) return;
+    if (displayedCount >= allPostIds.length) { document.getElementById('end-msg').style.display = 'block'; return; }
+    const batch = allPostIds.slice(displayedCount, displayedCount + batchSize);
+    batch.forEach(([id, post]) => {
+        const card = document.createElement('div'); card.className = 'card'; feed.appendChild(card);
+        onValue(ref(db, `post/${id}`), (pSnap) => {
+            const p = pSnap.val(); if (!p) return;
+            onValue(ref(db, `users/${p.uid}`), (uSnap) => {
+                const u = uSnap.val() || {}; const fc = count(u.followers); const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                card.innerHTML = `
+                <div class="header">
+                  <img src="${u.profilePic || ''}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
+                  <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='/profile?user=${p.uid}'">
+                    <div style="font-weight:900; display:flex; align-items:center; gap:4px;">@${u.handle || 'user'} ${fc >= 1000 ? '✅' : ''}</div>
+                    <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
+                  </div>
+                  <button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                </div>
+                <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
+                <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${p.title}</h3></div>
+                <div style="padding:0 16px 15px 16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; gap:20px;">
+                      <div onclick="doLike('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:900;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="${(p.likes && auth.currentUser && p.likes[auth.currentUser.uid]) ? 'var(--red)' : 'white'}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        ${p.likeCount || 0}
+                      </div>
+                      <div onclick="openComments('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:900;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        ${p.comments ? Object.keys(p.comments).length : 0}
+                      </div>
+                    </div>
+                    <span style="font-size:10px; color:var(--text-dim); font-weight:900;">${timeAgo(p.timestamp)}</span>
+                  </div>
+                  <div style="font-size:10px; color:var(--accent); font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
+                  <div style="font-size:14px; line-height:1.4;">${p.description ? p.description.substring(0, 70) : ''}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="openReadMore('${id}')">Read More</span></div>
+                </div>`;
+            });
+        });
+    });
+    displayedCount += batchSize;
+}
+
+/* ================= WINDOW GLOBALS ================= */
+window.openComments = (id) => {
+        currentActiveId = id;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('commentModal').classList.add('active');
+        onValue(ref(db, `post/${id}/comments`), async (snap) => {
+            const list = document.getElementById('commentList');
+            list.innerHTML = "";
+            if (!snap.exists()) return;
+            for (const [cid, c] of Object.entries(snap.val())) {
+                const u = (await get(ref(db, `users/${c.uid}`))).val() || {};
+                const fc = count(u.followers);
+                const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                let linkUI = "";
+                if (c.text.includes("http")) {
+                    const url = c.text.match(/\bhttps?:\/\/\S+/gi)[0];
+                    linkUI = `<div style="margin-top:10px; border:1px solid var(--border); border-radius:15px; overflow:hidden;">
+                        <span style="font-size:10px; color:var(--red); font-weight:900; background:rgba(255,75,75,0.1); padding:5px; text-align:center; display:block;">⚠️ CLICK AT YOUR OWN RISK</span>
+                        <iframe src="${url}" width="100%" height="120px" style="border:none; background:white;"></iframe>
+                        <a href="https://otieu.com/4/7950037" target="_blank" style="background:var(--green); display:block; text-align:center; padding:10px; color:black; font-weight:900; text-decoration:none;">VISIT SECURELY</a>
+                    </div>`;
+                }
+                list.innerHTML += `<div style="padding:15px 0; border-bottom:1px solid #222;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                        <img src="${u.profilePic}" style="width:35px; height:35px; border-radius:10px; cursor:pointer;" onclick="window.location.href='/profile?user=${c.uid}'">
+                        <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='/profile?user=${c.uid}'">
+                            <div style="font-weight:900; font-size:12px;">@${u.handle}</div>
+                            <div style="font-size:9px; color:var(--accent); font-weight:800;">${fc} Followers</div>
+                        </div>
+                        <button class="btn-action follow-btn-${c.uid} ${isF ? 'following' : ''}" style="min-width:75px; height:28px; font-size:8px;" onclick="doFollow('${c.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                        <button onclick="submitReport('${cid}', 'comment')" style="background:none; border:none; color:var(--red); font-weight:900; font-size:10px;">REPORT</button>
+                    </div>
+                    <div style="padding-left:45px; font-size:13px;">${c.text.replace(/\bhttps?:\/\/\S+/gi, '[Link Shared]')}</div>
+                    <div style="padding-left:45px;">${linkUI}</div>
+                </div>`;
+            }
+        });
+    };
+
+    window.submitReport = async (tid, type) => {
+        if(!auth.currentUser) return notify("Login required", "error");
+        await push(ref(db, 'reports'), { tid, type, reporter: auth.currentUser.uid, time: Date.now() });
+        notify("Report submitted", "error");
+    };
+
+    window.sendComment = async () => {
+        const val = document.getElementById('cInput').value;
+        if(!val || !auth.currentUser) return;
+        await push(ref(db, `post/${currentActiveId}/comments`), { uid: auth.currentUser.uid, text: val, timestamp: Date.now() });
+        document.getElementById('cInput').value = "";
+    };
+
+window.doFollow = async (uid) => {
+    if (!auth.currentUser) return notify("Login required", "error");
+    const fRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
+    const snap = await get(fRef); const active = snap.exists();
+    await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: active ? null : true });
+    
+    // Manage following list
+    const myFRef = ref(db, `following/${auth.currentUser.uid}/${uid}`);
+    if(!active) await set(myFRef, true); else await remove(myFRef);
+
+    document.querySelectorAll(`.follow-btn-${uid}`).forEach(btn => { btn.classList.toggle('following', !active); btn.innerText = !active ? 'FOLLOWING' : 'FOLLOW'; });
+    refreshStats();
+};
+
+window.doLike = (id) => {
+    if (!auth.currentUser) return notify("Login required", "error");
+    runTransaction(ref(db, `post/${id}`), (p) => {
+        if (p) { p.likes = p.likes || {}; if (p.likes[auth.currentUser.uid]) { delete p.likes[auth.currentUser.uid]; p.likeCount = Math.max(0, (p.likeCount || 1) - 1); } else { p.likes[auth.currentUser.uid] = true; p.likeCount = (p.likeCount || 0) + 1; } } return p;
+    });
+};
+
+window.openReadMore = async (id) => {
+    const p = (await get(ref(db, `post/${id}`))).val();
+    document.getElementById('detTitle').innerText = p.title;
+    document.getElementById('detCategory').innerText = `CATEGORY: ${p.category?.toUpperCase()}`;
+    document.getElementById('detStats').innerHTML = `<div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${p.views || 0} Views</div><div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${p.likeCount || 0} Likes</div>`;
+    document.getElementById('detDesc').innerText = p.description;
+    document.getElementById('overlay').style.display = 'block'; document.getElementById('detailsModal').classList.add('active');
+    runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
+};
+
+window.viewFull = (src) => { document.getElementById('fullImgSrc').src = src; document.getElementById('fullImageModal').style.display = 'flex'; };
+window.closeAllModals = () => { document.getElementById('overlay').style.display = 'none'; document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); };
+
+/* ================= AUTH & INITIAL LOAD ================= */
+onAuthStateChanged(auth, async user => {
+    currentUser = user || null;
+    if (user) {
+        const uid = user.uid;
+        userLinkInput.value = `${location.origin}/profile?uid=${uid}`;
+        refreshStats();
+        
+        const snap = await get(ref(db, `users/${uid}`));
+        const data = snap.val() || {};
+        handleInput.value = data.handle || 'user';
+        userBioTextarea.value = data.bio || '';
+        
+        if (data.profilePic) { 
+            headerProfile.style.backgroundImage = `url(${data.profilePic})`; 
+            panelProfilePic.style.backgroundImage = `url(${data.profilePic})`; 
+        }
+    } else {
+        userLinkInput.value = 'Login to get link';
+    }
+    loadFeaturedUsers();
+    loadPolls();
+    startUniverse();
+});
+
+confirmNo?.addEventListener('click', () => { confirmPopup.style.display = 'none'; deletePollId = null; });
+confirmYes?.addEventListener('click', async () => {
+    if (!deletePollId) return;
+    await remove(ref(db, `/poll/${deletePollId}`));
+    await remove(ref(db, `/pollVotes/${deletePollId}`));
+    await remove(ref(db, `/pollComments/${deletePollId}`));
+    confirmPopup.style.display = 'none'; loadPolls();
+});
+
+window.onscroll = () => { if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) renderBatch(); };
+</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -533,45 +1114,142 @@ headerProfile?.addEventListener('click', () => { profilePanel.classList.add('act
 closeProfile?.addEventListener('click', () => { profilePanel.classList.remove('active'); document.body.style.overflow = 'auto'; });
 copyBtn?.addEventListener('click', () => { if (!userLinkInput.value || userLinkInput.value.includes('Login')) return; navigator.clipboard.writeText(userLinkInput.value); notify(copyStatus, 'Copied'); });
 
+/* ================= HELPERS ================= */
+// Helper to manage notification styling
+const notify = (el, msg, success = true) => {
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = success ? '#4CAF50' : '#f44336';
+    setTimeout(() => el.textContent = '', 3000);
+};
+
+// Helper to check the 2-changes-per-week limit
+async function checkWeeklyLimit(type) {
+    const historyRef = ref(db, `users/${currentUser.uid}/updateHistory/${type}`);
+    const snap = await get(historyRef);
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    
+    // Filter history to only include timestamps within the last 7 days
+    const recentChanges = (snap.val() || []).filter(ts => (now - ts) < oneWeek);
+    
+    if (recentChanges.length >= 2) return null; // Limit reached
+    return [...recentChanges, now]; // Return updated history array
+}
+
+// Helper to refresh UI stats from DB
+async function refreshStats() {
+    const snap = await get(ref(db, `users/${currentUser.uid}`));
+    const data = snap.val() || {};
+    if (statPosts) statPosts.textContent = data.posts || 0;
+    if (statFollowers) statFollowers.textContent = data.followers || 0;
+    if (statFollowing) statFollowing.textContent = data.following || 0;
+}
+
+/* ================= UPDATED EVENT LISTENERS ================= */
+
+// 1. Handle Input: Enforce 12-character limit in real-time
+handleInput?.addEventListener('input', () => {
+    if (handleInput.value.length > 12) {
+        handleInput.value = handleInput.value.substring(0, 12);
+        notify(handleStatus, 'Max 12 characters', false);
+    }
+});
+
+// 2. Profile Picture Upload
 panelProfilePic?.addEventListener('click', () => profileInput.click());
 profileInput?.addEventListener('change', async () => {
     if (!profileInput.files[0] || !currentUser) return;
+
+    const newHistory = await checkWeeklyLimit('profilePic');
+    if (!newHistory) return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+
     uploadSpinner.style.display = 'block';
     const formData = new FormData();
     formData.append('image', profileInput.files[0]);
+
     try {
-        const res = await fetch('https://api.imgur.com/3/image', { method: 'POST', headers: { Authorization: 'Client-ID 891e5bb4aa94282' }, body: formData });
+        const res = await fetch('https://api.imgur.com/3/image', { 
+            method: 'POST', 
+            headers: { Authorization: 'Client-ID 891e5bb4aa94282' }, 
+            body: formData 
+        });
         const data = await res.json();
+        
         if (data.success) {
-            await set(ref(db, `users/${currentUser.uid}/profilePic`), data.data.link);
+            const updates = {};
+            updates[`users/${currentUser.uid}/profilePic`] = data.data.link;
+            updates[`users/${currentUser.uid}/updateHistory/profilePic`] = newHistory;
+            
+            await update(ref(db), updates);
             panelProfilePic.style.backgroundImage = `url(${data.data.link})`;
             headerProfile.style.backgroundImage = `url(${data.data.link})`;
             notify(saveProfileStatus, 'Profile picture updated!');
-        } else notify(saveProfileStatus, 'Upload failed!', false);
-    } catch (e) { console.error(e); notify(saveProfileStatus, 'Upload error!', false); }
+        } else {
+            notify(saveProfileStatus, 'Upload failed!', false);
+        }
+    } catch (e) {
+        console.error(e);
+        notify(saveProfileStatus, 'Upload error!', false);
+    }
     uploadSpinner.style.display = 'none';
 });
 
-saveHandleBtn?.addEventListener('click', async () => {
-    if (!currentUser) return notify(handleStatus, 'Login first', false);
-    const h = handleInput.value.trim();
-    if (h.length < 3) return notify(handleStatus, 'Too short', false);
-    const allSnap = await get(ref(db, 'users'));
-    const allUsers = allSnap.val() || {};
-    const taken = Object.entries(allUsers).some(([uid, u]) => u.handle?.toLowerCase() === h.toLowerCase() && uid !== currentUser.uid);
-    if (taken) return notify(handleStatus, 'Handle already taken!', false);
-    await set(ref(db, `users/${currentUser.uid}/handle`), h);
-    notify(handleStatus, 'Saved');
-});
-
+// 3. Consolidated Profile Save (Handle & Bio)
 saveProfileBtn?.addEventListener('click', async () => {
     if (!currentUser) return;
+
+    const h = handleInput.value.trim();
+    const b = userBioTextarea.value;
+
+    // Validation
+    if (h.length < 3) return notify(saveProfileStatus, 'Handle too short', false);
+    if (h.length > 12) return notify(saveProfileStatus, 'Handle max 12 chars', false);
+
     saveProfileSpinner.style.display = 'block';
-    if (userBioTextarea) await set(ref(db, `users/${currentUser.uid}/bio`), userBioTextarea.value);
-    if (handleInput?.value.trim().length >= 3) await set(ref(db, `users/${currentUser.uid}/handle`), handleInput.value.trim());
+
+    try {
+        // Check Limit
+        const newHistory = await checkWeeklyLimit('profileInfo');
+        if (!newHistory) {
+            saveProfileSpinner.style.display = 'none';
+            return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+        }
+
+        // Handle Availability Check
+        const allSnap = await get(ref(db, 'users'));
+        const allUsers = allSnap.val() || {};
+        const taken = Object.entries(allUsers).some(([uid, u]) => 
+            u.handle?.toLowerCase() === h.toLowerCase() && uid !== currentUser.uid
+        );
+
+        if (taken) {
+            saveProfileSpinner.style.display = 'none';
+            return notify(saveProfileStatus, 'Handle already taken!', false);
+        }
+
+        // Save Data
+        const updates = {};
+        updates[`users/${currentUser.uid}/handle`] = h;
+        updates[`users/${currentUser.uid}/bio`] = b;
+        updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+
+        await update(ref(db), updates);
+        
+        // Immediate Stat Refresh
+        await refreshStats();
+        
+        notify(saveProfileStatus, 'Profile saved!');
+    } catch (e) {
+        console.error(e);
+        notify(saveProfileStatus, 'Save error!', false);
+    }
     saveProfileSpinner.style.display = 'none';
-    notify(saveProfileStatus, 'Saved');
 });
+
+// Optional: Also hook up the specific saveHandleBtn if it's visible
+saveHandleBtn?.addEventListener('click', () => saveProfileBtn.click());
+
 
 /* ================= FEATURED USERS & POLLS ================= */
 async function loadFeaturedUsers() {
