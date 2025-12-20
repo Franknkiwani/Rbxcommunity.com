@@ -496,6 +496,56 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
+/* ================= GLOBAL MASTER FOLLOW ================= */
+window.doFollow = async (uid) => {
+    // Basic Guards
+    if (!auth || !auth.currentUser) return notify("Login required", "error");
+    if (window.isBlacklisted) return notify("Action Blocked: Blacklisted", "error");
+    if (auth.currentUser.uid === uid) return;
+
+    // Find all instances of this button (Feed, Comments, and Profile)
+    const btns = document.querySelectorAll(`.follow-btn-${uid}`);
+    
+    // Set all to loading
+    btns.forEach(b => { 
+        b.disabled = true; 
+        b.innerText = '...'; 
+    });
+
+    const followerRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
+    const followingRef = ref(db, `following/${auth.currentUser.uid}/${uid}`);
+    
+    try {
+        const snap = await get(followerRef);
+        const alreadyFollowing = snap.exists();
+
+        if (!alreadyFollowing) {
+            await set(followerRef, true);
+            await set(followingRef, true);
+        } else {
+            await remove(followerRef);
+            await remove(followingRef);
+        }
+        
+        // Final UI Sync
+        const newState = !alreadyFollowing;
+        btns.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.toggle('following', newState);
+            btn.innerText = newState ? 'FOLLOWING' : 'FOLLOW';
+            // Force color styles for dynamic modal buttons
+            btn.style.background = newState ? "#4caf50" : "var(--accent)";
+            btn.style.color = newState ? "#000" : "#fff";
+        });
+
+        // Update the stats numbers in the profile panel if it's open
+        if (typeof refreshStats === "function") refreshStats();
+        
+    } catch(e) { 
+        console.error("Follow error:", e);
+        btns.forEach(b => { b.disabled = false; b.innerText = 'RETRY'; });
+    }
+};
 
 /* ================= STATE & FEED VARIABLES ================= */
 let currentUser = null;
@@ -1124,38 +1174,6 @@ window.sendComment = async () => {
     input.focus();
 };
 
-window.doFollow = async (uid) => {
-    if (!auth.currentUser) return notify("Login required", "error");
-    // BLACKLIST CHECK
-    if (window.isBlacklisted) return notify("Action Blocked: Blacklisted users cannot follow.", "error");
-    
-    const btns = document.querySelectorAll(`.follow-btn-${uid}`);
-    btns.forEach(b => { b.disabled = true; b.innerHTML = '...'; });
-
-    const fRef = ref(db, `users/${uid}/followers/${auth.currentUser.uid}`);
-    const myFRef = ref(db, `following/${auth.currentUser.uid}/${uid}`);
-    
-    const snap = await get(fRef);
-    const active = snap.exists();
-
-    try {
-        if (!active) {
-            await update(ref(db, `users/${uid}/followers`), { [auth.currentUser.uid]: true });
-            await set(myFRef, true);
-        } else {
-            await remove(fRef);
-            await remove(myFRef);
-        }
-        
-        btns.forEach(btn => {
-            btn.disabled = false;
-            btn.classList.toggle('following', !active);
-            btn.innerText = !active ? 'FOLLOWING' : 'FOLLOW';
-        });
-        refreshStats();
-    } catch(e) { console.error(e); }
-};
-
 window.doLike = (id) => {
     if (!auth.currentUser) return notify("Login required", "error");
     // BLACKLIST CHECK
@@ -1326,6 +1344,8 @@ function renderSocialItem(container, uid, userData, btnText) {
     container.appendChild(div);
 }
 
+/* --- FIXED SOCIAL TAB & GLOBAL FOLLOW SYNC --- */
+
 window.showSocialTab = async (tab) => {
     const list = document.getElementById('socialList');
     const tabR = document.getElementById('tabFollowers');
@@ -1370,25 +1390,62 @@ async function renderSocialBatch() {
     socialDisplayedCount += socialBatchSize;
 }
 
-// Global follow override to ensure sync between both lists
+// THE MASTER FOLLOW FUNCTION (Universal Fix)
 window.doFollow = async (uid) => {
-    if (!currentUser) return;
-    const updates = {};
-    const myFollowingRef = ref(db, `following/${currentUser.uid}/${uid}`);
-    const snap = await get(myFollowingRef);
+    if (!currentUser) return notify("Login required", "error");
+    if (window.isBlacklisted) return notify("Action Blocked: Blacklisted", "error");
+    if (currentUser.uid === uid) return;
+
+    // 1. Find ALL buttons for this user (Feed, Comments, and Social Tab)
+    const allBtns = document.querySelectorAll(`.follow-btn-${uid}, #socBtn-${uid}`);
     
-    if (snap.exists()) {
-        updates[`following/${currentUser.uid}/${uid}`] = null;
-        updates[`users/${uid}/followers/${currentUser.uid}`] = null;
-    } else {
-        updates[`following/${currentUser.uid}/${uid}`] = true;
-        updates[`users/${uid}/followers/${currentUser.uid}`] = true;
-    }
+    // 2. Set loading state on all of them
+    allBtns.forEach(b => { b.disabled = true; b.innerText = '...'; });
 
     try {
+        const myFollowingRef = ref(db, `following/${currentUser.uid}/${uid}`);
+        const snap = await get(myFollowingRef);
+        const alreadyFollowing = snap.exists();
+        
+        const updates = {};
+        if (alreadyFollowing) {
+            updates[`following/${currentUser.uid}/${uid}`] = null;
+            updates[`users/${uid}/followers/${currentUser.uid}`] = null;
+        } else {
+            updates[`following/${currentUser.uid}/${uid}`] = true;
+            updates[`users/${uid}/followers/${currentUser.uid}`] = true;
+        }
+
         await update(ref(db), updates);
-        await refreshStats();
-    } catch (e) { console.error(e); }
+        
+        // 3. Update UI state for all buttons simultaneously
+        const newState = !alreadyFollowing;
+        allBtns.forEach(btn => {
+            btn.disabled = false;
+            
+            // Logic for the Social Panel List
+            if (btn.id.startsWith('socBtn-')) {
+                if (currentSocialTab === 'following' && !newState) {
+                    document.getElementById(`social-row-${uid}`)?.remove();
+                } else {
+                    btn.innerText = newState ? (currentSocialTab === 'following' ? 'UNFOLLOW' : 'FOLLOWING') : 'FOLLOW BACK';
+                    btn.style.background = newState ? "#333" : "var(--accent)";
+                }
+            } 
+            // Logic for Feed and Comment Modal
+            else {
+                btn.classList.toggle('following', newState);
+                btn.innerText = newState ? 'FOLLOWING' : 'FOLLOW';
+                btn.style.background = newState ? "#4caf50" : "var(--accent)";
+                btn.style.color = newState ? "#000" : "#fff";
+            }
+        });
+
+        refreshStats();
+    } catch (e) { 
+        console.error(e); 
+        allBtns.forEach(b => { b.disabled = false; b.innerText = 'RETRY'; });
+    }
 };
 
 document.getElementById('socialList').addEventListener('scroll', function(e) {
@@ -1397,6 +1454,7 @@ document.getElementById('socialList').addEventListener('scroll', function(e) {
         renderSocialBatch();
     }
 });
+
 /* --- FIXED SECURITY & ANNOUNCEMENT LOGIC --- */
 window.isBlacklisted = false; // Global flag
 
