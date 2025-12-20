@@ -375,6 +375,50 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
   cursor: pointer;
   transition: transform 0.2s ease;
 }
+#feed {
+    width: 100%;
+    max-width: 1200px; /* Allow it to grow wider */
+    margin: 0 auto;    /* Center the feed */
+    display: grid;
+    /* This creates as many 300px columns as will fit, then fills the space */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Ensure cards don't look weird when stretched */
+.card {
+    height: fit-content;
+    width: 100%;
+}
+
+/* Tablet/Mobile adjustment: If screen is small, go back to 1 column */
+@media (max-width: 600px) {
+    #feed {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+}
+
+/* Update the Profile Panel */
+.profile-panel {
+    position: fixed;
+    top: 0;
+    right: 0; /* Changed from left:0 to right:0 */
+    width: 100%;
+    max-width: 400px; /* Limits width on desktop */
+    height: 100vh;
+    background: #000;
+    transform: translateX(100%); /* Keeps it off-screen to the right */
+    transition: transform 0.3s ease-in-out;
+    z-index: 2000; /* Ensure it's above everything */
+    visibility: hidden; /* Extra safety: hides it from clicks when closed */
+}
+
+.profile-panel.active {
+    transform: translateX(0);
+    visibility: visible;
+}
 
 </style>  
     <style>
