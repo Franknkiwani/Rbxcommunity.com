@@ -1,402 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Content - RBX Community</title>
-<style>
-/* Base */
-body {
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  background:#121212;
-  color:#fff;
-  padding:20px;
-}
-h1 {
-  text-align:center;
-  font-size:26px;
-  font-weight:600;
-  color:#00bfff;
-  margin-bottom:30px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
+  <title>Create - RBX Community</title>
+  <style>
+    /* --- RESET & BASE --- */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      outline: none !important;
+    }
 
-/* Section Tabs */
-section.selector {
-  display:flex;
-  justify-content:center;
-  gap:18px;
-  margin-bottom:30px;
-}
-section.selector button {
-  padding:12px 20px;
-  border:none;
-  border-radius:18px;
-  background:#1c1c1c;
-  color:#aaa;
-  font-weight:500;
-  cursor:pointer;
-  transition:0.2s;
-}
-section.selector button.active {
-  background:#1a1a1a;
-  color:#00bfff;
-  box-shadow:0 0 10px rgba(0,191,255,0.3);
-}
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Gotham SSm", "Blinker", -apple-system, system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #1a1a2e, #0a0a0a);
+      background-attachment: fixed;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-/* Section Cards */
-.section-card {
-  background:#1c1c1c;
-  border-radius:20px;
-  padding:20px;
-  margin-bottom:20px;
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 4px 12px rgba(0,0,0,0.5);
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
+    /* --- IOS LOADER --- */
+    #ios-loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease;
+    }
+    .ios-tick-spinner { position: relative; width: 40px; height: 40px; }
+    .ios-tick-spinner .bar {
+      width: 3px; height: 10px; background: #636366; position: absolute;
+      left: 50%; top: 50%; transform-origin: 50% 100%; border-radius: 2px;
+      animation: ios-fade 1s linear infinite;
+    }
+    /* Spinner Animation */
+    @keyframes ios-fade { from { background: #fff; } to { background: #2c2c2e; } }
+    .bar:nth-child(1) { transform: translate(-50%, -150%) rotate(0deg); animation-delay: 0s; }
+    .bar:nth-child(2) { transform: translate(-50%, -150%) rotate(30deg); animation-delay: -0.916s; }
+    .bar:nth-child(3) { transform: translate(-50%, -150%) rotate(60deg); animation-delay: -0.833s; }
+    .bar:nth-child(4) { transform: translate(-50%, -150%) rotate(90deg); animation-delay: -0.75s; }
+    .bar:nth-child(5) { transform: translate(-50%, -150%) rotate(120deg); animation-delay: -0.666s; }
+    .bar:nth-child(6) { transform: translate(-50%, -150%) rotate(150deg); animation-delay: -0.583s; }
+    .bar:nth-child(7) { transform: translate(-50%, -150%) rotate(180deg); animation-delay: -0.5s; }
+    .bar:nth-child(8) { transform: translate(-50%, -150%) rotate(210deg); animation-delay: -0.416s; }
+    .bar:nth-child(9) { transform: translate(-50%, -150%) rotate(240deg); animation-delay: -0.333s; }
+    .bar:nth-child(10) { transform: translate(-50%, -150%) rotate(270deg); animation-delay: -0.25s; }
+    .bar:nth-child(11) { transform: translate(-50%, -150%) rotate(300deg); animation-delay: -0.166s; }
+    .bar:nth-child(12) { transform: translate(-50%, -150%) rotate(330deg); animation-delay: -0.083s; }
 
-/* Card Titles */
-.section-card h2 {
-  font-size:16px;
-  font-weight:600;
-  color:#00bfff;
-  margin-bottom:6px;
-}
+    /* --- PROFILE CARD --- */
+    .user-profile-card {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 35px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      text-align: center;
+      margin-bottom: 25px;
+    }
 
-/* Inputs */
-.section-card input,
-.section-card textarea,
-.section-card select {
-  width:100%;
-  padding:14px 16px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.1);
-  background:#1a1a1a;
-  color:#fff;
-  font-size:15px;
-  transition:0.2s;
-}
-.section-card input:focus,
-.section-card textarea:focus,
-.section-card select:focus {
-  border-color:#00bfff;
-  outline:none;
-}
+    .user-profile-card img {
+      width: 90px;
+      height: 90px;
+      border-radius: 28px;
+      object-fit: cover;
+      border: 4px solid #00bfff;
+      box-shadow: 0 0 20px rgba(0, 191, 255, 0.3);
+      margin-bottom: 12px;
+    }
 
-/* Upload preview */
-.upload-preview {
-  width:100%;
-  height:180px;
-  background:#181818;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,0.1);
-  color:#666;
-  cursor:pointer;
-  font-size:14px;
-}
-.upload-preview img {width:100%; height:100%; object-fit:contain; border-radius:16px;}
-.upload-preview:hover {border-color:#00bfff;}
+    .user-profile-card h2 { margin: 0; font-size: 22px; font-weight: 800; }
+    .user-profile-card p { margin: 5px 0 0; color: #00bfff; font-weight: 700; opacity: 0.9; }
 
-/* Buttons */
-button#createBtn {
-  width:100%;
-  padding:16px 0;
-  border:none;
-  border-radius:20px;
-  background:#00bfff;
-  color:#121212;
-  font-weight:600;
-  font-size:16px;
-  cursor:pointer;
-  transition:0.2s;
-}
-button#createBtn:hover {opacity:0.9;}
-button#addPollOption {
-  padding:10px 18px;
-  background:#1a1a1a;
-  border:1px solid #00bfff;
-  color:#00bfff;
-  border-radius:16px;
-  cursor:pointer;
-  font-weight:500;
-  align-self:start;
-  margin-top:10px;
-}
+    /* --- TAB SELECTOR --- */
+    section.selector {
+      display: flex;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px;
+      border-radius: 24px;
+      gap: 5px;
+      margin-bottom: 30px;
+    }
 
-/* Poll Options */
-.option-row {display:flex; gap:8px;}
-.option-row input {flex:1;}
+    section.selector button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 18px;
+      background: transparent;
+      color: #888;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
-/* Hidden Sections */
-.type-fields {display:none;}
-.type-fields.active {display:block;}
+    section.selector button.active {
+      background: #00bfff;
+      color: #000;
+      transform: scale(1.05);
+      box-shadow: 0 8px 15px rgba(0, 191, 255, 0.3);
+    }
 
-/* Spinner */
-.spinner {
-  border:4px solid rgba(255,255,255,0.1);
-  border-top:4px solid #00bfff;
-  border-radius:50%;
-  width:28px;
-  height:28px;
-  animation:spin 1s linear infinite;
-  display:none;
-  margin:20px auto;
-}
-@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-/* Center inputs & set 90% width */
-.section-card input,
-.section-card textarea,
-.section-card select {
-  width: 90%;
-  max-width: 600px;  /* optional, keeps very wide screens neat */
-  margin: 0 auto;     /* center horizontally */
-  display: block;
-  text-align: left;   /* keep typing left-aligned */
-}
-/* Remove glows and box-shadows */
-.section-card input:focus,
-.section-card textarea:focus,
-.section-card select:focus,
-section.selector button.active,
-button#createBtn,
-button#addPollOption {
-  outline: none !important;
-  box-shadow: none !important;
-}
+    /* --- CARDS & INPUTS --- */
+    .type-fields { width: 100%; max-width: 450px; display: none; }
+    .type-fields.active { display: block; animation: slideUp 0.4s ease; }
 
-/* Remove hover glows on buttons and previews */
-section.selector button:hover,
-.upload-preview:hover,
-button#createBtn:hover,
-button#addPollOption:hover {
-  box-shadow: none !important;
-  opacity: 1 !important;
-}
-/* Prevent text selection globally for your form/cards */
-body, 
-.section-card, 
-section.selector button, 
-input, 
-textarea, 
-select, 
-.upload-preview, 
-button {
-  user-select: none;       /* Standard */
-  -webkit-user-select: none; /* Safari/Chrome */
-  -moz-user-select: none;   /* Firefox */
-  -ms-user-select: none;    /* IE/Edge */
-}
-/* Remove button focus/active outline and tap highlight */
-button, 
-section.selector button {
-  outline: none;               /* removes focus outline */
-  -webkit-tap-highlight-color: transparent; /* removes blue highlight on mobile */
-}
+    @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
-/* Optional: remove any active background change on click */
-button:active,
-section.selector button:active {
-  background-color: inherit; /* keeps background unchanged */
-}
-/* Tab Button Layout */
-section.selector button {
-  display: flex;
-  flex-direction: column;   /* icon above text */
-  align-items: center;      /* center horizontally */
-  justify-content: center;  /* center vertically */
-  gap: 6px;                 /* space between icon and text */
-  padding: 12px 20px;
-  border: none;
-  border-radius: 18px;
-  background: #1c1c1c;
-  color: #aaa;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 0.2s;
-}
+    .section-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      padding: 22px;
+      margin-bottom: 18px;
+      border-bottom: 5px solid rgba(0,0,0,0.2);
+    }
 
-section.selector button svg {
-  display: block;           /* removes inline spacing issues */
-}
+    .section-card h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00bfff;
+      margin: 0 0 12px 5px;
+    }
 
-section.selector button.active {
-  background: #1a1a1a;
-  color: #00bfff;
-  box-shadow: 0 0 10px rgba(0,191,255,0.3);
-}
-/* Minimal User Profile Card */
-.user-profile-card {
-  width: 90%;
-  max-width: 350px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #1c1c1c;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
+    input, textarea, select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 16px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
 
-.user-profile-card img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #00bfff;
-}
+    input:focus { border-color: #00bfff; background: rgba(0,0,0,0.5); }
 
-.user-profile-card h2 {
-  font-size: 18px;
-  color: #00bfff;
-  margin: 0;
-}
+    /* --- CUSTOM IOS TOGGLE --- */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+    .ios-switch {
+      position: relative; display: inline-block; width: 50px; height: 28px;
+    }
+    .ios-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #333; transition: .4s; border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 22px; width: 22px;
+      left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background: #30d158; }
+    input:checked + .slider:before { transform: translateX(22px); }
 
-.user-profile-card p {
-  font-size: 14px;
-  color: #aaa;
-  margin: 0;
-}
-</style>
+    /* --- UPLOAD PREVIEW --- */
+    .upload-preview {
+      width: 100%;
+      height: 180px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 3px dashed rgba(0, 191, 255, 0.2);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      color: #666; font-weight: 700;
+    }
+    .upload-preview img { width: 100%; height: 100%; object-fit: contain; }
+
+    /* --- CREATE BUTTON --- */
+    #createBtn {
+      width: 100%;
+      max-width: 450px;
+      padding: 22px;
+      border-radius: 25px;
+      border: none;
+      background: linear-gradient(180deg, #00cdff 0%, #00a2ff 100%);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      border-bottom: 6px solid #007acc;
+      margin: 20px 0 50px;
+      cursor: pointer;
+    }
+    #createBtn:active { transform: translateY(4px); border-bottom-width: 2px; }
+
+    /* --- UTILS --- */
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-
-
-<!-- Minimal User Profile Section -->
-<div class="user-profile-card">
-  <img id="userProfilePic" src="default-avatar.png" alt="Profile Picture">
-  <h2 id="userHandle">@username</h2>
-  <p id="followersCount">0 Followers</p>
+<div id="ios-loader">
+  <div style="margin-bottom:30px;">
+      <img src="https://i.imgur.com/cM3Givj.jpeg" style="max-width: 100px; border-radius: 22px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+  </div>
+  <div class="ios-tick-spinner">
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <span id="load-pct" style="color: #fff; font-size: 10px; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">0%</span>
+  </div>
 </div>
-<!-- Tabs -->
+
+<div class="user-profile-card">
+  <img id="userProfilePic" src="default-avatar.png">
+  <h2 id="userHandle">@Guest</h2>
+  <p id="postCountDisplay">0 Posts</p>
+</div>
+
+
 <section class="selector">
   <button data-type="post" class="active">
-    <!-- Post Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-      <path d="M14 4H2v9h12V4zM2 3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/>
-      <path d="M3 5h10v1H3V5z"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M14 4H2v9h12V4zM2 3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/></svg>
     <span>Post</span>
   </button>
-  
   <button data-type="story">
-    <!-- Story Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-      <path d="M8 0a8 8 0 1 0 8 8A8 8 0 0 0 8 0zm0 1a7 7 0 1 1-7 7A7 7 0 0 1 8 1z"/>
-      <path d="M8 4a4 4 0 1 0 4 4 4 4 0 0 0-4-4z"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 0 8 8A8 8 0 0 0 8 0zm0 1a7 7 0 1 1-7 7A7 7 0 0 1 8 1z"/></svg>
     <span>Story</span>
   </button>
-  
   <button data-type="poll">
-    <!-- Poll Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-      <path d="M6 2h4v12H6V2zM2 6h2v6H2V6zm10 0h2v6h-2V6z"/>
-    </svg>
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2h4v12H6V2zM2 6h2v6H2V6z"/></svg>
     <span>Poll</span>
   </button>
 </section>
 
-<!-- POST SECTION -->
 <div class="type-fields active" data-type="post">
   <div class="section-card">
-    <h2>Title</h2>
-    <input type="text" id="postTitle" placeholder="Post title">
+    <h2>Post Title</h2>
+    <input type="text" id="postTitle" placeholder="Required (Max 24)" maxlength="24">
   </div>
   <div class="section-card">
     <h2>Description</h2>
-    <textarea id="postDescription" placeholder="Post description"></textarea>
+    <textarea id="postDescription" rows="3" placeholder="Tell us about it... (Required)"></textarea>
   </div>
   <div class="section-card">
-    <h2>Category</h2>
-    <select id="postCategory">
-      <option value="">Select Roblox Category</option>
-      <option>Games</option>
-      <option>Accessories</option>
-      <option>Clothing</option>
-      <option>Models</option>
-      <option>Scripts</option>
-    </select>
+    <div style="display:flex; gap:10px;">
+      <div style="flex:1;">
+        <h2>Category</h2>
+        <select id="postCategory">
+          <option>Games</option><option>Accessories</option><option>Clothing</option><option>Scripts</option>
+        </select>
+      </div>
+      <div style="flex:1;">
+        <h2>Privacy</h2>
+        <select id="postPrivacy">
+          <option value="public">Public</option><option value="private">Private</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div class="section-card">
-    <h2>Privacy</h2>
-    <select id="postPrivacy">
-      <option value="public">Public</option>
-      <option value="private">Private</option>
-    </select>
+    <h2>Media</h2>
+    <div class="upload-preview" onclick="document.getElementById('postImageInput').click()" id="postImagePreview">Tap to add Image *</div>
+    <input type="file" id="postImageInput" class="hidden" accept="image/*">
   </div>
   <div class="section-card">
-    <h2>Image</h2>
-    <div class="upload-preview" id="postImagePreview">No Image</div>
-    <input type="file" id="postImageInput" accept="image/*">
-  </div>
-  <div class="section-card">
-    <h2>Link & Sponsored</h2>
-    <input type="text" id="postLink" placeholder="Optional link">
-    <label><input type="checkbox" id="postSponsored"> Sponsored</label>
+    <div class="toggle-row">
+      <h2>Sponsored</h2>
+      <label class="ios-switch">
+        <input type="checkbox" id="postSponsored">
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
 </div>
 
-<!-- STORY SECTION -->
-<div class="type-fields" data-type="story">
+<div class="type-fields" data-type="story" style="display:none;">
   <div class="section-card">
-    <h2>Image</h2>
-    <div class="upload-preview" id="storyImagePreview">No Image</div>
-    <input type="file" id="storyImageInput" accept="image/*">
+    <h2>Story Title</h2>
+    <input type="text" id="storyTitle" placeholder="Required (Max 16)" maxlength="16">
   </div>
   <div class="section-card">
-    <h2>Privacy</h2>
-    <select id="storyPrivacy">
-      <option value="public">Public</option>
-      <option value="private">Private</option>
-    </select>
+    <h2>Story Image</h2>
+    <div class="upload-preview" onclick="document.getElementById('storyImageInput').click()" id="storyImagePreview">Select Media *</div>
+    <input type="file" id="storyImageInput" class="hidden" accept="image/*">
   </div>
   <div class="section-card">
-    <h2>Link</h2>
-    <input type="text" id="storyLink" placeholder="Link">
-    <select id="storyLinkType" style="margin-top:10px;">
-      <option value="">Select Link Type</option>
-      <option value="roblox">ROBLOX</option>
-      <option value="youtube">YOUTUBE</option>
-      <option value="website">WEBSITE</option>
-    </select>
+    <div class="toggle-row">
+      <h2>Sponsored Story</h2>
+      <label class="ios-switch">
+        <input type="checkbox" id="storySponsored">
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
 </div>
 
-<!-- POLL SECTION -->
-<div class="type-fields" data-type="poll">
+<div class="type-fields" data-type="poll" style="display:none;">
   <div class="section-card">
     <h2>Question</h2>
-    <input type="text" id="pollQuestion" placeholder="Type your question">
+    <input type="text" id="pollQuestion" placeholder="What do you think?">
   </div>
   <div class="section-card">
     <h2>Options</h2>
     <div id="pollOptionsContainer">
-      <div class="option-row"><input type="text" class="pollOption" placeholder="Option 1"></div>
-      <div class="option-row"><input type="text" class="pollOption" placeholder="Option 2"></div>
+      <input type="text" class="pollOption" placeholder="Option 1" style="margin-bottom:8px;">
+      <input type="text" class="pollOption" placeholder="Option 2">
     </div>
-    <button type="button" id="addPollOption">Add Option (max 3)</button>
+    <button type="button" id="addPollOption" style="background:transparent; border:none; color:#00bfff; font-weight:800; margin-top:10px; cursor:pointer;">+ Add Option</button>
   </div>
 </div>
 
-<button type="button" id="createBtn">Create</button>
-<div class="spinner" id="createSpinner"></div>
-<div id="statusMsg" style="margin-top:12px;font-size:14px;text-align:center;"></div>
+<button id="createBtn">Create Now</button>
+
+<div id="ios-popup" style="position:fixed; top:-100px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:rgba(255,255,255,0.1); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-radius:20px; padding:15px; display:flex; align-items:center; gap:12px; z-index:200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); border:1px solid rgba(255,255,255,0.2); box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    <div id="popup-icon" style="width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold;">!</div>
+    <div id="popup-text" style="color:#fff; font-weight:600; font-size:14px;">Message here</div>
+</div>
+
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, push, get, runTransaction, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, push, get, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-/* --- Firebase config --- */
 const firebaseConfig = {
   apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
   authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -411,249 +349,187 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* --- Elements --- */
-const typeButtons = document.querySelectorAll('section.selector button');
-const typeFields = document.querySelectorAll('.type-fields');
+/* --- Global State --- */
 let selectedType = 'post';
-
-const createBtn = document.getElementById('createBtn');
-const spinner = document.getElementById('createSpinner');
-const statusMsg = document.getElementById('statusMsg');
-const pollContainer = document.getElementById('pollOptionsContainer');
-
-const statPosts = document.getElementById('statPosts');
-const statFollowers = document.getElementById('statFollowers');
-const userInfo = document.getElementById('userInfo');
-
-const userProfilePic = document.getElementById('userProfilePic');
-const userHandleEl = document.getElementById('userHandle');
-const followersCountEl = document.getElementById('followersCount');
-
-const feedContainer = document.getElementById('feedContainer'); // container for posts/stories/polls
-
-/* --- User info --- */
 let currentUser = null;
+const createBtn = document.getElementById('createBtn');
 
-/* --- Type Selector --- */
-typeButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    typeButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedType = btn.dataset.type;
-    typeFields.forEach(f => f.style.display = f.dataset.type === selectedType ? 'block' : 'none');
-  });
+// Stop scroll immediately on load
+document.body.classList.add('no-scroll');
+
+const sponsoredLinks = [
+    "https://otieu.com/4/7197807", "https://otieu.com/4/8784016",
+    "https://otieu.com/4/7216382", "https://otieu.com/4/7197806",
+    "https://otieu.com/4/7950037", "https://otieu.com/4/7165724",
+    "https://otieu.com/4/8272145"
+];
+
+/* --- Notification System --- */
+function showPopup(msg, isError = false) {
+    const popup = document.getElementById('ios-popup');
+    const icon = document.getElementById('popup-icon');
+    const text = document.getElementById('popup-text');
+    text.innerText = msg;
+    icon.style.background = isError ? "#ff453a" : "#30d158";
+    icon.innerText = isError ? "✕" : "✓";
+    popup.style.top = "20px";
+    setTimeout(() => { popup.style.top = "-100px"; }, 3000);
+}
+
+/* --- UI Interactions --- */
+
+// Tab Toggling
+document.querySelectorAll('section.selector button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('section.selector button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedType = btn.getAttribute('data-type');
+        document.querySelectorAll('.type-fields').forEach(f => {
+            f.style.display = f.getAttribute('data-type') === selectedType ? 'block' : 'none';
+            f.classList.toggle('active', f.getAttribute('data-type') === selectedType);
+        });
+    });
 });
 
-/* --- Image Previews --- */
-function setupImagePreview(inputId, previewId) {
-  const input = document.getElementById(inputId);
-  const preview = document.getElementById(previewId);
-  input.addEventListener('change', () => {
-    const file = input.files[0];
-    if (!file) { preview.innerHTML = 'No Image'; return; }
-    const url = URL.createObjectURL(file);
-    preview.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = url;
-    preview.appendChild(img);
-  });
-}
-setupImagePreview('postImageInput', 'postImagePreview');
-setupImagePreview('storyImageInput', 'storyImagePreview');
-
-/* --- Poll Options --- */
+// Dynamic Poll Options
 document.getElementById('addPollOption').addEventListener('click', () => {
-  const currentOptions = pollContainer.querySelectorAll('.pollOption').length;
-  if (currentOptions >= 3) return;
-  const row = document.createElement('div');
-  row.className = 'option-row';
-  row.innerHTML = `<input type="text" class="pollOption" placeholder="Option ${currentOptions + 1}">`;
-  pollContainer.appendChild(row);
+    const container = document.getElementById('pollOptionsContainer');
+    const input = document.createElement('input');
+    input.type = "text";
+    input.className = 'pollOption';
+    input.placeholder = `Option ${container.querySelectorAll('.pollOption').length + 1}`;
+    input.style.cssText = "width:100%; margin-top:8px; padding:16px; background:rgba(0,0,0,0.3); border:2px solid rgba(255,255,255,0.1); border-radius:18px; color:#fff;";
+    container.appendChild(input);
 });
 
-/* --- Auth State & Profile Loader --- */
+// Media Previews
+function setupPreview(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            document.getElementById(previewId).innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:18px;">`;
+        }
+    });
+}
+setupPreview('postImageInput', 'postImagePreview');
+setupPreview('storyImageInput', 'storyImagePreview');
+
+/* --- Data Handlers --- */
+
 onAuthStateChanged(auth, async user => {
-  if (!user) {
-    currentUser = null;
-    statPosts.textContent = '0';
-    statFollowers.textContent = '0';
-    userInfo.textContent = '@user (0)';
-    userProfilePic.src = 'default-avatar.png';
-    userHandleEl.textContent = '@user';
-    followersCountEl.textContent = '0 Followers';
-    return;
-  }
+    if (user) {
+        currentUser = user;
+        
+        // 1. Get Profile Info
+        const userRef = ref(db, `users/${user.uid}`);
+        const snap = await get(userRef);
+        const data = snap.val() || {};
+        
+        document.getElementById('userHandle').innerText = `@${data.handle || 'User'}`;
+        if(data.profilePic) document.getElementById('userProfilePic').src = data.profilePic;
 
-  currentUser = user;
-  const uid = user.uid;
+        // 2. Real-time Post Counter (Fixed: Added onValue)
+        const postCountRef = ref(db, `users/${user.uid}/posts`);
+        onValue(postCountRef, (snapshot) => {
+            const count = snapshot.val() || 0;
+            const display = document.getElementById('followersCount'); // Using existing ID to match your HTML
+            if(display) display.innerText = `${count} Posts`;
+        });
+    }
 
-  try {
-    const snap = await get(ref(db, 'users/' + uid));
-    const data = snap.val() || {};
-    const userHandle = data.handle || 'user';
-    const userProfile = data.profilePic || 'default-avatar.png';
-
-    userProfilePic.src = userProfile;
-    userHandleEl.textContent = `@${userHandle}`;
-
-    const followersRef = ref(db, `users/${uid}/followers`);
-    onValue(followersRef, snap => {
-      const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-      statFollowers.textContent = count;
-      userInfo.textContent = `@${userHandle} (${count})`;
-      followersCountEl.textContent = `${count} Followers`;
-    });
-
-    const postsRef = ref(db, `users/${uid}/posts`);
-    onValue(postsRef, snap => {
-      statPosts.textContent = snap.val() || 0;
-    });
-
-  } catch (e) { console.error('Failed to fetch user data:', e); }
-
-  renderFeed(); // load feed dynamically
+    // Hide Loader & Enable Scroll
+    setTimeout(() => { 
+        const loader = document.getElementById('ios-loader');
+        if(loader) {
+            loader.style.opacity = "0"; 
+            setTimeout(() => {
+                loader.remove();
+                document.body.classList.remove('no-scroll');
+            }, 800);
+        }
+    }, 1200);
 });
 
-/* --- Upload Image to Imgur --- */
-async function uploadImage(file) {
-  if (!file) return '';
-  const formData = new FormData();
-  formData.append('image', file);
-  try {
-    const res = await fetch('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success && data.data?.link) return data.data.link;
-  } catch (e) { console.error("Imgur upload failed:", e); }
-  return '';
+async function uploadToImgur(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+        const res = await fetch('https://api.imgur.com/3/image', {
+            method: 'POST',
+            headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
+            body: formData
+        });
+        const data = await res.json();
+        return data.success ? data.data.link : null;
+    } catch(e) { return null; }
 }
 
-/* --- Create Content --- */
+/* --- Main Create Action --- */
 createBtn.addEventListener('click', async () => {
-  if (!currentUser) { statusMsg.style.color = '#f44336'; statusMsg.textContent = 'Login required'; return; }
+    if (!currentUser) return showPopup("Login Required", true);
+    
+    createBtn.innerText = "PROCESSING...";
+    createBtn.disabled = true;
 
-  spinner.style.display = 'block';
-  statusMsg.textContent = '';
+    try {
+        let payload = { uid: currentUser.uid, timestamp: Date.now(), type: selectedType };
+        const getRandomLink = () => sponsoredLinks[Math.floor(Math.random() * sponsoredLinks.length)];
 
-  let postData = { uid: currentUser.uid, timestamp: Date.now() };
+        if (selectedType === 'post') {
+            const title = document.getElementById('postTitle').value.trim();
+            const desc = document.getElementById('postDescription').value.trim();
+            const file = document.getElementById('postImageInput').files[0];
+            const isSpon = document.getElementById('postSponsored').checked;
 
-  try {
-    if (selectedType === 'post') {
-      const title = document.getElementById('postTitle').value.trim().slice(0, 16);
-      const desc = document.getElementById('postDescription').value.trim().slice(0, 250);
-      const category = document.getElementById('postCategory').value;
-      const privacy = document.getElementById('postPrivacy').value;
-      const sponsored = document.getElementById('postSponsored').checked;
-      const link = document.getElementById('postLink').value.trim();
-      const imageFile = document.getElementById('postImageInput').files[0];
-      if (!title || !desc || !category || !privacy || !imageFile) throw 'All required fields must be filled';
-      const imageUrl = await uploadImage(imageFile);
-      if (!imageUrl) throw 'Image upload failed';
-      postData = { ...postData, type: 'post', title, description: desc, category, privacy, image: imageUrl, link: sponsored ? link : '', sponsored };
+            if (!title || !desc || !file) throw "All fields required!";
+            
+            payload.image = await uploadToImgur(file);
+            if(!payload.image) throw "Upload failed!";
+            payload.title = title;
+            payload.description = desc;
+            payload.category = document.getElementById('postCategory').value;
+            payload.sponsored = isSpon;
+            payload.link = isSpon ? getRandomLink() : "";
+        } 
+        
+        else if (selectedType === 'story') {
+            const title = document.getElementById('storyTitle').value.trim();
+            const file = document.getElementById('storyImageInput').files[0];
+            const isSpon = document.getElementById('storySponsored').checked;
+
+            if (!title || !file) throw "Title and Image required!";
+            
+            payload.title = title;
+            payload.image = await uploadToImgur(file);
+            if(!payload.image) throw "Upload failed!";
+            payload.sponsored = isSpon;
+            payload.link = isSpon ? getRandomLink() : "";
+        }
+
+        else if (selectedType === 'poll') {
+            const question = document.getElementById('pollQuestion').value.trim();
+            const options = [...document.querySelectorAll('.pollOption')].map(o => o.value.trim()).filter(v => v);
+            if (!question || options.length < 2) throw "Min 2 options required";
+            payload.question = question;
+            payload.options = options;
+        }
+
+        await push(ref(db, selectedType), payload);
+        await runTransaction(ref(db, `users/${currentUser.uid}/posts`), c => (c || 0) + 1);
+        
+        showPopup("Created Successfully!");
+        setTimeout(() => location.reload(), 1500);
+
+    } catch (e) {
+        showPopup(e.message || e, true);
+        createBtn.innerText = "Create Now";
+        createBtn.disabled = false;
     }
-    else if (selectedType === 'story') {
-      const imageFile = document.getElementById('storyImageInput').files[0];
-      const privacy = document.getElementById('storyPrivacy').value;
-      const link = document.getElementById('storyLink').value.trim();
-      const linkType = document.getElementById('storyLinkType').value;
-      const title = document.getElementById('storyTitle')?.value.trim().slice(0, 10) || '';
-      if (!imageFile || !privacy || !link || !linkType) throw 'All required fields must be filled';
-      const imageUrl = await uploadImage(imageFile);
-      if (!imageUrl) throw 'Image upload failed';
-      postData = { ...postData, type: 'story', image: imageUrl, privacy, link, linkType, title };
-    }
-    else if (selectedType === 'poll') {
-      const question = document.getElementById('pollQuestion').value.trim().slice(0, 24);
-      const options = [...document.querySelectorAll('.pollOption')].map(o => o.value.trim()).filter(o => o);
-      if (!question || options.length < 2) throw 'Question and at least 2 options required';
-      postData = { ...postData, type: 'poll', question, options };
-    }
-
-    await push(ref(db, `/${selectedType}`), postData);
-
-    const userPostsRef = ref(db, `users/${currentUser.uid}/posts`);
-    await runTransaction(userPostsRef, current => (current || 0) + 1);
-
-    statusMsg.style.color = '#4caf50';
-    statusMsg.textContent = `${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} created successfully!`;
-    clearFields();
-
-    renderFeed(); // reload feed after posting
-  } catch (e) {
-    console.error(e);
-    statusMsg.style.color = '#f44336';
-    statusMsg.textContent = e.toString();
-  } finally { spinner.style.display = 'none'; }
 });
-
-/* --- Clear form fields --- */
-function clearFields() {
-  if (selectedType === 'post') {
-    document.getElementById('postTitle').value = '';
-    document.getElementById('postDescription').value = '';
-    document.getElementById('postCategory').value = '';
-    document.getElementById('postPrivacy').value = 'public';
-    document.getElementById('postSponsored').checked = false;
-    document.getElementById('postLink').value = '';
-    document.getElementById('postImagePreview').innerHTML = 'No Image';
-    document.getElementById('postImageInput').value = '';
-  }
-  if (selectedType === 'story') {
-    document.getElementById('storyPrivacy').value = 'public';
-    document.getElementById('storyLink').value = '';
-    document.getElementById('storyLinkType').value = '';
-    document.getElementById('storyImagePreview').innerHTML = 'No Image';
-    document.getElementById('storyImageInput').value = '';
-    if (document.getElementById('storyTitle')) document.getElementById('storyTitle').value = '';
-  }
-  if (selectedType === 'poll') {
-    pollContainer.innerHTML = `<div class="option-row"><input type="text" class="pollOption" placeholder="Option 1"></div>
-      <div class="option-row"><input type="text" class="pollOption" placeholder="Option 2"></div>`;
-    document.getElementById('pollQuestion').value = '';
-  }
-}
-
-/* --- Render Feed dynamically --- */
-async function renderFeed() {
-  feedContainer.innerHTML = '';
-  try {
-    const snap = await get(ref(db, '/post'));
-    if (!snap.exists()) { feedContainer.innerHTML = '<p>No posts yet.</p>'; return; }
-
-    const posts = Object.entries(snap.val()).sort((a,b) => b[1].timestamp - a[1].timestamp);
-    for (const [id, postData] of posts) {
-      const userSnap = await get(ref(db, `users/${postData.uid}`));
-      const userData = userSnap.val() || {};
-      const handle = userData.handle || 'user';
-      const profilePic = userData.profilePic || 'default-avatar.png';
-
-      const card = document.createElement('div');
-      card.className = 'post-card';
-
-      const userSec = document.createElement('div');
-      userSec.className = 'post-user';
-      userSec.innerHTML = `<img src="${profilePic}" class="post-profile-pic"><span>@${handle}</span>`;
-      card.appendChild(userSec);
-
-      const contentSec = document.createElement('div');
-      contentSec.className = 'post-content';
-      if (postData.type === 'post') {
-        contentSec.innerHTML = `<h3>${postData.title}</h3><p>${postData.description}</p><img src="${postData.image}">`;
-      } else if (postData.type === 'story') {
-        contentSec.innerHTML = `<img src="${postData.image}"><p>${postData.title}</p>`;
-      } else if (postData.type === 'poll') {
-        contentSec.innerHTML = `<p>${postData.question}</p><ul>${postData.options.map(o=>`<li>${o}</li>`).join('')}</ul>`;
-      }
-      card.appendChild(contentSec);
-
-      feedContainer.appendChild(card);
-    }
-  } catch(e) { console.error('Failed to load feed:', e); }
-}
 </script>
+
 
 </body>
 </html>
