@@ -5,65 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profile | RBX</title>
     <style>
-        :root { --accent: #2196F3; --red: #ff453a; --bg: #000; --card: #111; --border: #222; }
+        :root { --accent: #0095f6; --red: #ff453a; --bg: #000; --card: #111; --border: #222; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; }
         
-        /* Header Section */
-        .profile-header { padding: 50px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        .profile-header { padding: 40px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
         #uPfp { 
-            width: 90px; height: 90px; border-radius: 50%; border: 2px solid #fff; 
-            margin: 0 auto 15px; background-size: cover; background-position: center; background-color: var(--card);
+            width: 85px; height: 85px; border-radius: 50%; border: 2px solid #333; 
+            margin: 0 auto 12px; background-size: cover; background-position: center; background-color: var(--card);
         }
-        #uHandle { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
-        #uBio { color: #888; font-size: 13px; margin: 10px auto; max-width: 80%; line-height: 1.4; }
         
-        .stats-row { display: flex; justify-content: center; gap: 40px; margin: 15px 0; }
-        .stat-item { display: flex; flex-direction: column; align-items: center; }
-        .stat-num { font-weight: 900; font-size: 17px; }
-        .stat-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        /* Handle & Verified Badge */
+        .handle-container { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        #uHandle { font-size: 20px; font-weight: 700; }
+        .v-badge { width: 18px; height: 18px; display: none; }
 
+        #uBio { color: #efefef; font-size: 14px; margin: 8px auto; max-width: 90%; line-height: 1.4; white-space: pre-wrap; }
+        
+        .stats-row { display: flex; justify-content: center; gap: 30px; margin: 15px 0; }
+        .stat-item { display: flex; flex-direction: column; min-width: 70px; }
+        .stat-num { font-weight: 700; font-size: 18px; }
+        .stat-label { font-size: 12px; color: #a8a8a8; }
+
+        .btn-container { display: flex; justify-content: center; padding: 0 20px 15px; }
         #followBtn {
-            width: 100%; max-width: 250px; padding: 10px; border-radius: 10px; font-weight: 900;
-            border: none; cursor: pointer; font-size: 13px; transition: 0.2s;
+            width: 100%; max-width: 300px; padding: 8px; border-radius: 8px; font-weight: 600;
+            border: none; cursor: pointer; font-size: 14px; transition: 0.2s; display: none;
         }
-        .btn-follow { background: #fff; color: #000; }
-        .btn-unfollow { background: var(--red); color: #fff; }
+        .btn-follow { background: var(--accent); color: #fff; }
+        .btn-unfollow { background: #333; color: #fff; border: 1px solid #444 !important; }
 
-        /* Tabs System */
-        .tabs { display: flex; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 11px; font-weight: 900; color: #555; cursor: pointer; transition: 0.3s; }
-        .tab.active { color: #fff; border-bottom: 2px solid #fff; }
+        /* Tabs */
+        .tabs { display: flex; border-top: 1px solid var(--border); }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #a8a8a8; cursor: pointer; }
+        .tab.active { color: #fff; border-top: 2px solid #fff; margin-top: -1px; }
 
-        /* Content Grids */
-        .content-container { padding: 2px; display: none; }
+        .content-container { padding: 2px; display: none; grid-template-columns: repeat(3, 1fr); gap: 2px; }
         .content-container.active { display: grid; }
+        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; }
         
-        /* Posts & Stories Grid */
-        .grid { grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; border-radius: 4px; }
-        
-        /* Polls List */
-        .poll-list { display: flex; flex-direction: column; gap: 10px; padding: 15px; }
-        .poll-item { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-        .poll-q { font-weight: 800; font-size: 14px; margin-bottom: 5px; }
-
-        .back-btn { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+        .back-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; z-index: 20; }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.history.back()">✕</button>
+    <button class="back-btn" onclick="window.history.back()">‹</button>
 
     <div class="profile-header">
         <div id="uPfp"></div>
-        <div id="uHandle">@loading</div>
-        <div class="stats-row">
-            <div class="stat-item"><span class="stat-num" id="count-followers">0</span><span class="stat-label">Followers</span></div>
-            <div class="stat-item"><span class="stat-num" id="count-following">0</span><span class="stat-label">Following</span></div>
+        <div class="handle-container">
+            <span id="uHandle">loading...</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" class="v-badge" id="vBadge">
         </div>
-        <div id="uBio">...</div>
-        <button id="followBtn" style="display:none;">Follow</button>
+        
+        <div class="stats-row">
+            <div class="stat-item"><span class="stat-num" id="count-followers">0</span><span class="stat-label">followers</span></div>
+            <div class="stat-item"><span class="stat-num" id="count-following">0</span><span class="stat-label">following</span></div>
+        </div>
+        
+        <div id="uBio"></div>
+    </div>
+
+    <div class="btn-container">
+        <button id="followBtn">Follow</button>
     </div>
 
     <div class="tabs">
@@ -72,13 +76,13 @@
         <div class="tab" onclick="switchTab('stories', this)">STORIES</div>
     </div>
 
-    <div id="posts" class="content-container grid active"></div>
-    <div id="polls" class="content-container poll-list"></div>
-    <div id="stories" class="content-container grid"></div>
+    <div id="posts" class="content-container active"></div>
+    <div id="polls" class="content-container" style="grid-template-columns: 1fr; padding: 15px;"></div>
+    <div id="stories" class="content-container"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
         const config = {
@@ -101,69 +105,77 @@
             document.getElementById(id).classList.add('active');
         };
 
-        async function init() {
+        function init() {
             if (!targetUID) return;
 
-            // 1. Profile & Stats
+            // 1. Core Profile Data (Bio, Handle, Pfp)
             onValue(ref(db, `users/${targetUID}`), (snap) => {
-                const d = snap.val() || {};
-                document.getElementById('uHandle').innerText = "@" + (d.handle || "user");
+                const d = snap.val();
+                if (!d) return;
+
+                document.getElementById('uHandle').innerText = d.handle || "user";
                 document.getElementById('uBio').innerText = d.bio || "";
-                document.getElementById('count-followers').innerText = d.followers ? Object.keys(d.followers).length : 0;
                 if (d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
+                
+                // Follower Count & Verified Badge
+                const followerCount = d.followers ? Object.keys(d.followers).length : 0;
+                document.getElementById('count-followers').innerText = followerCount;
+                document.getElementById('vBadge').style.display = followerCount >= 1000 ? "block" : "none";
             });
 
-            onValue(ref(db, `following/${targetUID}`), s => {
-                document.getElementById('count-following').innerText = s.exists() ? Object.keys(s.val()).length : 0;
+            // 2. Following Count
+            onValue(ref(db, `following/${targetUID}`), (snap) => {
+                document.getElementById('count-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
             });
 
-            // 2. Auth & Follow Logic
+            // 3. Auth & Follow Interaction
             onAuthStateChanged(auth, (user) => {
                 const fBtn = document.getElementById('followBtn');
-                if (!user || user.uid === targetUID) return;
-                fBtn.style.display = 'inline-block';
-                
+                if (!user || user.uid === targetUID) {
+                    fBtn.style.display = 'none';
+                    return;
+                }
+                fBtn.style.display = 'block';
+
                 onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
                     const isF = snap.exists();
                     fBtn.innerText = isF ? "Unfollow" : "Follow";
                     fBtn.className = isF ? "btn-unfollow" : "btn-follow";
+
                     fBtn.onclick = () => {
                         const updates = {};
                         updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
                         updates[`users/${targetUID}/followers/${user.uid}`] = isF ? null : true;
-                        set(ref(db), updates); // Batch update
+                        update(ref(db), updates); 
                     };
                 });
             });
 
-            // 3. Content Fetching (Filtered by targetUID)
-            const fetchContent = (path, containerId, isGrid) => {
+            // 4. Content Sections
+            const loadData = (path, divId, isGrid) => {
                 onValue(ref(db, path), (snap) => {
-                    const container = document.getElementById(containerId);
-                    container.innerHTML = "";
-                    if (!snap.exists()) { container.innerHTML = "<p style='grid-column:1/4; color:#333; padding:40px; text-align:center;'>No content yet</p>"; return; }
-                    
+                    const box = document.getElementById(divId);
+                    box.innerHTML = "";
+                    if (!snap.exists()) return;
+
                     Object.entries(snap.val()).forEach(([id, item]) => {
                         if (item.uid !== targetUID) return;
-                        
                         const el = document.createElement('div');
                         if (isGrid) {
                             el.className = "grid-item";
-                            el.style.backgroundImage = `url('${item.image}')`;
-                            el.onclick = () => window.location.href = `/${path.slice(0,-1)}?id=${id}`;
+                            el.style.backgroundImage = `url('${item.image || item.url}')`;
                         } else {
-                            el.className = "poll-item";
-                            el.innerHTML = `<div class="poll-q">${item.question}</div><div style="font-size:10px; color:var(--accent)">VIEW POLL</div>`;
-                            el.onclick = () => window.location.href = `/poll?id=${id}`;
+                            el.style.cssText = "background:#111; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #222";
+                            el.innerHTML = `<div style="font-weight:700">${item.question}</div>`;
                         }
-                        container.appendChild(el);
+                        box.appendChild(el);
                     });
                 });
             };
 
-            fetchContent('post', 'posts', true);
-            fetchContent('poll', 'polls', false);
-            fetchContent('story', 'stories', true);
+            loadData('post', 'posts', true);
+            loadData('poll', 'polls', false);
+            loadData('story', 'stories', true);
         }
 
         init();
