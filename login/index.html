@@ -2,308 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RBX Community</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile View</title>
     <style>
-        :root {
-            --ios-accent: #0A84FF;
-            --rbx-silver: #FFFFFF;
-            --card-bg: rgba(0, 0, 0, 0.98);
-            --white-edge: 1.5px solid rgba(255, 255, 255, 0.9);
-            --ios-red: #FF453A;
-            --ios-green: #32D74B;
-        }
+        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; --accent: #0A84FF; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; }
+        
+        /* Profile Header */
+        .profile-header { text-align: center; padding-top: 20px; }
+        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; 
+               background-size: cover; background-position: center; border: 1.5px solid rgba(255,255,255,0.9); }
+        .handle { font-size: 1.5rem; margin: 15px 0 5px; font-weight: bold; }
+        .stats { color: var(--gray); font-size: 0.9rem; margin-bottom: 30px; }
 
-        /* STOP TEXT SELECTION */
-        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
-        input { -webkit-user-select: text; user-select: text; }
+        /* Tabs */
+        .tabs { display: flex; justify-content: center; border-top: 1px solid var(--border); margin-top: 20px; }
+        .tab { padding: 15px 25px; cursor: pointer; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
+        .tab.active { color: var(--text); border-top: 2px solid var(--text); margin-top: -1px; }
 
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            font-family: -apple-system, system-ui, sans-serif;
-            background-color: #000; overflow: hidden;
-        }
-
-        .main-bg {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), 
-                        url('https://www.falmouth.ac.uk/sites/default/files/styles/article_main_image/public/media/images/Roblox_Avatar_Lineup_3900x4984%20%281%29_0.jpg?itok=HB_osE0t');
-            background-size: cover; background-position: center; z-index: -1;
-        }
-
-        /* iOS TICK SPINNER */
-        #loader {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
-            display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-        .spinner { position: relative; width: 32px; height: 32px; }
-        .spinner div {
-            position: absolute; width: 3px; height: 9px; background: #636366;
-            left: 50%; top: 50%; transform-origin: 50% 160%; border-radius: 2px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { from { background: #fff; } to { background: transparent; } }
-        .spinner div:nth-child(1) { transform: translate(-50%, -150%) rotate(0deg); animation-delay: -1s; }
-        .spinner div:nth-child(2) { transform: translate(-50%, -150%) rotate(30deg); animation-delay: -0.916s; }
-        .spinner div:nth-child(3) { transform: translate(-50%, -150%) rotate(60deg); animation-delay: -0.833s; }
-        .spinner div:nth-child(4) { transform: translate(-50%, -150%) rotate(90deg); animation-delay: -0.75s; }
-        .spinner div:nth-child(5) { transform: translate(-50%, -150%) rotate(120deg); animation-delay: -0.666s; }
-        .spinner div:nth-child(6) { transform: translate(-50%, -150%) rotate(150deg); animation-delay: -0.583s; }
-        .spinner div:nth-child(7) { transform: translate(-50%, -150%) rotate(180deg); animation-delay: -0.5s; }
-        .spinner div:nth-child(8) { transform: translate(-50%, -150%) rotate(210deg); animation-delay: -0.416s; }
-        .spinner div:nth-child(9) { transform: translate(-50%, -150%) rotate(240deg); animation-delay: -0.333s; }
-        .spinner div:nth-child(10) { transform: translate(-50%, -150%) rotate(270deg); animation-delay: -0.25s; }
-        .spinner div:nth-child(11) { transform: translate(-50%, -150%) rotate(300deg); animation-delay: -0.166s; }
-        .spinner div:nth-child(12) { transform: translate(-50%, -150%) rotate(330deg); animation-delay: -0.083s; }
-
-        .container { display: flex; height: 100vh; align-items: center; justify-content: center; padding: 20px; }
-        .card {
-            width: 100%; max-width: 380px; background: var(--card-bg);
-            border-radius: 35px; border: var(--white-edge);
-            padding: 40px; text-align: center;
-        }
-
-        .logo { max-width: 160px; height: auto; margin-bottom: 25px; }
-
-        .signup-req { display: none; margin-bottom: 20px; }
-        .pfp-pick {
-            width: 90px; height: 90px; border-radius: 50%;
-            background: #111; border: var(--white-edge);
-            margin: 0 auto 15px; display: flex; align-items: center;
-            justify-content: center; cursor: pointer; overflow: hidden;
-        }
-        .pfp-pick img { width: 100%; height: 100%; object-fit: cover; }
-
-        .inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
-        input {
-            background: #000; border: var(--white-edge);
-            border-radius: 14px; padding: 16px; color: white;
-            font-size: 16px; outline: none; transition: 0.2s;
-        }
-        input:focus { border-color: var(--ios-accent); }
-
-        .handle-row { position: relative; }
-        #char-count {
-            position: absolute; right: 12px; top: 18px;
-            font-size: 10px; color: #555; font-weight: 800;
-        }
-
-        #handle-status {
-            font-size: 11px; font-weight: 700; margin-top: 5px;
-            display: none; text-align: left; padding-left: 10px;
-        }
-
-        .btn {
-            width: 100%; background: var(--rbx-silver); color: #000;
-            padding: 18px; border-radius: 14px; border: none;
-            font-size: 17px; font-weight: 800; cursor: pointer;
-        }
-
-        .links { margin-top: 20px; font-size: 14px; color: #888; }
-        .links span { color: var(--ios-accent); font-weight: 600; cursor: pointer; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        .shake { animation: shake 0.2s ease-in-out 0s 2; border-color: var(--ios-red) !important; }
-
-        #toast {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #fff; padding: 12px 25px; border-radius: 20px;
-            color: #000; z-index: 10001; transition: 0.5s; font-size: 14px; font-weight: 600;
-        }
+        /* Content */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding-top: 2px; }
+        .grid-item { aspect-ratio: 1/1; background-color: #111; background-size: cover; background-position: center; }
+        .empty-msg { text-align: center; color: var(--gray); margin-top: 50px; font-size: 14px; }
+        
+        .back-btn { background: none; color: var(--accent); border: none; font-size: 16px; cursor: pointer; padding: 0; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div id="toast"></div>
-<div id="loader"><div class="spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
-<div class="main-bg"></div>
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
 
-<div class="container">
-    <div class="card">
-        <img src="https://i.imgur.com/cM3Givj.jpeg" class="logo">
-
-        <div id="signup-extra" class="signup-req">
-            <div class="pfp-pick" onclick="document.getElementById('fileInput').click()" id="pfpDisplay">
-                <span style="font-size: 11px; color: #fff;">PFP +</span>
-            </div>
-            <input type="file" id="fileInput" style="display:none" accept="image/*">
-            
-            <div class="handle-row">
-                <input type="text" id="handle" placeholder="@handle" maxlength="12" autocomplete="off">
-                <span id="char-count">0/12</span>
-            </div>
-            <div id="handle-status"></div>
-            <div style="height:10px"></div>
+    <div id="profileUI">
+        <div class="profile-header">
+            <div id="uPfp" class="pfp"></div>
+            <div id="uHandle" class="handle">Loading...</div>
+            <div id="uStats" class="stats">0 posts</div>
         </div>
 
-        <div class="inputs">
-            <input type="email" id="email" placeholder="Email Address">
-            <input type="password" id="pass" placeholder="Password">
+        <div class="tabs">
+            <div class="tab active">Posts</div>
         </div>
 
-        <button class="btn" id="actionBtn" onclick="submit()">Continue</button>
-        
-        <p class="links" id="forgot-link" onclick="forgot()">Forgot Password?</p>
-        <p class="links"><span id="toggleTxt">Don't have an account?</span> <span onclick="toggle()" id="toggleBtn">Sign Up</span></p>
+        <div id="postsSection">
+            <div id="postsGrid" class="grid"></div>
+            <div id="noPosts" class="empty-msg" style="display:none;">No posts yet</div>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    const config = {
-        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-        projectId: "itzhoyoo-f9f7e",
-        appId: "1:1094792075584:web:d49e9cd31082a5"
-    };
+        // Your specific config from the signup page
+        const config = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            appId: "1:1094792075584:web:d49e9cd31082a5"
+        };
 
-    const app = initializeApp(config);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+        const app = initializeApp(config);
+        const db = getDatabase(app);
 
-    // DYNAMIC REDIRECT: Goes to the root of whatever domain the user is on
-    const REDIRECT_URL = window.location.origin; 
+        // Get UID from URL (?user=ID)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUid = urlParams.get('user');
 
-    let handleValid = false;
-    let checkTimeout;
-
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('loader').remove(), 500);
-        }, 1200);
-    };
-
-    function notify(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.style.top = '30px';
-        setTimeout(() => t.style.top = '-100px', 3000);
-    }
-
-    const handleInput = document.getElementById('handle');
-    const statusDiv = document.getElementById('handle-status');
-    const charCounter = document.getElementById('char-count');
-
-    handleInput.oninput = (e) => {
-        clearTimeout(checkTimeout);
-        let val = e.target.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-        if(val.length > 12) val = val.substring(0, 12);
-        e.target.value = val; 
-        charCounter.innerText = `${val.length}/12`;
-        charCounter.style.color = val.length >= 12 ? 'var(--ios-red)' : '#555';
-
-        if(val.length < 3) {
-            statusDiv.style.display = 'none';
-            handleValid = false;
-            return;
+        if (!targetUid) {
+            document.getElementById('uHandle').innerText = "User not found";
+        } else {
+            loadProfile();
         }
 
-        statusDiv.style.display = 'block';
-        statusDiv.innerText = "Checking availability...";
-        statusDiv.style.color = '#888';
+        async function loadProfile() {
+            try {
+                // 1. Fetch User Data (matching your set(ref(db, `users/${cred.user.uid}`)) structure)
+                const userSnap = await get(ref(db, `users/${targetUid}`));
+                
+                if (userSnap.exists()) {
+                    const user = userSnap.val();
+                    document.getElementById('uHandle').innerText = `@${user.handle}`;
+                    document.getElementById('uStats').innerText = `${user.posts || 0} posts`;
+                    if (user.profilePic) {
+                        document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic})`;
+                    }
+                } else {
+                    document.getElementById('uHandle').innerText = "User not found";
+                    return;
+                }
 
-        checkTimeout = setTimeout(async () => {
-            const handleRef = ref(db, 'handles/' + val);
-            const snapshot = await get(handleRef);
-            if (snapshot.exists()) {
-                statusDiv.innerText = "✕ Handle taken";
-                statusDiv.style.color = 'var(--ios-red)';
-                handleValid = false;
-            } else {
-                statusDiv.innerText = "✓ Handle available";
-                statusDiv.style.color = 'var(--ios-green)';
-                handleValid = true;
+                // 2. Fetch User's Posts
+                // This assumes your posts also have a 'uid' field matching the user
+                const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid));
+                const postsSnap = await get(postsQ);
+                const grid = document.getElementById('postsGrid');
+
+                if (postsSnap.exists()) {
+                    const posts = Object.values(postsSnap.val()).reverse();
+                    grid.innerHTML = posts.map(post => 
+                        `<div class="grid-item" style="background-image: url('${post.imageUrl}')"></div>`
+                    ).join('');
+                } else {
+                    document.getElementById('noPosts').style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('uHandle').innerText = "Error loading";
             }
-        }, 400);
-    };
-
-    window.toggle = () => {
-        const extra = document.getElementById('signup-extra');
-        const isLogin = extra.style.display === 'block';
-        extra.style.display = isLogin ? 'none' : 'block';
-        document.getElementById('forgot-link').style.display = isLogin ? 'block' : 'none';
-        document.getElementById('actionBtn').innerText = isLogin ? 'Continue' : 'Create Account';
-        document.getElementById('toggleTxt').innerText = isLogin ? "Don't have an account?" : "Already a member?";
-        document.getElementById('toggleBtn').innerText = isLogin ? "Sign Up" : "Login";
-    };
-
-    async function upload(file) {
-        const fd = new FormData(); fd.append('image', file);
-        try {
-            const res = await fetch('https://api.imgur.com/3/image', {
-                method: 'POST', headers: { Authorization: 'Client-ID 891e5bb4aa94282' }, body: fd
-            });
-            const d = await res.json();
-            return d.success ? d.data.link : null;
-        } catch { return null; }
-    }
-
-    document.getElementById('fileInput').onchange = (e) => {
-        const file = e.target.files[0];
-        if(file) {
-            const url = URL.createObjectURL(file);
-            document.getElementById('pfpDisplay').innerHTML = `<img src="${url}">`;
         }
-    };
-
-    window.submit = async () => {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('pass').value;
-        const btn = document.getElementById('actionBtn');
-        const isSignup = document.getElementById('signup-extra').style.display === 'block';
-
-        if(!email || !pass) return notify("Fields required");
-        if(isSignup && (!handleValid || handleInput.value.length > 12)) {
-            handleInput.classList.add('shake');
-            setTimeout(() => handleInput.classList.remove('shake'), 400);
-            return notify("Invalid handle");
-        }
-
-        btn.disabled = true; 
-        btn.innerText = "Connecting...";
-
-        try {
-            if(!isSignup) {
-                await signInWithEmailAndPassword(auth, email, pass);
-                window.location.href = REDIRECT_URL;
-            } else {
-                const handle = handleInput.value.trim().toLowerCase();
-                const file = document.getElementById('fileInput').files[0];
-                if(!file) throw new Error("PFP required");
-
-                const cred = await createUserWithEmailAndPassword(auth, email, pass);
-                const url = await upload(file);
-                if(!url) throw new Error("PFP upload failed");
-
-                await Promise.all([
-                    set(ref(db, `users/${cred.user.uid}`), { handle, profilePic: url, posts: 0, uid: cred.user.uid }),
-                    set(ref(db, `handles/${handle}`), cred.user.uid)
-                ]);
-                window.location.href = REDIRECT_URL;
-            }
-        } catch(e) {
-            notify(e.message.replace("Firebase: ", ""));
-            btn.disabled = false; 
-            btn.innerText = isSignup ? "Create Account" : "Continue";
-        }
-    };
-
-    window.forgot = async () => {
-        const email = document.getElementById('email').value;
-        if(!email) return notify("Enter email");
-        await sendPasswordResetEmail(auth, email);
-        notify("Reset link sent!");
-    };
-</script>
+    </script>
 </body>
 </html>
