@@ -9,6 +9,10 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; overflow-x: hidden; }
 
+        /* Navigation Header */
+        .nav-top { position: sticky; top: 0; background: #000; z-index: 500; display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); }
+        .back-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding-right: 20px; }
+
         /* Glassy Loader */
         #loader {
             position: fixed; inset: 0; background: #000; z-index: 1000;
@@ -23,7 +27,7 @@
         @keyframes shine { to { background-position: -200% 0; } }
 
         /* Profile Header */
-        .profile-header { padding: 40px 20px 10px; text-align: center; }
+        .profile-header { padding: 20px 20px 10px; text-align: center; }
         #uPfp { 
             width: 85px; height: 85px; border-radius: 50%; border: 2px solid #333; 
             margin: 0 auto 12px; background-size: cover; background-position: center; background-color: var(--card);
@@ -41,6 +45,16 @@
         .btn-unfollow { background: #333; color: #fff; }
         .btn-msg { background: #333; color: #fff; }
 
+        /* Content Sections */
+        .tabs { display: flex; border-top: 1px solid var(--border); margin-top: 10px; }
+        .tab { flex: 1; padding: 12px; text-align: center; color: #888; cursor: pointer; font-size: 12px; font-weight: 700; }
+        .tab.active { color: #fff; border-top: 2px solid #fff; margin-top: -1px; }
+
+        .content-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; min-height: 200px; }
+        .content-container.active { display: grid; }
+        .empty-msg { grid-column: 1/4; text-align: center; padding: 60px 20px; color: #555; font-size: 14px; }
+        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; cursor: pointer; }
+
         /* About Modal */
         #aboutModal {
             position: fixed; bottom: -100%; left: 0; width: 100%; background: #181818;
@@ -51,16 +65,6 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1999; }
         .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; font-size: 14px; }
         .info-label { color: #888; }
-
-        /* Content Sections */
-        .tabs { display: flex; border-top: 1px solid var(--border); margin-top: 10px; }
-        .tab { flex: 1; padding: 12px; text-align: center; color: #888; cursor: pointer; font-size: 12px; font-weight: 700; }
-        .tab.active { color: #fff; border-top: 2px solid #fff; margin-top: -1px; }
-
-        .content-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; min-height: 200px; }
-        .content-container.active { display: grid; }
-        .empty-msg { grid-column: 1/4; text-align: center; padding: 60px 20px; color: #555; font-size: 14px; }
-        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -69,6 +73,11 @@
         <div class="shimmer"></div>
         <p style="margin-top: 15px; color: #555; font-weight: 600; font-size: 12px; letter-spacing: 2px;">LOADING PROFILE</p>
     </div>
+
+    <nav class="nav-top">
+        <button class="back-btn" onclick="history.back()">←</button>
+        <div style="font-weight: 700; font-size: 14px;">Profile</div>
+    </nav>
 
     <div class="profile-header">
         <div id="uPfp"></div>
@@ -124,7 +133,6 @@
         const auth = getAuth(app);
         const targetUID = new URLSearchParams(window.location.search).get('user');
 
-        // Modal Helpers
         window.openAbout = () => { document.getElementById('aboutModal').classList.add('open'); document.getElementById('overlay').style.display='block'; };
         window.closeAbout = () => { document.getElementById('aboutModal').classList.remove('open'); document.getElementById('overlay').style.display='none'; };
         
@@ -137,7 +145,6 @@
         async function init() {
             if (!targetUID) return;
 
-            // Load Main Data
             onValue(ref(db, `users/${targetUID}`), (snap) => {
                 const d = snap.val() || {};
                 document.getElementById('uHandle').innerText = d.handle || "user";
@@ -150,7 +157,6 @@
                 document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
             });
 
-            // Auth & Chat Redirect
             onAuthStateChanged(auth, (user) => {
                 const fBtn = document.getElementById('followBtn');
                 const mBtn = document.getElementById('msgBtn');
@@ -158,7 +164,7 @@
 
                 fBtn.style.display = 'block';
                 mBtn.style.display = 'block';
-                mBtn.onclick = () => window.location.href = `/messages?chat=${targetUID}`;
+                mBtn.onclick = () => window.location.href = `/messages.html?chat=${targetUID}`;
 
                 onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
                     const isF = snap.exists();
@@ -173,7 +179,6 @@
                 });
             });
 
-            // Dynamic Content Loader
             const loadSection = (path, divId, type) => {
                 onValue(ref(db, path), (snap) => {
                     const box = document.getElementById(divId);
@@ -188,11 +193,13 @@
                             if (type === 'grid') {
                                 el.className = "grid-item";
                                 el.style.backgroundImage = `url('${item.image || item.url}')`;
-                                el.onclick = () => window.location.href = `/${path}/${id}`;
+                                // Redirect Fix: Using ?id= style to avoid 404s
+                                el.onclick = () => window.location.href = `/${path}.html?id=${id}`;
                             } else {
                                 el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222";
                                 el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
-                                el.onclick = () => window.location.href = `/poll?id=${id}`;
+                                // Redirect Fix: Polls also get ?id=
+                                el.onclick = () => window.location.href = `/poll.html?id=${id}`;
                             }
                             box.appendChild(el);
                         });
@@ -207,7 +214,6 @@
             loadSection('poll', 'polls', 'list');
             loadSection('story', 'stories', 'grid');
 
-            // Force 2 second loader delay
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
