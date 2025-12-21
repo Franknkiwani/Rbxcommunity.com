@@ -3,147 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profile View</title>
+    <title>User Profile</title>
     <style>
-        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding-bottom: 50px; }
+        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; --accent: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
         
-        /* Header */
-        .header { padding: 40px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
-        .pfp { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 15px; background-size: cover; background-position: center; background-color: #111; border: 1px solid var(--border); }
-        .handle { font-size: 1.2rem; font-weight: 800; margin: 5px 0; }
-        .bio { font-size: 0.9rem; color: var(--gray); max-width: 300px; margin: 10px auto; line-height: 1.4; }
+        /* Header Section */
+        .profile-header { padding: 50px 20px 30px; text-align: center; border-bottom: 1px solid var(--border); }
+        .pfp-circle { width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 15px; background-size: cover; background-position: center; background-color: #111; border: 2px solid var(--border); }
+        .username { font-size: 1.4rem; font-weight: 900; margin: 5px 0; letter-spacing: -0.5px; }
+        .bio-text { font-size: 0.95rem; color: var(--gray); max-width: 350px; margin: 10px auto; line-height: 1.5; white-space: pre-wrap; }
         
-        /* Tabs */
-        .tabs { display: flex; justify-content: center; border-bottom: 1px solid var(--border); sticky; top: 0; background: var(--bg); z-index: 10; }
-        .tab { padding: 15px 25px; font-size: 0.8rem; font-weight: bold; color: var(--gray); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .tab.active { color: var(--text); border-bottom: 2px solid var(--text); }
+        /* Tab Navigation */
+        .tabs { display: flex; justify-content: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(0,0,0,0.95); z-index: 100; backdrop-filter: blur(10px); }
+        .tab { padding: 18px 20px; font-size: 0.75rem; font-weight: 800; color: var(--gray); cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; transition: 0.2s; }
+        .tab.active { color: var(--text); border-bottom: 2px solid var(--accent); }
 
-        /* Grid Layout */
-        .content-section { display: none; padding: 2px; }
-        .content-section.active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .grid-item { aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #111; }
+        /* Grid for Media (Posts/Stories) */
+        .section { display: none; padding: 2px; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .media-item { aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #0a0a0a; border-radius: 2px; }
         
-        /* Polls/Text List */
-        .list-item { padding: 15px; border-bottom: 1px solid var(--border); background: #0a0a0a; margin-bottom: 1px; }
+        /* Polls List */
+        .poll-card { background: #0a0a0a; padding: 20px; border-bottom: 1px solid var(--border); margin-bottom: 1px; }
+        .poll-question { font-weight: bold; font-size: 1rem; margin-bottom: 8px; }
+
+        /* Navigation */
+        .nav-top { position: fixed; top: 0; width: 100%; padding: 15px; z-index: 1000; display: flex; align-items: center; }
+        .back-circle { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         
-        .back-btn { position: fixed; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 8px 12px; border-radius: 50px; font-size: 0.8rem; cursor: pointer; z-index: 100; }
-        .loading { text-align: center; padding: 50px; color: var(--gray); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.history.back()">← Back</button>
+    <div class="nav-top">
+        <button class="back-circle" onclick="window.history.back()">←</button>
+    </div>
 
-    <div class="header">
-        <div id="uPfp" class="pfp"></div>
-        <div id="uHandle" class="handle">Loading...</div>
-        <div id="uBio" class="bio"></div>
+    <div class="profile-header">
+        <div id="uPfp" class="pfp-circle"></div>
+        <div id="uHandle" class="username">Loading...</div>
+        <div id="uBio" class="bio-text"></div>
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="showTab('posts', this)">Posts</div>
-        <div class="tab" onclick="showTab('polls', this)">Polls</div>
-        <div class="tab" onclick="showTab('stories', this)">Stories</div>
+        <div class="tab active" onclick="openTab('posts', this)">Posts</div>
+        <div class="tab" onclick="openTab('polls', this)">Polls</div>
+        <div class="tab" onclick="openTab('stories', this)">Stories</div>
     </div>
 
-    <div id="postsSec" class="content-section active"><div id="postsGrid" class="grid"></div></div>
-    <div id="pollsSec" class="content-section"><div id="pollsList"></div></div>
-    <div id="storiesSec" class="content-section"><div id="storiesGrid" class="grid"></div></div>
+    <div id="postsSec" class="section active"><div id="postsGrid" class="media-grid"></div></div>
+    <div id="pollsSec" class="section"><div id="pollsList"></div></div>
+    <div id="storiesSec" class="section"><div id="storiesGrid" class="media-grid"></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // 1. !!! PASTE YOUR CONFIG HERE !!!
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
         const firebaseConfig = {
-            apiKey: "...",
-            authDomain: "...",
-            databaseURL: "...",
-            projectId: "...",
-            storageBucket: "...",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_ID",
+            appId: "YOUR_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 2. Tab Switcher Logic
-        window.showTab = (id, el) => {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        // UI Helpers
+        window.openTab = (name, el) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id + 'Sec').classList.add('active');
+            document.getElementById(name + 'Sec').classList.add('active');
             el.classList.add('active');
         };
 
-        // 3. Get UID from URL (?user=...)
+        // Read URL Parameters
         const urlParams = new URLSearchParams(window.location.search);
         const targetUid = urlParams.get('user');
 
         if (!targetUid) {
-            document.getElementById('uHandle').innerText = "User not found";
+            document.getElementById('uHandle').innerText = "Invalid User";
         } else {
-            fetchFullProfile(targetUid);
+            initProfile(targetUid);
         }
 
-        async function fetchFullProfile(uid) {
+        async function initProfile(uid) {
             try {
-                // A. Get Basic User Info
+                // 1. Fetch User Identity
                 const userSnap = await get(ref(db, `users/${uid}`));
                 if (userSnap.exists()) {
-                    const user = userSnap.val();
-                    document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic || ''})`;
-                    document.getElementById('uHandle').innerText = `@${user.handle || 'user'}`;
-                    document.getElementById('uBio').innerText = user.bio || "";
+                    const data = userSnap.val();
+                    document.getElementById('uPfp').style.backgroundImage = `url(${data.profilePic || ''})`;
+                    document.getElementById('uHandle').innerText = `@${(data.handle || 'user').toLowerCase()}`;
+                    document.getElementById('uBio').innerText = data.bio || "";
+                } else {
+                    document.getElementById('uHandle').innerText = "User Not Found";
+                    return;
                 }
 
-                // B. Get Posts (Requires Database Indexes)
-                const postsRef = query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid));
-                const postsSnap = await get(postsRef);
-                const postsGrid = document.getElementById('postsGrid');
-                if (postsSnap.exists()) {
-                    Object.values(postsSnap.val()).reverse().forEach(post => {
-                        if (post.imageUrl) {
+                // 2. Pull User Content (Requires .indexOn: ["uid"] in Firebase Rules)
+                
+                // Fetch Posts
+                fetchContent('posts', 'postsGrid', uid);
+                
+                // Fetch Polls
+                fetchContent('polls', 'pollsList', uid);
+                
+                // Fetch Stories
+                fetchContent('stories', 'storiesGrid', uid);
+
+            } catch (err) {
+                console.error("Profile Fetch Error:", err);
+            }
+        }
+
+        async function fetchContent(path, containerId, uid) {
+            const container = document.getElementById(containerId);
+            try {
+                const q = query(ref(db, path), orderByChild('uid'), equalTo(uid));
+                const snap = await get(q);
+                
+                if (snap.exists()) {
+                    container.innerHTML = "";
+                    const items = Object.values(snap.val()).reverse();
+                    
+                    items.forEach(item => {
+                        if (path === 'polls') {
                             const div = document.createElement('div');
-                            div.className = 'grid-item';
-                            div.style.backgroundImage = `url(${post.imageUrl})`;
-                            postsGrid.appendChild(div);
+                            div.className = 'poll-card';
+                            div.innerHTML = `<div class="poll-question">${item.question}</div><div style="color:#444; font-size:11px;">View Poll Details</div>`;
+                            container.appendChild(div);
+                        } else {
+                            const div = document.createElement('div');
+                            div.className = 'media-item';
+                            div.style.backgroundImage = `url(${item.imageUrl || item.url || ''})`;
+                            container.appendChild(div);
                         }
                     });
                 } else {
-                    postsGrid.innerHTML = "<p style='grid-column:1/4; padding:40px; text-align:center; color:#444;'>No posts yet.</p>";
+                    container.innerHTML = `<p style="grid-column:1/4; text-align:center; padding:50px; color:#333;">No ${path} found.</p>`;
                 }
-
-                // C. Get Polls
-                const pollsRef = query(ref(db, 'polls'), orderByChild('uid'), equalTo(uid));
-                const pollsSnap = await get(pollsRef);
-                const pollsList = document.getElementById('pollsList');
-                if (pollsSnap.exists()) {
-                    Object.values(pollsSnap.val()).reverse().forEach(poll => {
-                        const div = document.createElement('div');
-                        div.className = 'list-item';
-                        div.innerHTML = `<strong>${poll.question}</strong><br><small style="color:#555">Active Poll</small>`;
-                        pollsList.appendChild(div);
-                    });
-                }
-
-                // D. Get Stories
-                const storiesRef = query(ref(db, 'stories'), orderByChild('uid'), equalTo(uid));
-                const storiesSnap = await get(storiesRef);
-                const storiesGrid = document.getElementById('storiesGrid');
-                if (storiesSnap.exists()) {
-                    Object.values(storiesSnap.val()).reverse().forEach(story => {
-                        const div = document.createElement('div');
-                        div.className = 'grid-item';
-                        div.style.backgroundImage = `url(${story.imageUrl})`;
-                        storiesGrid.appendChild(div);
-                    });
-                }
-
-            } catch (err) {
-                console.error("Fetch error:", err);
+            } catch (e) {
+                console.error(`Error fetching ${path}:`, e);
+                container.innerHTML = `<p style="color:red; text-align:center;">Failed to load ${path}. Check Firebase Indexing Rules.</p>`;
             }
         }
     </script>
