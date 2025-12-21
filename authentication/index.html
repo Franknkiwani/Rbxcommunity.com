@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Version Only</title>
+    <title>Mobile Access Required</title>
     <style>
-        /* Dark Theme Styling */
+        /* Reset and Full Screen Dark Layout */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body, html {
-            margin: 0;
-            padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #121212; /* Dark background */
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000; /* Pitch black */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Prevents scrolling when blocked */
         }
 
-        /* The Full-Screen Blocker Overlay */
-        #desktop-overlay {
-            display: none; /* Hidden by default, shown via JS */
+        /* The Full-Screen Blocker */
+        #desktop-blocker {
+            display: none; /* Controlled by JS */
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: #000000;
-            z-index: 9999; /* Stay on top of everything */
+            z-index: 99999;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -34,66 +34,95 @@
             padding: 20px;
         }
 
-        .icon {
-            font-size: 50px;
+        .sad-emoji {
+            font-size: 80px;
             margin-bottom: 20px;
         }
 
         h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #ffffff;
+            color: #ff3333; /* Bright Red */
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         p {
-            font-size: 16px;
-            color: #b0b0b0;
-            max-width: 400px;
-            line-height: 1.5;
+            color: #ff3333; /* Bright Red */
+            font-size: 18px;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
         }
 
-        /* Main Content (What mobile users see) */
-        #mobile-content {
-            display: none;
-            padding: 20px;
+        .continue-btn {
+            background: transparent;
+            color: #555; /* Subtle gray so it doesn't stand out too much */
+            border: 1px solid #333;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            text-decoration: underline;
+        }
+
+        .continue-btn:hover {
+            color: #ff3333;
+            border-color: #ff3333;
+        }
+
+        /* What mobile users see */
+        #main-site {
+            display: block;
+            padding: 40px;
+            color: white;
         }
     </style>
 </head>
 <body>
 
-    <div id="desktop-overlay">
-        <div class="icon">📱</div>
+    <div id="desktop-blocker">
+        <div class="sad-emoji">☹️</div>
         <h1>Mobile Access Only</h1>
         <p>This website works better on mobile devices. The desktop version is not out yet.</p>
+        
+        <button class="continue-btn" onclick="bypass()">Continue anyway</button>
     </div>
 
-    <div id="mobile-content">
-        <h1>Welcome!</h1>
-        <p>You are viewing the mobile version of the site.</p>
+    <div id="main-site">
+        <h1>Welcome to the Mobile Site</h1>
+        <p>This content is now visible.</p>
     </div>
 
     <script>
-        function checkDevice() {
-            const overlay = document.getElementById('desktop-overlay');
-            const content = document.getElementById('mobile-content');
+        const blocker = document.getElementById('desktop-blocker');
 
-            // Detects mobile based on User Agent string
+        function checkDevice() {
+            // Logic: Is it a mobile user agent?
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
-            // Also check width (less than 1024px is usually considered mobile/tablet)
+            // Logic: Is the screen narrow?
             const isSmallScreen = window.innerWidth < 1024;
 
-            if (isMobile || isSmallScreen) {
-                overlay.style.display = 'none';
-                content.style.display = 'block';
+            // If NOT mobile and NOT a small screen, show the blocker
+            if (!isMobile && !isSmallScreen) {
+                blocker.style.display = 'flex';
             } else {
-                overlay.style.display = 'flex';
-                content.style.display = 'none';
+                blocker.style.display = 'none';
             }
         }
 
-        // Run check on load and if window is resized
+        function bypass() {
+            // Hides the blocker if they click 'Continue anyway'
+            blocker.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+
+        // Run on load
         window.onload = checkDevice;
+        // Optional: Re-check if they resize the window
         window.onresize = checkDevice;
     </script>
 </body>
