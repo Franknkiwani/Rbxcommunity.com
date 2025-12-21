@@ -3,131 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile View</title>
+    <title>User Profile | RBX</title>
     <style>
-        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; --accent: #0095f6; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
-        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; background-size: cover; background-position: center; border: 1px solid var(--border); }
-        .handle { text-align: center; font-size: 1.5rem; margin: 15px 0 5px; font-weight: bold; }
-        .bio { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; max-width: 400px; margin-inline: auto; }
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .profile-container { width: 100%; max-width: 400px; padding: 40px 20px; text-align: center; }
         
-        .tabs { display: flex; justify-content: center; border-top: 1px solid var(--border); margin-bottom: 20px; }
-        .tab { padding: 15px 25px; cursor: pointer; color: var(--gray); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
-        .tab.active { color: var(--text); border-top: 2px solid var(--text); margin-top: -1px; }
-
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
-        .grid-item { aspect-ratio: 1/1; background-color: #111; background-size: cover; background-position: center; cursor: pointer; }
-        .poll-item { background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .back-btn { background: none; color: var(--accent); border: none; font-size: 1rem; cursor: pointer; margin-bottom: 20px; padding: 0; }
-        
-        .empty-msg { text-align: center; color: var(--gray); padding: 40px; grid-column: span 3; }
+        /* Matching your main app style */
+        #uPfp { 
+            width: 120px; height: 120px; border-radius: 50%; 
+            border: 2px solid #fff; margin: 0 auto 20px;
+            background-size: cover; background-position: center;
+            background-color: #111; box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+        }
+        #uHandle { font-size: 26px; font-weight: 900; letter-spacing: -1px; text-transform: lowercase; }
+        #uBio { color: #888; margin-top: 10px; font-size: 14px; line-height: 1.5; padding: 0 20px; }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: #222; border: none; color: #fff; padding: 8px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        #loader { font-weight: 900; opacity: 0.5; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.history.back()">← Back</button>
+    <button class="back-btn" onclick="window.history.back()">← BACK</button>
 
-    <div id="profileUI">
-        <div id="uPfp" class="pfp"></div>
-        <div id="uHandle" class="handle">Loading...</div>
-        <div id="uBio" class="bio"></div>
-
-        <div class="tabs">
-            <div id="tab-posts" class="tab active" onclick="switchTab('posts')">Posts</div>
-            <div id="tab-polls" class="tab" onclick="switchTab('polls')">Polls</div>
-            <div id="tab-stories" class="tab" onclick="switchTab('stories')">Stories</div>
+    <div class="profile-container">
+        <div id="loader">LOADING PROFILE...</div>
+        <div id="profile-content" style="display:none;">
+            <div id="uPfp"></div>
+            <div id="uHandle"></div>
+            <div id="uBio"></div>
         </div>
-
-        <div id="postsSection" class="section"><div id="postsGrid" class="grid"></div></div>
-        <div id="pollsSection" class="section" style="display:none;"><div id="pollsList"></div></div>
-        <div id="storiesSection" class="section" style="display:none;"><div id="storiesGrid" class="grid"></div></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
+        // Your specific project config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Define switchTab globally so HTML buttons can see it
-        window.switchTab = (type) => {
-            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-            document.getElementById(`${type}Section`).style.display = 'block';
+        // EXTRA ROBUST UID PARSER
+        const getTargetUID = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let uid = urlParams.get('user');
             
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.toggle('active', t.id === `tab-${type}`);
-            });
+            // If URLSearchParams fails, try manual split
+            if (!uid) {
+                const parts = window.location.href.split('user=');
+                if (parts.length > 1) uid = parts[1].split('&')[0];
+            }
+            return uid;
         };
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const uid = urlParams.get('user');
+        async function loadProfile() {
+            const uid = getTargetUID();
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('profile-content');
 
-        if (!uid) {
-            document.getElementById('uHandle').innerText = "User ID Missing";
-        } else {
-            loadProfile(uid);
-        }
+            if (!uid) {
+                loader.innerText = "ERROR: NO USER ID FOUND";
+                return;
+            }
 
-        async function loadProfile(targetUid) {
             try {
-                // 1. Load User Profile
-                const userSnap = await get(ref(db, `users/${targetUid}`));
-                if (userSnap.exists()) {
-                    const user = userSnap.val();
-                    document.getElementById('uHandle').innerText = user.handle ? `@${user.handle}` : "User";
-                    document.getElementById('uBio').innerText = user.bio || "No bio yet.";
-                    if (user.profilePic) {
-                        document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic})`;
+                // Target the exact path where your signup saves data
+                const userRef = ref(db, 'users/' + uid);
+                const snapshot = await get(userRef);
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    // Update the DOM
+                    document.getElementById('uHandle').innerText = "@" + (data.handle || "user");
+                    document.getElementById('uBio').innerText = data.bio || "No bio yet.";
+                    
+                    if (data.profilePic) {
+                        document.getElementById('uPfp').style.backgroundImage = `url('${data.profilePic}')`;
                     }
-                } else {
-                    document.getElementById('uHandle').innerText = "User Not Found";
-                    return;
-                }
 
-                // 2. Load Posts
-                const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid));
-                const postsSnap = await get(postsQ);
-                const postsGrid = document.getElementById('postsGrid');
-                
-                if (postsSnap.exists()) {
-                    const posts = Object.values(postsSnap.val()).reverse();
-                    postsGrid.innerHTML = posts.map(post => 
-                        `<div class="grid-item" style="background-image: url('${post.imageUrl}')"></div>`
-                    ).join('');
+                    loader.style.display = 'none';
+                    content.style.display = 'block';
                 } else {
-                    postsGrid.innerHTML = `<div class="empty-msg">No posts yet</div>`;
+                    loader.innerText = "USER NOT FOUND";
                 }
-
-                // 3. Load Polls
-                const pollsQ = query(ref(db, 'polls'), orderByChild('uid'), equalTo(targetUid));
-                const pollsSnap = await get(pollsQ);
-                const pollsList = document.getElementById('pollsList');
-                
-                if (pollsSnap.exists()) {
-                    const polls = Object.values(pollsSnap.val());
-                    pollsList.innerHTML = polls.map(poll => 
-                        `<div class="poll-item"><strong>${poll.question}</strong></div>`
-                    ).join('');
-                } else {
-                    pollsList.innerHTML = `<div class="empty-msg">No polls created</div>`;
-                }
-
-            } catch (error) {
-                console.error("Firebase Error:", error);
-                document.getElementById('uHandle').innerText = "Error Loading Profile";
+            } catch (err) {
+                console.error(err);
+                loader.innerText = "CONNECTION ERROR";
             }
         }
+
+        loadProfile();
     </script>
 </body>
 </html>
