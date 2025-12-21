@@ -3,46 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>View Post | RBX</title>
+    <title>Post | RBX</title>
     <style>
         :root { --accent: #0095f6; --bg: #000; --card: #111; --border: #262626; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; }
-        .nav { height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 15px; position: sticky; top: 0; background: #000; z-index: 10; }
-        .back-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding-right: 20px; }
+
+        /* Navigation Header */
+        .nav-header { 
+            position: sticky; top: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); z-index: 100;
+        }
+        .back-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; margin-right: 15px; }
+
+        /* Post Content */
         .post-container { max-width: 600px; margin: 0 auto; }
+        
         .post-header { display: flex; align-items: center; padding: 12px; }
-        .user-pfp { width: 32px; height: 32px; border-radius: 50%; background: #222; margin-right: 10px; border: 1px solid var(--border); background-size: cover; }
-        .user-handle { font-weight: 600; font-size: 14px; color: #fff; text-decoration: none; }
-        .post-media img { width: 100%; display: block; background: #111; }
-        .post-details { padding: 12px; }
-        #loading-overlay { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .author-pfp { width: 34px; height: 34px; border-radius: 50%; background: #222; margin-right: 10px; border: 1px solid var(--border); background-size: cover; background-position: center; }
+        .author-handle { font-size: 14px; font-weight: 700; color: #fff; text-decoration: none; }
+
+        .media-container { width: 100%; min-height: 300px; background: #050505; display: flex; align-items: center; position: relative; }
+        .media-container img { width: 100%; height: auto; display: block; }
+
+        .actions { padding: 12px 15px; display: flex; gap: 18px; }
+        .action-btn { background: none; border: none; color: #fff; font-size: 24px; padding: 0; cursor: pointer; transition: transform 0.1s; }
+        .action-btn:active { transform: scale(1.2); }
+        .heart-icon.liked { color: #ff3040; animation: heartPop 0.3s ease; }
+
+        @keyframes heartPop { 
+            0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } 
+        }
+
+        .details { padding: 0 15px 20px; }
+        .likes-count { font-size: 14px; font-weight: 700; margin-bottom: 5px; display: block; }
+        .caption { font-size: 14px; line-height: 1.4; color: #efefef; }
+        .caption b { margin-right: 6px; }
+        .timestamp { color: #8e8e8e; font-size: 11px; margin-top: 8px; text-transform: uppercase; }
+
+        /* State Overlays */
+        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 200; font-size: 14px; color: #555; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay">Loading Post...</div>
+    <div id="loader">Loading...</div>
 
-    <nav class="nav">
-        <button class="back-btn" onclick="window.location.href='/'">←</button>
+    <nav class="nav-header">
+        <button class="back-btn" onclick="history.back()">←</button>
         <span style="font-weight:700">Post</span>
     </nav>
 
     <div class="post-container">
         <div class="post-header">
-            <div id="authorPfp" class="user-pfp"></div>
-            <a href="#" id="authorHandle" class="user-handle">@loading</a>
+            <div id="uPfp" class="author-pfp"></div>
+            <a href="#" id="uHandle" class="author-handle">@loading</a>
         </div>
-        <div class="post-media">
-            <img id="postImg" src="">
+
+        <div class="media-container">
+            <img id="postImg" src="" alt="">
         </div>
-        <div class="post-details">
-            <div class="caption"><b id="capHandle">user</b> <span id="capText">...</span></div>
+
+        <div class="actions">
+            <button id="likeBtn" class="action-btn heart-icon">♡</button>
+            <button class="action-btn">💬</button>
+            <button class="action-btn">✈</button>
+        </div>
+
+        <div class="details">
+            <span class="likes-count"><span id="likesNum">0</span> likes</span>
+            <div class="caption">
+                <b id="capHandle">user</b>
+                <span id="capText">...</span>
+            </div>
+            <div id="postTime" class="timestamp">---</div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
         const config = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -54,35 +95,60 @@
 
         const app = initializeApp(config);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // --- THE FIX FOR DYNAMIC URLS ---
-        // This takes "/post/-Oh-NIj..." and grabs the "-Oh-NIj..." part
-        const pathArray = window.location.pathname.split('/');
-        const postId = pathArray[pathArray.length - 1];
+        // 1. Get ID from URL query (?id=...)
+        const params = new URLSearchParams(window.location.search);
+        const postId = params.get('id');
 
-        if (!postId || postId === "post") {
-            document.body.innerHTML = "<div style='padding:50px; text-align:center'>Invalid Post ID</div>";
+        if (!postId) {
+            document.getElementById('loader').innerText = "Post Not Found";
         } else {
-            // Use 'post' (singular) as requested
+            initPost();
+        }
+
+        async function initPost() {
+            // 2. Load Post Data (using 'post' singular)
             onValue(ref(db, `post/${postId}`), (snap) => {
-                const data = snap.val();
-                if (!data) {
-                    document.getElementById('loading-overlay').innerText = "Post Not Found";
+                const post = snap.val();
+                if (!post) {
+                    document.getElementById('loader').innerText = "Post deleted or missing";
                     return;
                 }
 
-                document.getElementById('postImg').src = data.image || data.url;
-                document.getElementById('capText').innerText = data.caption || "";
+                document.getElementById('postImg').src = post.image || post.url;
+                document.getElementById('capText').innerText = post.caption || "";
+                document.getElementById('postTime').innerText = post.createdAt || "Just now";
+                
+                const likesNum = post.likes ? Object.keys(post.likes).length : 0;
+                document.getElementById('likesNum').innerText = likesNum;
 
-                // Fetch User Info
-                onValue(ref(db, `users/${data.uid}`), (uSnap) => {
-                    const u = uSnap.val() || {};
-                    document.getElementById('authorHandle').innerText = `@${u.handle || 'user'}`;
-                    document.getElementById('capHandle').innerText = u.handle || 'user';
-                    if (u.profilePic) document.getElementById('authorPfp').style.backgroundImage = `url('${u.profilePic}')`;
+                // 3. Load Author Data
+                onValue(ref(db, `users/${post.uid}`), (uSnap) => {
+                    const user = uSnap.val() || {};
+                    document.getElementById('uHandle').innerText = `@${user.handle || 'user'}`;
+                    document.getElementById('uHandle').href = `/profile.html?user=${post.uid}`;
+                    document.getElementById('capHandle').innerText = user.handle || 'user';
+                    if (user.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${user.profilePic}')`;
                 });
 
-                document.getElementById('loading-overlay').style.display = 'none';
+                // 4. Like Button Logic
+                onAuthStateChanged(auth, (user) => {
+                    const btn = document.getElementById('likeBtn');
+                    const isLiked = user && post.likes && post.likes[user.uid];
+                    
+                    btn.innerText = isLiked ? "❤️" : "♡";
+                    btn.className = isLiked ? "action-btn heart-icon liked" : "action-btn heart-icon";
+
+                    btn.onclick = () => {
+                        if (!user) return alert("Log in to like posts!");
+                        const updates = {};
+                        updates[`post/${postId}/likes/${user.uid}`] = isLiked ? null : true;
+                        update(ref(db), updates);
+                    };
+                });
+
+                document.getElementById('loader').style.display = 'none';
             });
         }
     </script>
