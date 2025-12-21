@@ -3,41 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Post | RBX</title>
+    <title>Post View | RBX</title>
     <style>
         :root { --accent: #0095f6; --bg: #000; --card: #111; --border: #262626; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; }
 
+        /* Navigation */
         .nav-header { 
             position: sticky; top: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
             display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); z-index: 100;
         }
         .back-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; margin-right: 15px; }
 
+        /* Post Layout */
         .post-container { max-width: 600px; margin: 0 auto; }
         .post-header { display: flex; align-items: center; padding: 12px; }
         .author-pfp { width: 34px; height: 34px; border-radius: 50%; background: #222; margin-right: 10px; border: 1px solid var(--border); background-size: cover; background-position: center; }
         .author-handle { font-size: 14px; font-weight: 700; color: #fff; text-decoration: none; }
 
-        .media-container { width: 100%; min-height: 300px; background: #050505; display: flex; align-items: center; justify-content: center; }
-        .media-container img { width: 100%; height: auto; display: block; }
+        .media-box { width: 100%; min-height: 300px; background: #050505; display: flex; align-items: center; justify-content: center; }
+        .media-box img { width: 100%; height: auto; display: block; }
 
         .actions { padding: 12px 15px; display: flex; gap: 18px; }
-        .action-btn { background: none; border: none; color: #fff; font-size: 24px; padding: 0; cursor: pointer; }
-        .heart-icon.liked { color: #ff3040; }
-
+        .action-btn { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 0; }
+        
         .details { padding: 0 15px 20px; }
         .likes-count { font-size: 14px; font-weight: 700; margin-bottom: 5px; display: block; }
         .caption { font-size: 14px; line-height: 1.4; color: #efefef; }
         .caption b { margin-right: 6px; }
 
+        /* Loading Screen */
         #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 200; font-size: 14px; color: #555; }
     </style>
 </head>
 <body>
 
-    <div id="loader">Loading Post...</div>
+    <div id="loader">Fetching Post...</div>
 
     <nav class="nav-header">
         <button class="back-btn" onclick="history.back()">←</button>
@@ -50,7 +52,7 @@
             <a href="#" id="uHandle" class="author-handle">@loading</a>
         </div>
 
-        <div class="media-container">
+        <div class="media-box">
             <img id="postImg" src="" alt="">
         </div>
 
@@ -86,41 +88,49 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // --- EXTRACT ID FROM FOLDER PATH ---
-        const pathSegments = window.location.pathname.split('/').filter(s => s !== "");
-        const postId = pathSegments[pathSegments.length - 1];
+        // --- FETCH ID FROM URL QUERY ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
 
-        if (!postId || postId === 'post') {
-            document.getElementById('loader').innerText = "Post ID not found";
+        if (!postId) {
+            document.getElementById('loader').innerText = "Post ID Missing";
         } else {
+            // Load Post Data
             onValue(ref(db, `post/${postId}`), (snap) => {
                 const post = snap.val();
                 if (!post) {
-                    document.getElementById('loader').innerText = "Post deleted";
+                    document.getElementById('loader').innerText = "Post not found";
                     return;
                 }
 
+                // Fill UI with Post Data
                 document.getElementById('postImg').src = post.image || post.url;
                 document.getElementById('capText').innerText = post.caption || "";
                 
-                const likesNum = post.likes ? Object.keys(post.likes).length : 0;
-                document.getElementById('likesNum').innerText = likesNum;
+                const likesCount = post.likes ? Object.keys(post.likes).length : 0;
+                document.getElementById('likesNum').innerText = likesCount;
 
-                // Load User
+                // Fetch Author Info
                 onValue(ref(db, `users/${post.uid}`), (uSnap) => {
                     const user = uSnap.val() || {};
                     document.getElementById('uHandle').innerText = `@${user.handle || 'user'}`;
+                    document.getElementById('uHandle').href = `/profile.html?user=${post.uid}`;
                     document.getElementById('capHandle').innerText = user.handle || 'user';
-                    if (user.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${user.profilePic}')`;
+                    if (user.profilePic) {
+                        document.getElementById('uPfp').style.backgroundImage = `url('${user.profilePic}')`;
+                    }
                 });
 
-                // Likes Logic
+                // Like Logic
                 onAuthStateChanged(auth, (user) => {
                     const btn = document.getElementById('likeBtn');
                     const isLiked = user && post.likes && post.likes[user.uid];
+                    
                     btn.innerText = isLiked ? "❤️" : "♡";
+                    btn.style.color = isLiked ? "#ff3040" : "#fff";
+
                     btn.onclick = () => {
-                        if (!user) return alert("Log in first");
+                        if (!user) return alert("Log in to like posts");
                         const updates = {};
                         updates[`post/${postId}/likes/${user.uid}`] = isLiked ? null : true;
                         update(ref(db), updates);
