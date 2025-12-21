@@ -3,135 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>User Profile</title>
-    <link rel="stylesheet" href="style.css"> <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; }
-        .profile-header { text-align: center; padding: 40px 20px; border-bottom: 1px solid #222; }
-        .profile-pfp { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; background-size: cover; background-position: center; border: 2px solid #333; }
-        .profile-handle { font-size: 20px; font-weight: 900; margin: 0; }
-        .profile-bio { color: #aaa; font-size: 14px; margin: 10px auto; max-width: 400px; line-height: 1.4; }
+    <title>Profile View</title>
+    <style>
+        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding-bottom: 50px; }
         
-        .tab-bar { display: flex; justify-content: space-around; border-bottom: 1px solid #222; position: sticky; top: 0; background: rgba(0,0,0,0.9); z-index: 10; }
-        .tab { padding: 15px; font-size: 12px; font-weight: bold; color: #555; cursor: pointer; text-transform: uppercase; }
-        .tab.active { color: #fff; border-bottom: 2px solid #fff; }
+        /* Header */
+        .header { padding: 40px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        .pfp { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 15px; background-size: cover; background-position: center; background-color: #111; border: 1px solid var(--border); }
+        .handle { font-size: 1.2rem; font-weight: 800; margin: 5px 0; }
+        .bio { font-size: 0.9rem; color: var(--gray); max-width: 300px; margin: 10px auto; line-height: 1.4; }
+        
+        /* Tabs */
+        .tabs { display: flex; justify-content: center; border-bottom: 1px solid var(--border); sticky; top: 0; background: var(--bg); z-index: 10; }
+        .tab { padding: 15px 25px; font-size: 0.8rem; font-weight: bold; color: var(--gray); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .tab.active { color: var(--text); border-bottom: 2px solid var(--text); }
 
-        .content-section { display: none; padding: 10px; }
+        /* Grid Layout */
+        .content-section { display: none; padding: 2px; }
         .content-section.active { display: block; }
-
-        /* Grid for Posts/Stories */
-        .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .grid-item { aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #111; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .grid-item { aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #111; }
         
-        /* List for Polls */
-        .poll-list { display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto; }
+        /* Polls/Text List */
+        .list-item { padding: 15px; border-bottom: 1px solid var(--border); background: #0a0a0a; margin-bottom: 1px; }
         
-        .back-btn { position: fixed; top: 20px; left: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 100; }
+        .back-btn { position: fixed; top: 15px; left: 15px; background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 8px 12px; border-radius: 50px; font-size: 0.8rem; cursor: pointer; z-index: 100; }
+        .loading { text-align: center; padding: 50px; color: var(--gray); }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.location.href='index.html'">← Home</button>
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
 
-    <div class="profile-header">
-        <div id="targetPfp" class="profile-pfp"></div>
-        <h1 id="targetHandle" class="profile-handle">Loading...</h1>
-        <p id="targetBio" class="profile-bio"></p>
-        <button id="profileFollowBtn" style="display:none; background:#fff; color:#000; border:none; padding:8px 25px; border-radius:20px; font-weight:bold;"></button>
+    <div class="header">
+        <div id="uPfp" class="pfp"></div>
+        <div id="uHandle" class="handle">Loading...</div>
+        <div id="uBio" class="bio"></div>
     </div>
 
-    <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('posts', this)">Posts</div>
-        <div class="tab" onclick="switchTab('polls', this)">Polls</div>
-        <div class="tab" onclick="switchTab('stories', this)">Stories</div>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('posts', this)">Posts</div>
+        <div class="tab" onclick="showTab('polls', this)">Polls</div>
+        <div class="tab" onclick="showTab('stories', this)">Stories</div>
     </div>
 
-    <div id="postsSection" class="content-section active">
-        <div id="postsGrid" class="media-grid"></div>
-    </div>
-
-    <div id="pollsSection" class="content-section">
-        <div id="pollsList" class="poll-list"></div>
-    </div>
-
-    <div id="storiesSection" class="content-section">
-        <div id="storiesGrid" class="media-grid"></div>
-    </div>
+    <div id="postsSec" class="content-section active"><div id="postsGrid" class="grid"></div></div>
+    <div id="pollsSec" class="content-section"><div id="pollsList"></div></div>
+    <div id="storiesSec" class="content-section"><div id="storiesGrid" class="grid"></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // 1. YOUR CONFIG HERE
-        const firebaseConfig = { /* PASTE YOUR CONFIG OBJECT HERE */ };
+        // 1. !!! PASTE YOUR CONFIG HERE !!!
+        const firebaseConfig = {
+            apiKey: "...",
+            authDomain: "...",
+            databaseURL: "...",
+            projectId: "...",
+            storageBucket: "...",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
 
-        // 2. GET UID FROM URL
-        const params = new URLSearchParams(window.location.search);
-        const targetUid = params.get('id');
-
-        if (!targetUid) window.location.href = 'index.html';
-
-        window.switchTab = (sectionId, el) => {
+        // 2. Tab Switcher Logic
+        window.showTab = (id, el) => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(sectionId + 'Section').classList.add('active');
+            document.getElementById(id + 'Sec').classList.add('active');
             el.classList.add('active');
         };
 
-        // 3. FETCH DATA
-        async function loadProfile() {
-            // A. Fetch User Info
-            const userSnap = await get(ref(db, `users/${targetUid}`));
-            const user = userSnap.val();
-            if (user) {
-                document.getElementById('targetPfp').style.backgroundImage = `url(${user.profilePic || 'default.png'})`;
-                document.getElementById('targetHandle').innerText = `@${(user.handle || 'user').toLowerCase()}`;
-                document.getElementById('targetBio').innerText = user.bio || "";
-            }
+        // 3. Get UID from URL (?user=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUid = urlParams.get('user');
 
-            // B. Fetch Posts (Filtering by UID)
-            const postsSnap = await get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid)));
-            const postsGrid = document.getElementById('postsGrid');
-            if (postsSnap.exists()) {
-                Object.values(postsSnap.val()).reverse().forEach(post => {
-                    const item = document.createElement('div');
-                    item.className = 'grid-item';
-                    item.style.backgroundImage = `url(${post.imageUrl})`;
-                    postsGrid.appendChild(item);
-                });
-            }
-
-            // C. Fetch Polls
-            const pollsSnap = await get(query(ref(db, 'polls'), orderByChild('uid'), equalTo(targetUid)));
-            const pollsList = document.getElementById('pollsList');
-            if (pollsSnap.exists()) {
-                Object.values(pollsSnap.val()).forEach(poll => {
-                    const p = document.createElement('div');
-                    p.innerHTML = `<div style="background:#111; padding:15px; border-radius:10px;">
-                        <p style="font-weight:bold; margin-bottom:10px;">${poll.question}</p>
-                        <div style="font-size:12px; color:#555;">Poll by User</div>
-                    </div>`;
-                    pollsList.appendChild(p);
-                });
-            }
-
-            // D. Fetch Stories
-            const storiesSnap = await get(query(ref(db, 'stories'), orderByChild('uid'), equalTo(targetUid)));
-            const storiesGrid = document.getElementById('storiesGrid');
-            if (storiesSnap.exists()) {
-                Object.values(storiesSnap.val()).forEach(story => {
-                    const item = document.createElement('div');
-                    item.className = 'grid-item';
-                    item.style.backgroundImage = `url(${story.imageUrl})`;
-                    storiesGrid.appendChild(item);
-                });
-            }
+        if (!targetUid) {
+            document.getElementById('uHandle').innerText = "User not found";
+        } else {
+            fetchFullProfile(targetUid);
         }
 
-        loadProfile();
+        async function fetchFullProfile(uid) {
+            try {
+                // A. Get Basic User Info
+                const userSnap = await get(ref(db, `users/${uid}`));
+                if (userSnap.exists()) {
+                    const user = userSnap.val();
+                    document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic || ''})`;
+                    document.getElementById('uHandle').innerText = `@${user.handle || 'user'}`;
+                    document.getElementById('uBio').innerText = user.bio || "";
+                }
+
+                // B. Get Posts (Requires Database Indexes)
+                const postsRef = query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid));
+                const postsSnap = await get(postsRef);
+                const postsGrid = document.getElementById('postsGrid');
+                if (postsSnap.exists()) {
+                    Object.values(postsSnap.val()).reverse().forEach(post => {
+                        if (post.imageUrl) {
+                            const div = document.createElement('div');
+                            div.className = 'grid-item';
+                            div.style.backgroundImage = `url(${post.imageUrl})`;
+                            postsGrid.appendChild(div);
+                        }
+                    });
+                } else {
+                    postsGrid.innerHTML = "<p style='grid-column:1/4; padding:40px; text-align:center; color:#444;'>No posts yet.</p>";
+                }
+
+                // C. Get Polls
+                const pollsRef = query(ref(db, 'polls'), orderByChild('uid'), equalTo(uid));
+                const pollsSnap = await get(pollsRef);
+                const pollsList = document.getElementById('pollsList');
+                if (pollsSnap.exists()) {
+                    Object.values(pollsSnap.val()).reverse().forEach(poll => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `<strong>${poll.question}</strong><br><small style="color:#555">Active Poll</small>`;
+                        pollsList.appendChild(div);
+                    });
+                }
+
+                // D. Get Stories
+                const storiesRef = query(ref(db, 'stories'), orderByChild('uid'), equalTo(uid));
+                const storiesSnap = await get(storiesRef);
+                const storiesGrid = document.getElementById('storiesGrid');
+                if (storiesSnap.exists()) {
+                    Object.values(storiesSnap.val()).reverse().forEach(story => {
+                        const div = document.createElement('div');
+                        div.className = 'grid-item';
+                        div.style.backgroundImage = `url(${story.imageUrl})`;
+                        storiesGrid.appendChild(div);
+                    });
+                }
+
+            } catch (err) {
+                console.error("Fetch error:", err);
+            }
+        }
     </script>
 </body>
 </html>
