@@ -2,23 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profile View</title>
     <style>
-        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; background-size: cover; border: 1px solid var(--border); }
-        .handle { text-align: center; font-size: 1.5rem; margin: 10px 0; font-weight: bold; }
-        .bio { text-align: center; color: var(--gray); margin-bottom: 30px; }
+        :root { --bg: #000; --text: #fff; --gray: #888; --danger: #ff4444; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; }
         
-        .tabs { display: flex; justify-content: space-around; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .tab { padding: 10px; cursor: pointer; color: var(--gray); font-weight: bold; }
-        .tab.active { color: var(--text); border-bottom: 2px solid var(--text); }
-
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .grid-item { aspect-ratio: 1/1; background-color: #111; background-size: cover; background-position: center; border-radius: 4px; }
-        .poll-item { background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .back-btn { background: #222; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-bottom: 20px; }
+        /* Status Pages (404, Banned, Blacklist) */
+        .status-container { text-align: center; margin-top: 100px; padding: 20px; }
+        .status-icon { font-size: 60px; margin-bottom: 20px; }
+        .status-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        
+        /* Profile UI */
+        #profileUI { display: none; }
+        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; background-size: cover; background-position: center; border: 1px solid #222; }
+        .handle { text-align: center; font-size: 1.5rem; margin: 15px 0 5px; font-weight: 900; }
+        .bio { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; line-height: 1.4; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .grid-item { aspect-ratio: 1/1; background-color: #0a0a0a; background-size: cover; background-position: center; }
+        
+        .back-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -27,31 +31,24 @@
 
     <div id="profileUI">
         <div id="uPfp" class="pfp"></div>
-        <div id="uHandle" class="handle">Loading...</div>
+        <div id="uHandle" class="handle"></div>
         <div id="uBio" class="bio"></div>
-
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('posts')">Posts</div>
-            <div class="tab" onclick="switchTab('polls')">Polls</div>
-            <div class="tab" onclick="switchTab('stories')">Stories</div>
-        </div>
-
-        <div id="postsSection"><div id="postsGrid" class="grid"></div></div>
-        <div id="pollsSection" style="display:none;"><div id="pollsList"></div></div>
-        <div id="storiesSection" style="display:none;"><div id="storiesGrid" class="grid"></div></div>
+        <div id="postsGrid" class="grid"></div>
     </div>
+
+    <div id="statusUI" class="status-container" style="display:none;"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // 1. !!! PASTE YOUR FIREBASE CONFIG HERE !!!
+        // 1. CONFIG
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
+            apiKey: "...",
+            authDomain: "...",
+            databaseURL: "...", 
+            projectId: "...",
+            storageBucket: "...",
             messagingSenderId: "...",
             appId: "..."
         };
@@ -59,73 +56,81 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 2. Tab Switching Logic
-        window.switchTab = (type) => {
-            document.getElementById('postsSection').style.display = type === 'posts' ? 'block' : 'none';
-            document.getElementById('pollsSection').style.display = type === 'polls' ? 'block' : 'none';
-            document.getElementById('storiesSection').style.display = type === 'stories' ? 'block' : 'none';
-            
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.toggle('active', t.innerText.toLowerCase() === type);
-            });
-        };
-
-        // 3. GET UID FROM URL (Supports ?user=ID)
+        // 2. GET UID FROM URL
         const urlParams = new URLSearchParams(window.location.search);
-        const uid = urlParams.get('user');
+        const targetUid = urlParams.get('user');
 
-        if (!uid) {
-            document.getElementById('uHandle').innerText = "No User Selected";
+        if (!targetUid) {
+            showStatus("404", "No user specified.", "🔍");
         } else {
-            console.log("Loading data for UID:", uid);
-            loadProfile(uid);
+            init(targetUid);
         }
 
-        async function loadProfile(targetUid) {
+        async function init(uid) {
             try {
-                // FETCH USER INFO
-                const userSnap = await get(ref(db, `users/${targetUid}`));
-                if (userSnap.exists()) {
-                    const user = userSnap.val();
-                    document.getElementById('uHandle').innerText = "@" + (user.handle || "user");
-                    document.getElementById('uBio').innerText = user.bio || "";
-                    document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic || ''})`;
-                } else {
-                    document.getElementById('uHandle').innerText = "User Not Found";
+                const userSnap = await get(ref(db, `users/${uid}`));
+                
+                // CHECK 1: DOES USER EXIST?
+                if (!userSnap.exists()) {
+                    showStatus("404", "User does not exist.", "❓");
+                    return;
                 }
 
-                // FETCH POSTS
-                const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid));
-                const postsSnap = await get(postsQ);
-                const postsGrid = document.getElementById('postsGrid');
-                if (postsSnap.exists()) {
-                    Object.values(postsSnap.val()).reverse().forEach(post => {
-                        const div = document.createElement('div');
-                        div.className = 'grid-item';
-                        div.style.backgroundImage = `url(${post.imageUrl})`;
-                        postsGrid.appendChild(div);
-                    });
-                } else {
-                    postsGrid.innerHTML = "<p>No posts yet.</p>";
+                const user = userSnap.val();
+
+                // CHECK 2: BLACKLISTED
+                if (user.isBlacklisted) {
+                    showStatus("ACCESS DENIED", "System-wide blacklist active.", "⚠️");
+                    return;
                 }
 
-                // FETCH POLLS
-                const pollsQ = query(ref(db, 'polls'), orderByChild('uid'), equalTo(targetUid));
-                const pollsSnap = await get(pollsQ);
-                const pollsList = document.getElementById('pollsList');
-                if (pollsSnap.exists()) {
-                    Object.values(pollsSnap.val()).forEach(poll => {
-                        const div = document.createElement('div');
-                        div.className = 'poll-item';
-                        div.innerHTML = `<strong>${poll.question}</strong>`;
-                        pollsList.appendChild(div);
-                    });
+                // CHECK 3: BANNED
+                if (user.isBanned) {
+                    showStatus("BANNED", "This account has been suspended.", "🚫");
+                    return;
                 }
 
-            } catch (error) {
-                console.error("Firebase Load Error:", error);
-                document.getElementById('uHandle').innerText = "Error Loading Data";
+                // SHOW PROFILE
+                document.getElementById('profileUI').style.display = 'block';
+                document.getElementById('uHandle').innerText = "@" + (user.handle || "user");
+                document.getElementById('uBio').innerText = user.bio || "No bio available.";
+                document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic || ''})`;
+
+                // LOAD POSTS
+                loadPosts(uid);
+
+            } catch (err) {
+                console.error(err);
+                showStatus("Error", "Something went wrong.", "❌");
             }
+        }
+
+        async function loadPosts(uid) {
+            const grid = document.getElementById('postsGrid');
+            const q = query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid));
+            const snap = await get(q);
+            
+            if (snap.exists()) {
+                Object.values(snap.val()).reverse().forEach(post => {
+                    const div = document.createElement('div');
+                    div.className = 'grid-item';
+                    div.style.backgroundImage = `url(${post.imageUrl})`;
+                    grid.appendChild(div);
+                });
+            } else {
+                grid.innerHTML = "<p style='grid-column:1/4;text-align:center;color:#444;padding:40px;'>No posts yet.</p>";
+            }
+        }
+
+        function showStatus(title, msg, icon) {
+            const sUI = document.getElementById('statusUI');
+            sUI.style.display = 'block';
+            sUI.innerHTML = `
+                <div class="status-icon">${icon}</div>
+                <div class="status-title">${title}</div>
+                <p style="color:#888;">${msg}</p>
+                <button onclick="window.location.href='index.html'" style="background:#fff; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; margin-top:20px;">Return Home</button>
+            `;
         }
     </script>
 </body>
