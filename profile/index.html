@@ -3,22 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile | RBX</title>
+    <title>Profile | RBX</title>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; }
-        .profile-container { width: 100%; max-width: 400px; padding: 40px 20px; text-align: center; }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 0; }
+        .profile-container { width: 100%; max-width: 400px; margin: 0 auto; padding: 60px 20px; text-align: center; }
         
-        /* Matching your main app style */
         #uPfp { 
-            width: 120px; height: 120px; border-radius: 50%; 
-            border: 2px solid #fff; margin: 0 auto 20px;
-            background-size: cover; background-position: center;
-            background-color: #111; box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+            width: 100px; height: 100px; border-radius: 50%; 
+            border: 2px solid #fff; margin: 0 auto 15px;
+            background-size: cover; background-position: center; background-color: #111;
         }
-        #uHandle { font-size: 26px; font-weight: 900; letter-spacing: -1px; text-transform: lowercase; }
-        #uBio { color: #888; margin-top: 10px; font-size: 14px; line-height: 1.5; padding: 0 20px; }
-        .back-btn { position: absolute; top: 20px; left: 20px; background: #222; border: none; color: #fff; padding: 8px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; }
-        #loader { font-weight: 900; opacity: 0.5; margin-top: 50px; }
+        #uHandle { font-size: 22px; font-weight: 900; }
+        
+        /* Stats row like Instagram */
+        .stats-row { display: flex; justify-content: center; gap: 30px; margin: 20px 0; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-num { font-weight: 900; font-size: 18px; }
+        .stat-label { font-size: 12px; color: #888; text-transform: uppercase; }
+
+        #uBio { color: #ccc; font-size: 14px; margin-bottom: 25px; line-height: 1.4; }
+
+        /* Follow Button Logic */
+        #followBtn {
+            width: 80%; padding: 12px; border-radius: 12px; font-weight: 900;
+            border: none; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-follow { background: #fff; color: #000; }
+        .btn-unfollow { background: #ff453a; color: #fff; }
+        
+        .back-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; color: #fff; cursor: pointer; font-weight: 800; }
     </style>
 </head>
 <body>
@@ -26,81 +39,100 @@
     <button class="back-btn" onclick="window.history.back()">← BACK</button>
 
     <div class="profile-container">
-        <div id="loader">LOADING PROFILE...</div>
-        <div id="profile-content" style="display:none;">
-            <div id="uPfp"></div>
-            <div id="uHandle"></div>
-            <div id="uBio"></div>
+        <div id="uPfp"></div>
+        <div id="uHandle">@loading...</div>
+        
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-num" id="count-followers">0</span>
+                <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num" id="count-following">0</span>
+                <span class="stat-label">Following</span>
+            </div>
         </div>
+
+        <div id="uBio">...</div>
+        <button id="followBtn" style="display:none;">Follow</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-        // Your specific project config
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
             databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
             projectId: "itzhoyoo-f9f7e",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+            appId: "1:1094792075584:web:d49e9cd31082a5"
         };
 
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(config);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // EXTRA ROBUST UID PARSER
-        const getTargetUID = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            let uid = urlParams.get('user');
-            
-            // If URLSearchParams fails, try manual split
-            if (!uid) {
-                const parts = window.location.href.split('user=');
-                if (parts.length > 1) uid = parts[1].split('&')[0];
-            }
-            return uid;
-        };
+        const targetUID = new URLSearchParams(window.location.search).get('user');
+        const followBtn = document.getElementById('followBtn');
 
-        async function loadProfile() {
-            const uid = getTargetUID();
-            const loader = document.getElementById('loader');
-            const content = document.getElementById('profile-content');
+        // Helper to count object keys
+        const count = (obj) => obj ? Object.keys(obj).length : 0;
 
-            if (!uid) {
-                loader.innerText = "ERROR: NO USER ID FOUND";
-                return;
-            }
+        async function initProfile() {
+            if (!targetUID) return;
 
-            try {
-                // Target the exact path where your signup saves data
-                const userRef = ref(db, 'users/' + uid);
-                const snapshot = await get(userRef);
+            // 1. Listen to Profile Data & Stats
+            onValue(ref(db, `users/${targetUID}`), (snap) => {
+                const data = snap.val();
+                if (!data) return;
 
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    
-                    // Update the DOM
-                    document.getElementById('uHandle').innerText = "@" + (data.handle || "user");
-                    document.getElementById('uBio').innerText = data.bio || "No bio yet.";
-                    
-                    if (data.profilePic) {
-                        document.getElementById('uPfp').style.backgroundImage = `url('${data.profilePic}')`;
-                    }
+                document.getElementById('uHandle').innerText = "@" + (data.handle || "user");
+                document.getElementById('uBio').innerText = data.bio || "No bio yet.";
+                document.getElementById('count-followers').innerText = count(data.followers);
+                if (data.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${data.profilePic}')`;
+            });
 
-                    loader.style.display = 'none';
-                    content.style.display = 'block';
-                } else {
-                    loader.innerText = "USER NOT FOUND";
+            // 2. Listen to "Following" (Stored in your separate following node)
+            onValue(ref(db, `following/${targetUID}`), (snap) => {
+                document.getElementById('count-following').innerText = count(snap.val());
+            });
+
+            // 3. Handle Follow Logic
+            onAuthStateChanged(auth, (user) => {
+                if (!user || user.uid === targetUID) {
+                    followBtn.style.display = 'none'; // Don't follow yourself
+                    return;
                 }
-            } catch (err) {
-                console.error(err);
-                loader.innerText = "CONNECTION ERROR";
-            }
+
+                followBtn.style.display = 'inline-block';
+                const followRef = ref(db, `following/${user.uid}/${targetUID}`);
+                const followerRef = ref(db, `users/${targetUID}/followers/${user.uid}`);
+
+                onValue(followRef, (snap) => {
+                    const isFollowing = snap.exists();
+                    
+                    if (isFollowing) {
+                        followBtn.innerText = "Unfollow";
+                        followBtn.className = "btn-unfollow";
+                        followBtn.onclick = () => {
+                            remove(followRef);
+                            remove(followerRef);
+                        };
+                    } else {
+                        followBtn.innerText = "Follow";
+                        followBtn.className = "btn-follow";
+                        followBtn.onclick = () => {
+                            set(followRef, true);
+                            set(followerRef, true);
+                        };
+                    }
+                });
+            });
         }
 
-        loadProfile();
+        initProfile();
     </script>
 </body>
 </html>
