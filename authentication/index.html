@@ -3,57 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Only Content</title>
+    <title>Mobile Version Only</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        
-        /* Hidden by default */
-        #desktop-blocker { display: none; }
-        #main-content { display: none; }
+        /* Dark Theme Styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-        .error-box {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 2px solid #ef5350;
+        /* The Full-Screen Blocker Overlay */
+        #desktop-overlay {
+            display: none; /* Hidden by default, shown via JS */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 9999; /* Stay on top of everything */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
             padding: 20px;
-            border-radius: 8px;
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        p {
+            font-size: 16px;
+            color: #b0b0b0;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        /* Main Content (What mobile users see) */
+        #mobile-content {
+            display: none;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div id="desktop-blocker">
-        <div class="error-box">
-            <h1>Mobile Access Only</h1>
-            <p>Sorry, this website is specifically designed for mobile devices. Please switch to a smartphone to continue.</p>
-        </div>
+    <div id="desktop-overlay">
+        <div class="icon">📱</div>
+        <h1>Mobile Access Only</h1>
+        <p>This website works better on mobile devices. The desktop version is not out yet.</p>
     </div>
 
-    <div id="main-content">
-        <h1>Welcome to the App!</h1>
-        <p>You are viewing this on a mobile device.</p>
+    <div id="mobile-content">
+        <h1>Welcome!</h1>
+        <p>You are viewing the mobile version of the site.</p>
     </div>
 
     <script>
         function checkDevice() {
-            const blocker = document.getElementById('desktop-blocker');
-            const content = document.getElementById('main-content');
-            
-            // Basic detection using User Agent
+            const overlay = document.getElementById('desktop-overlay');
+            const content = document.getElementById('mobile-content');
+
+            // Detects mobile based on User Agent string
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             
-            // Optional: Also check screen width for extra coverage
-            const isSmallScreen = window.innerWidth <= 800;
+            // Also check width (less than 1024px is usually considered mobile/tablet)
+            const isSmallScreen = window.innerWidth < 1024;
 
             if (isMobile || isSmallScreen) {
+                overlay.style.display = 'none';
                 content.style.display = 'block';
             } else {
-                blocker.style.display = 'block';
+                overlay.style.display = 'flex';
+                content.style.display = 'none';
             }
         }
 
-        // Run on load
-        checkDevice();
+        // Run check on load and if window is resized
+        window.onload = checkDevice;
+        window.onresize = checkDevice;
     </script>
 </body>
 </html>
