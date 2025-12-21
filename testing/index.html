@@ -419,6 +419,295 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     transform: translateX(0);
     visibility: visible;
 }
+.story-feed-block {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px 16px 16px;
+}
+
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 120px; /* Small neat height */
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: transform 0.3s;
+}
+
+.story-card-small:hover .story-img {
+    transform: scale(1.05);
+}
+
+.story-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 4px 10px 4px 4px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+.story-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story-badge span {
+    font-size: 10px;
+    font-weight: 900;
+    color: #fff;
+}
+/* Vertical Story Container */
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px 16px 16px;
+}
+
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+/* Header UI */
+.story-header-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    padding: 6px 10px;
+    border-radius: 14px;
+    z-index: 2;
+}
+
+.story-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--accent);
+}
+
+.story-user-handle {
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.story-verified-icon {
+    width: 11px;
+    height: 11px;
+}
+
+.story-follower-count {
+    font-size: 8px;
+    color: #aaa;
+    font-weight: 700;
+    margin-top: -2px;
+}
+
+.story-follow-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    font-size: 7px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.story-follow-btn.following {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* Action Buttons */
+.story-report-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.3);
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.story-bottom-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
+.story-title-text {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+
+.story-view-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Full View Monetization */
+.story-monetization-box {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.story-sponsor-btn {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-weight: 900;
+}
+/* --- GLOBAL FEED EDGES --- */
+
+/* Main Post Cards */
+.card {
+    border: 1.5px solid rgba(255, 255, 255, 0.9); /* Bright white edges */
+    border-radius: 24px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Story Cards */
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #111;
+    /* White edges for stories */
+    border: 1.5px solid rgba(255, 255, 255, 0.8); 
+    box-sizing: border-box;
+}
+
+/* Post Images Edge (Optional: adds a line between header and image) */
+.post-img {
+    width: 100%;
+    display: block;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- ENHANCED STORY UI --- */
+
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spacing between bordered stories */
+    padding: 0 16px 20px 16px;
+}
+
+.story-header-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    padding: 6px 10px;
+    border-radius: 14px;
+    z-index: 2;
+    border: 0.5px solid rgba(255, 255, 255, 0.2); /* Thin inner border */
+}
+
+.story-verified-icon {
+    width: 12px;
+    height: 12px;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.story-view-btn {
+    background: #ffffff; /* Solid white button */
+    color: #000;
+    border: none;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 7px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.story-report-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 6px;
+    cursor: pointer;
+    z-index: 5;
+}
 
 </style>  
     <style>
@@ -1522,17 +1811,18 @@ async function renderPoll(pollId, data, following = []) {
 
 /* ================= FEED (POSTS) LOGIC ================= */
 /* ================= FEED (POSTS) LOGIC ================= */
+let postsSinceStory = 0; // Track frequency
+
 async function startUniverse() {
     const snap = await get(ref(db, 'post'));
     if (!snap.exists()) return;
-    // Shuffle posts and reset feed
     allPostIds = Object.entries(snap.val()).sort(() => Math.random() - 0.5);
     const feed = document.getElementById('feed'); 
     if (feed) feed.innerHTML = '';
-    displayedCount = 0; 
+    displayedCount = 0;
+    postsSinceStory = 0; // Reset counter
     renderBatch();
 }
-
 
 function renderBatch() {
     const feed = document.getElementById('feed'); 
@@ -1546,6 +1836,16 @@ function renderBatch() {
     const batch = allPostIds.slice(displayedCount, displayedCount + batchSize);
     
     batch.forEach(([id, post]) => {
+        // --- STORY INJECTION LOGIC ---
+        postsSinceStory++;
+        if (postsSinceStory === 4) {
+            const storyWrapper = document.createElement('div');
+            storyWrapper.className = 'story-feed-block';
+            feed.appendChild(storyWrapper);
+            renderStorySection(storyWrapper);
+            postsSinceStory = 0; 
+        }
+
         const card = document.createElement('div'); 
         card.className = 'card'; 
         feed.appendChild(card);
@@ -1560,17 +1860,13 @@ function renderBatch() {
                 const u = uSnap.val() || {}; 
                 const fc = count(u.followers); 
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
-                
-                // Logic for Self-Check
                 const isMe = auth.currentUser && auth.currentUser.uid === p.uid;
                 const profileLink = isMe ? '/profile' : `/profile?user=${p.uid}`;
 
-                // --- SLIDESHOW TITLE LOGIC ---
                 const titleHTML = p.title.length > 20 
                     ? `<div class="title-scroll-wrap"><div class="scrolling-text">${p.title} &nbsp;&nbsp;&nbsp; ${p.title} &nbsp;&nbsp;&nbsp;</div></div>`
                     : p.title;
 
-                // --- UPDATED MONETIZATION UI ---
                 const sponsoredSection = p.sponsored ? `
                   <div style="margin-top: 15px; text-align: center;">
                     <button onclick="window.open('${p.link}', '_blank')" 
@@ -1595,22 +1891,18 @@ function renderBatch() {
                     <div style="font-weight:900; display:flex; align-items:center; gap:4px;">@${u.handle || 'user'} ${fc >= 1000 ? '✅' : ''}</div>
                     <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                   </div>
-                  
                   ${isMe 
                     ? `<button class="btn-action" style="background:#333; color:#fff; border-bottom-color:#555;" onclick="window.location.href='/profile'">MANAGE</button>`
                     : `<button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>`
                   }
                 </div>
-
                 <div style="position:relative;">
                    <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
                    ${p.sponsored ? '<span style="position:absolute; top:10px; right:10px; background:rgba(0,191,255,0.9); padding:4px 8px; border-radius:6px; font-size:9px; font-weight:900; color:#000; text-transform:uppercase;">Monetized</span>' : ''}
                 </div>
-
                 <div class="glass-title-row">
                     <h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${titleHTML}</h3>
                 </div>
-
                 <div style="padding:0 16px 15px 16px;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                     <div style="display:flex; gap:20px;">
@@ -1627,7 +1919,6 @@ function renderBatch() {
                   </div>
                   <div style="font-size:10px; color:var(--accent); font-weight:800; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
                   <div style="font-size:14px; line-height:1.4;">${p.description ? p.description.substring(0, 70) : ''}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="openReadMore('${id}')">Read More</span></div>
-                  
                   ${sponsoredSection}
                 </div>`;
             });
@@ -1635,6 +1926,90 @@ function renderBatch() {
     });
     displayedCount += batchSize;
 }
+
+/* ================= STORY LOGIC ================= */
+async function renderStorySection(container) {
+    try {
+        const snap = await get(ref(db, 'story'));
+        if (!snap.exists()) return container.remove();
+        
+        // Pick 3 random stories
+        let stories = Object.entries(snap.val()).sort(() => 0.5 - Math.random()).slice(0, 3);
+        
+        container.innerHTML = `<div style="padding:10px 16px; font-size:10px; font-weight:900; color:#888; letter-spacing:1px; text-transform:uppercase;">Suggested Stories</div>`;
+        
+        const list = document.createElement('div');
+        list.className = 'story-vertical-list';
+        
+        for (const [id, data] of stories) {
+            const uSnap = await get(ref(db, `users/${data.uid}`));
+            const u = uSnap.val() || {};
+            const fc = count(u.followers);
+            const isMe = auth.currentUser && auth.currentUser.uid === data.uid;
+            const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+
+            // Verified Logic: 1000+ followers OR marked verified
+            const isVerified = fc >= 1000 || u.verified === true;
+            const badgeHTML = isVerified ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" class="story-verified-icon">` : '';
+
+            const item = document.createElement('div');
+            item.className = 'story-card-small';
+            
+            item.innerHTML = `
+                <img src="${data.image}" class="story-img">
+                
+                <div class="story-header-overlay">
+                    <img src="${u.profilePic || 'default-avatar.png'}" class="story-avatar" onclick="window.location.href='/profile?user=${data.uid}'">
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <div style="display:flex; align-items:center; gap:3px;">
+                            <span class="story-user-handle" onclick="window.location.href='/profile?user=${data.uid}'">@${u.handle || 'user'}</span>
+                            ${badgeHTML}
+                            ${!isMe ? `<button class="story-follow-btn follow-btn-${data.uid} ${isF ? 'following' : ''}" onclick="event.stopPropagation(); doFollow('${data.uid}')">${isF ? '✓' : 'FOLLOW'}</button>` : ''}
+                        </div>
+                        <span class="story-follower-count">${fc} Followers</span>
+                    </div>
+                </div>
+
+                <button class="story-report-btn" onclick="event.stopPropagation(); submitReport('${id}', 'story')">🚩</button>
+
+                <div class="story-bottom-overlay">
+                    <div class="story-title-text">${data.title || ''}</div>
+                    <button class="story-view-btn" onclick='openStoryModal(${JSON.stringify(data).replace(/'/g, "&apos;")})'>VIEW</button>
+                </div>
+            `;
+            list.appendChild(item);
+        }
+        container.appendChild(list);
+    } catch (e) { console.error("Story Error:", e); }
+}
+
+window.openStoryModal = (story) => {
+    const modal = document.getElementById('fullImageModal');
+    const img = document.getElementById('fullImgSrc');
+    img.src = story.image;
+    
+    // Check for monetization only in the full view
+    const monetizationHTML = story.sponsored ? `
+        <div class="story-monetization-box">
+            <button onclick="window.open('${story.link}', '_blank')" class="story-sponsor-btn">
+                VISIT SPONSORED
+            </button>
+            <p>The creator monetized this story</p>
+        </div>
+    ` : '';
+
+    // You might have a specific container in your modal for details
+    let detailBox = document.getElementById('modalDetailBox');
+    if (detailBox) {
+        detailBox.innerHTML = `
+            <h2 style="margin:0; font-size:18px;">${story.title || ''}</h2>
+            ${monetizationHTML}
+        `;
+    }
+    
+    modal.style.display = 'flex';
+};
+
 
 
 
