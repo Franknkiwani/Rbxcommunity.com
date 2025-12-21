@@ -2,27 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile View</title>
     <style>
-        :root { --bg: #000; --text: #fff; --gray: #888; --danger: #ff4444; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; }
+        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; --accent: #0095f6; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; }
+        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; background-size: cover; background-position: center; border: 1px solid var(--border); }
+        .handle { text-align: center; font-size: 1.5rem; margin: 15px 0 5px; font-weight: bold; }
+        .bio { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; max-width: 400px; margin-inline: auto; }
         
-        /* Status Pages (404, Banned, Blacklist) */
-        .status-container { text-align: center; margin-top: 100px; padding: 20px; }
-        .status-icon { font-size: 60px; margin-bottom: 20px; }
-        .status-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .tabs { display: flex; justify-content: center; border-top: 1px solid var(--border); margin-bottom: 20px; }
+        .tab { padding: 15px 25px; cursor: pointer; color: var(--gray); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+        .tab.active { color: var(--text); border-top: 2px solid var(--text); margin-top: -1px; }
+
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+        .grid-item { aspect-ratio: 1/1; background-color: #111; background-size: cover; background-position: center; cursor: pointer; }
+        .poll-item { background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .back-btn { background: none; color: var(--accent); border: none; font-size: 1rem; cursor: pointer; margin-bottom: 20px; padding: 0; }
         
-        /* Profile UI */
-        #profileUI { display: none; }
-        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; background-size: cover; background-position: center; border: 1px solid #222; }
-        .handle { text-align: center; font-size: 1.5rem; margin: 15px 0 5px; font-weight: 900; }
-        .bio { text-align: center; color: var(--gray); margin-bottom: 30px; font-size: 0.9rem; line-height: 1.4; }
-        
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .grid-item { aspect-ratio: 1/1; background-color: #0a0a0a; background-size: cover; background-position: center; }
-        
-        .back-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-bottom: 20px; }
+        .empty-msg { text-align: center; color: var(--gray); padding: 40px; grid-column: span 3; }
     </style>
 </head>
 <body>
@@ -31,24 +29,30 @@
 
     <div id="profileUI">
         <div id="uPfp" class="pfp"></div>
-        <div id="uHandle" class="handle"></div>
+        <div id="uHandle" class="handle">Loading...</div>
         <div id="uBio" class="bio"></div>
-        <div id="postsGrid" class="grid"></div>
-    </div>
 
-    <div id="statusUI" class="status-container" style="display:none;"></div>
+        <div class="tabs">
+            <div id="tab-posts" class="tab active" onclick="switchTab('posts')">Posts</div>
+            <div id="tab-polls" class="tab" onclick="switchTab('polls')">Polls</div>
+            <div id="tab-stories" class="tab" onclick="switchTab('stories')">Stories</div>
+        </div>
+
+        <div id="postsSection" class="section"><div id="postsGrid" class="grid"></div></div>
+        <div id="pollsSection" class="section" style="display:none;"><div id="pollsList"></div></div>
+        <div id="storiesSection" class="section" style="display:none;"><div id="storiesGrid" class="grid"></div></div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // 1. CONFIG
         const firebaseConfig = {
-            apiKey: "...",
-            authDomain: "...",
-            databaseURL: "...", 
-            projectId: "...",
-            storageBucket: "...",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
             messagingSenderId: "...",
             appId: "..."
         };
@@ -56,81 +60,73 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 2. GET UID FROM URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUid = urlParams.get('user');
-
-        if (!targetUid) {
-            showStatus("404", "No user specified.", "🔍");
-        } else {
-            init(targetUid);
-        }
-
-        async function init(uid) {
-            try {
-                const userSnap = await get(ref(db, `users/${uid}`));
-                
-                // CHECK 1: DOES USER EXIST?
-                if (!userSnap.exists()) {
-                    showStatus("404", "User does not exist.", "❓");
-                    return;
-                }
-
-                const user = userSnap.val();
-
-                // CHECK 2: BLACKLISTED
-                if (user.isBlacklisted) {
-                    showStatus("ACCESS DENIED", "System-wide blacklist active.", "⚠️");
-                    return;
-                }
-
-                // CHECK 3: BANNED
-                if (user.isBanned) {
-                    showStatus("BANNED", "This account has been suspended.", "🚫");
-                    return;
-                }
-
-                // SHOW PROFILE
-                document.getElementById('profileUI').style.display = 'block';
-                document.getElementById('uHandle').innerText = "@" + (user.handle || "user");
-                document.getElementById('uBio').innerText = user.bio || "No bio available.";
-                document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic || ''})`;
-
-                // LOAD POSTS
-                loadPosts(uid);
-
-            } catch (err) {
-                console.error(err);
-                showStatus("Error", "Something went wrong.", "❌");
-            }
-        }
-
-        async function loadPosts(uid) {
-            const grid = document.getElementById('postsGrid');
-            const q = query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid));
-            const snap = await get(q);
+        // Define switchTab globally so HTML buttons can see it
+        window.switchTab = (type) => {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(`${type}Section`).style.display = 'block';
             
-            if (snap.exists()) {
-                Object.values(snap.val()).reverse().forEach(post => {
-                    const div = document.createElement('div');
-                    div.className = 'grid-item';
-                    div.style.backgroundImage = `url(${post.imageUrl})`;
-                    grid.appendChild(div);
-                });
-            } else {
-                grid.innerHTML = "<p style='grid-column:1/4;text-align:center;color:#444;padding:40px;'>No posts yet.</p>";
-            }
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.toggle('active', t.id === `tab-${type}`);
+            });
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const uid = urlParams.get('user');
+
+        if (!uid) {
+            document.getElementById('uHandle').innerText = "User ID Missing";
+        } else {
+            loadProfile(uid);
         }
 
-        function showStatus(title, msg, icon) {
-            const sUI = document.getElementById('statusUI');
-            sUI.style.display = 'block';
-            sUI.innerHTML = `
-                <div class="status-icon">${icon}</div>
-                <div class="status-title">${title}</div>
-                <p style="color:#888;">${msg}</p>
-                <button onclick="window.location.href='index.html'" style="background:#fff; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; margin-top:20px;">Return Home</button>
-            `;
+        async function loadProfile(targetUid) {
+            try {
+                // 1. Load User Profile
+                const userSnap = await get(ref(db, `users/${targetUid}`));
+                if (userSnap.exists()) {
+                    const user = userSnap.val();
+                    document.getElementById('uHandle').innerText = user.handle ? `@${user.handle}` : "User";
+                    document.getElementById('uBio').innerText = user.bio || "No bio yet.";
+                    if (user.profilePic) {
+                        document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic})`;
+                    }
+                } else {
+                    document.getElementById('uHandle').innerText = "User Not Found";
+                    return;
+                }
+
+                // 2. Load Posts
+                const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid));
+                const postsSnap = await get(postsQ);
+                const postsGrid = document.getElementById('postsGrid');
+                
+                if (postsSnap.exists()) {
+                    const posts = Object.values(postsSnap.val()).reverse();
+                    postsGrid.innerHTML = posts.map(post => 
+                        `<div class="grid-item" style="background-image: url('${post.imageUrl}')"></div>`
+                    ).join('');
+                } else {
+                    postsGrid.innerHTML = `<div class="empty-msg">No posts yet</div>`;
+                }
+
+                // 3. Load Polls
+                const pollsQ = query(ref(db, 'polls'), orderByChild('uid'), equalTo(targetUid));
+                const pollsSnap = await get(pollsQ);
+                const pollsList = document.getElementById('pollsList');
+                
+                if (pollsSnap.exists()) {
+                    const polls = Object.values(pollsSnap.val());
+                    pollsList.innerHTML = polls.map(poll => 
+                        `<div class="poll-item"><strong>${poll.question}</strong></div>`
+                    ).join('');
+                } else {
+                    pollsList.innerHTML = `<div class="empty-msg">No polls created</div>`;
+                }
+
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                document.getElementById('uHandle').innerText = "Error Loading Profile";
+            }
         }
     </script>
 </body>
