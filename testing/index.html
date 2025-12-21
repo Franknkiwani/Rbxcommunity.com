@@ -290,6 +290,135 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     overflow-y: auto; /* This allows scrolling inside the panel */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
 }
+/* Container for the title */
+.title-scroll-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+}
+
+/* The actual scrolling text */
+.scrolling-title {
+    display: inline-block;
+    padding-left: 100%; /* Start off-screen to the right */
+    animation: marquee 10s linear infinite;
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Only animate if the title is long (optional) */
+.glass-title-row h3 {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Share Container Styles */
+.share-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+.share-label {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.share-link-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.share-input {
+    flex-grow: 1;
+    background: #000;
+    border: 1px solid #333;
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 11px;
+    outline: none;
+    text-overflow: ellipsis;
+}
+
+.btn-copy {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 10px;
+    cursor: pointer;
+    border-bottom: 3px solid #0072B3;
+}
+#panelProfilePic {
+  width: 90px; 
+  height: 90px; 
+  border-radius: 50%; 
+  border: 3px solid #fff; /* White border to match header */
+  background-image: url('https://i.imgur.com/cM3Givj.jpeg'); /* Default pic */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+#feed {
+    width: 100%;
+    max-width: 1200px; /* Allow it to grow wider */
+    margin: 0 auto;    /* Center the feed */
+    display: grid;
+    /* This creates as many 300px columns as will fit, then fills the space */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Ensure cards don't look weird when stretched */
+.card {
+    height: fit-content;
+    width: 100%;
+}
+
+/* Tablet/Mobile adjustment: If screen is small, go back to 1 column */
+@media (max-width: 600px) {
+    #feed {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+}
+
+/* Update the Profile Panel */
+.profile-panel {
+    position: fixed;
+    top: 0;
+    right: 0; /* Changed from left:0 to right:0 */
+    width: 100%;
+    max-width: 400px; /* Limits width on desktop */
+    height: 100vh;
+    background: #000;
+    transform: translateX(100%); /* Keeps it off-screen to the right */
+    transition: transform 0.3s ease-in-out;
+    z-index: 2000; /* Ensure it's above everything */
+    visibility: hidden; /* Extra safety: hides it from clicks when closed */
+}
+
+.profile-panel.active {
+    transform: translateX(0);
+    visibility: visible;
+}
 
 </style>  
     <style>
@@ -336,6 +465,98 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
         #end-msg { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--red); color: white; text-align: center; padding: 10px; font-weight: 900; z-index: 998; display: none; font-size: 12px; }
         
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Neatly spaces the button from the profile */
+}
+
+.rbx-small-btn {
+  /* Layout & Size */
+  padding: 4px 12px;
+  font-size: 13px;
+  height: 28px; /* Compact height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Black Glassy Design */
+  background: rgba(15, 15, 15, 0.6); /* Translucent black */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  
+  /* White Curved Edges */
+  border: 1.5px solid #FFFFFF;
+  border-radius: 6px;
+  
+  /* Text Styling */
+  color: #FFFFFF;
+  font-family: "Gotham SSm", "Arial", sans-serif;
+  font-weight: 600;
+  text-transform: none;
+  cursor: pointer;
+  
+  transition: all 0.2s ease;
+}
+
+/* Hover & Active States */
+.rbx-small-btn:hover {
+  background: rgba(15, 15, 15, 0.85);
+  border-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.rbx-small-btn:active {
+  transform: scale(0.95);
+  background: #000000;
+}
+.profile-edge-only {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #121212; /* Profile stays dark */
+  cursor: pointer;
+  z-index: 1;
+}
+
+.profile-edge-only::before {
+  content: "";
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 50%;
+  padding: 2px; 
+  
+  background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8);
+  background-size: 400%;
+  
+  /* Masking logic to keep the center clear */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  
+  /* CHANGED: Slowed down to 7 seconds */
+  animation: hueRotate 7s linear infinite; 
+  z-index: -1;
+}
+
+@keyframes hueRotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.profile-edge-only:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+.rbx-small-btn {
+    cursor: pointer;
+    /* ... your other styles ... */
+}
+
     </style>
 <div id="ios-loader" style="position:fixed; inset:0; background:#000; z-index:100000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.8s ease; font-family: -apple-system, sans-serif;">
     
@@ -365,6 +586,105 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
 
         @keyframes ios-fade { from { background: #fff; } to { background: #2c2c2e; } }
     </style>
+<div id="desktop-warning-modal" class="modal-overlay">
+  <div class="modal-content">
+    <svg class="sad-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M8 15s1.5 2 4 2 4-2 4-2"></path>
+      <line x1="9" y1="9" x2="9.01" y2="9"></line>
+      <line x1="15" y1="9" x2="15.01" y2="9"></line>
+    </svg>
+
+    <h2>Oops! Desktop detected.</h2>
+    <p>This website wasn't designed for larger screens. For the best experience, try switching to a phone or tablet.</p>
+    
+    <button id="continue-btn" class="continue-link">Continue anyway</button>
+  </div>
+</div>
+
+<style>
+  /* Fade-in Animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-overlay {
+    display: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    font-family: sans-serif;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 400px;
+    width: 85%;
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .sad-icon {
+    width: 80px;
+    height: 80px;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+  }
+
+  h2 { color: #2d3748; margin-bottom: 15px; font-size: 1.5rem; }
+  p { color: #718096; line-height: 1.5; margin-bottom: 30px; }
+
+  .continue-link {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 5px;
+  }
+</style>
+
+<script>
+  (function() {
+    const modal = document.getElementById('desktop-warning-modal');
+    const continueBtn = document.getElementById('continue-btn');
+
+    function checkScreen() {
+      // 992px is the standard 'Desktop' breakpoint
+      // If the browser (or Desktop Mode) reports a width above this, show modal
+      if (window.innerWidth >= 992) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; 
+      } else {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    continueBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+      // Optional: Stop checking once they've dismissed it for this session
+      window.removeEventListener('resize', checkScreen);
+    });
+
+    window.addEventListener('load', checkScreen);
+    window.addEventListener('resize', checkScreen);
+  })();
+</script>
 
     <div style="margin-bottom:30px;">
         <img src="https://i.imgur.com/cM3Givj.jpeg" style="max-width: 130px; height: auto; border-radius: 25px;">
@@ -379,118 +699,169 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     </div>
 </div>
 
-
-
-
 <header>
   <img src="https://i.imgur.com/cM3Givj.jpeg" alt="RBX Community" class="logo">
   <div class="header-right">
-    <div class="profile" id="headerProfile"></div>
+    <button class="rbx-small-btn" id="uploadBtn">Upload</button>
+    
+    <div class="profile profile-edge-only" id="headerProfile"></div>
+    
     <div class="hamburger" id="hamburger"><div></div><div></div><div></div></div>
   </div>
 </header>
 
 <div class="menu-overlay" id="menuOverlay">
-  <a href="#">Home</a>
-  <a href="#">Community</a>
-  <a href="#">Games</a>
-  <a href="#">Events</a>
-  <a href="#">Profile</a>
-  <a href="#">Settings</a>
+  <a href="/" class="menu-link">
+    HOME
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </a>
+
+  <a href="/community" class="menu-link">
+    COMMUNITY
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  </a>
+
+  <a href="/games" class="menu-link">
+    GAMES
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/></svg>
+  </a>
+
+  <a href="/events" class="menu-link">
+    EVENTS
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </a>
+
+  <a href="/profile" class="menu-link">
+    PROFILE
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  </a>
+
+  <a href="/settings" class="menu-link">
+    SETTINGS
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+  </a>
 </div>
-
-<div class="profile-panel" id="profilePanel">
-  <div class="panel-header">
-    <img src="https://i.imgur.com/cM3Givj.jpeg" alt="RBX Community" class="profile-logo" style="height:40px; object-fit:contain;">
-    <button class="close-btn" id="closeProfile">Close</button>
-  </div>
-  <div class="panel-top">
-    <div id="panelProfilePic"></div>
-    <div id="userInfo"></div>
-    <div id="copyLinkContainer">
-      <input type="text" id="userLink" readonly>
-      <button id="copyLinkBtn">Copy</button>
-    </div>
-    <span id="copyStatus"></span>
-    <div class="spinner" id="uploadSpinner"></div>
-    <input type="file" id="profileInput" accept="image/*" style="display:none;">
-  </div>
-<div class="panel-content" style="padding:20px; flex:1; display:flex; flex-direction:column;">
- <!-- Handle / Username Edit -->
-<div id="handleContainer" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:12px;">
-  <input type="text" id="handleInput" placeholder="Username / Handle" 
-         style="padding:6px 12px;border-radius:12px;border:1px solid #333;background:#222;color:#fff;text-align:center;font-size:14px;width:60%;">
- <button id="saveHandleBtn">Save Handle</button>
-  <span id="handleStatus" style="font-size:12px;color:#ccc;"></span>
-</div>
-  <!-- User Stats -->
-  <div class="profile-stats" style="display:flex;justify-content:space-around;width:100%;margin-bottom:20px;">
-    <div style="text-align:center;">
-      <span style="font-weight:bold;font-size:18px;" id="statPosts">0</span>
-      <p style="font-size:12px;color:#aaa;margin:0;">Posts</p>
-    </div>
-    <div style="text-align:center;">
-      <span style="font-weight:bold;font-size:18px;" id="statFollowers">0</span>
-      <p style="font-size:12px;color:#aaa;margin:0;">Followers</p>
-    </div>
-    <div style="text-align:center;">
-      <span style="font-weight:bold;font-size:18px;" id="statFollowing">0</span>
-      <p style="font-size:12px;color:#aaa;margin:0;">Following</p>
-    </div>
-  </div>
-
-
-<div style="width:100%;background:#1a1a1a;padding:12px;border-radius:12px;margin-bottom:12px;">
-  <h3 style="margin:0 0 8px 0;font-size:16px;">About Me</h3>
-  <textarea id="userBioTextarea" maxlength="100" placeholder="Write something about yourself..." 
-            style="width:100%;background:#222;color:#ccc;border:none;padding:8px;border-radius:8px;resize:none;font-size:14px;outline:none;"></textarea>
-  <div id="bioCharCount" style="text-align:right;font-size:12px;color:#777;margin-top:4px;">0 / 100</div>
-  <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-    <button id="saveProfileBtn" style="padding:8px 16px;border-radius:12px;border:none;background:#2196F3;color:#fff;font-weight:bold;cursor:pointer;flex-shrink:0;">Save Profile</button>
-    <div class="spinner" id="saveProfileSpinner" style="width:20px;height:20px;border:3px solid #ccc;border-top:3px solid #4caf50;border-radius:50%;animation:spin 1s linear infinite;display:none;"></div>
-    <span id="saveProfileStatus" style="font-size:12px;color:#4caf50;"></span>
-  </div>
-<div style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
-    <div style="display: flex; justify-content: space-around; margin-bottom: 15px; flex-shrink:0;">
-        <button onclick="showSocialTab('followers')" id="tabFollowers" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer; font-size:12px;">FOLLOWERS</button>
-        <button onclick="showSocialTab('following')" id="tabFollowing" style="background:none; border:none; color:#555; font-weight:900; cursor:pointer; font-size:12px;">FOLLOWING</button>
-    </div>
-
-    <div id="socialList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom: 20px;">
-        </div>
-</div>
-
-    </div>
-</div>
-
-</div>
-
-  </div>
-</div>
-
-<main style="padding:12px; background:#121212;">
-  <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; font-weight:bold; color:white; font-size:14px;">
-    FEATURED PROFILES
-    <img width="24" height="24" src="https://img.icons8.com/stickers/100/verified-badge.png" alt="verified-badge"/>
-  </div>
-
-  <div id="userContainer" style="display:flex; overflow-x:auto; gap:12px; padding:8px 0; scrollbar-width:none;"></div>
-<h1>Polls</h1>  
-<div class="status-msg" id="statusMsg"></div>  
-<div class="poll-feed-container" id="pollFeed"></div>  
-<div class="spinner" id="spinner"></div>  
+<div class="profile-panel" id="profilePanel" style="position:fixed; right:0; top:0; height:100%; width:100%; max-width:420px; background:#000; color:#fff; z-index:10000; display:flex; flex-direction:column; border-left:1px solid #333;">
   
-<div class="confirm-popup" id="confirmPopup">  
-  <div class="popup-content">  
-    <p id="confirmText">Are you sure you want to delete this poll?</p>  
-    <button class="confirm" id="confirmYes">Yes</button>  
-    <button class="cancel" id="confirmNo">Cancel</button>  
-  </div>  
-</div>  
-  <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; font-weight:bold; color:white; font-size:14px;">
-    FEED
-    <img width="24" height="24" src="https://img.icons8.com/stickers/100/verified-badge.png" alt="verified-badge"/>
+  <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #222; flex-shrink:0;">
+    <img src="https://i.imgur.com/cM3Givj.jpeg" alt="RBX Community" class="profile-logo" style="height:40px; object-fit:contain;">
+    <button class="close-btn" id="closeProfile" style="background:none; border:none; color:#fff; cursor:pointer; font-weight:bold;">Close</button>
   </div>
+
+  <div class="panel-main-scroll" style="flex:1; overflow-y:auto; padding:20px;">
+    
+    <div class="panel-top" style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px;">
+      <div id="panelProfilePic" style="width:80px; height:80px; border-radius:50%; background:#222; overflow:hidden; border:2px solid #333; background-size:cover; background-position:center; background-repeat:no-repeat;"></div>
+      <div id="authBtnContainer" style="margin-top: 10px; width: 30%;">
+  <button id="authActionBtn" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;">
+    Loading...
+  </button>
+</div>
+      <div id="userInfo" style="text-align:center; font-weight:bold;"></div>
+      
+      <div class="spinner" id="uploadSpinner" style="display:none;"></div>
+      <input type="file" id="profileInput" accept="image/*" style="display:none;">
+
+      <div id="handleContainer" style="display:flex; flex-direction:column; align-items:center; gap:8px; width:100%;">
+        <input type="text" id="handleInput" placeholder="Username / Handle" 
+               style="padding:8px 12px; border-radius:12px; border:1px solid #333; background:#222; color:#fff; text-align:center; font-size:14px; width:80%;">
+        <button id="saveHandleBtn" style="background:#fff; color:#000; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">Save Handle</button>
+        <span id="handleStatus" style="font-size:12px; color:#ccc;"></span>
+      </div>
+
+      <div id="copyLinkContainer" style="display:flex; gap:5px; width:100%; margin-top:10px;">
+        <input type="text" id="userLink" readonly style="flex:1; background:#111; border:1px solid #333; color:#aaa; padding:8px; border-radius:8px; font-size:12px;">
+        <button id="copyLinkBtn" style="background:#333; color:#fff; border:none; padding:8px; border-radius:8px; cursor:pointer;">Copy</button>
+      </div>
+      <span id="copyStatus" style="font-size:11px;"></span>
+    </div>
+
+    <div class="profile-stats" style="display:flex; justify-content:space-around; width:100%; margin-bottom:25px; background:#111; padding:15px 0; border-radius:15px;">
+      <div style="text-align:center;">
+        <span style="font-weight:bold; font-size:18px; display:block;" id="statPosts">0</span>
+        <p style="font-size:12px; color:#aaa; margin:0;">Posts</p>
+      </div>
+      <div style="text-align:center;">
+        <span style="font-weight:bold; font-size:18px; display:block;" id="statFollowers">0</span>
+        <p style="font-size:12px; color:#aaa; margin:0;">Followers</p>
+      </div>
+      <div style="text-align:center;">
+        <span style="font-weight:bold; font-size:18px; display:block;" id="statFollowing">0</span>
+        <p style="font-size:12px; color:#aaa; margin:0;">Following</p>
+      </div>
+    </div>
+
+    <div style="width:100%; background:#1a1a1a; padding:15px; border-radius:15px; margin-bottom:20px;">
+      <h3 style="margin:0 0 8px 0; font-size:14px; color:#fff; text-transform:uppercase; letter-spacing:1px;">About Me</h3>
+      <textarea id="userBioTextarea" maxlength="100" placeholder="Write something about yourself..." 
+                style="width:100%; height:80px; background:#222; color:#ccc; border:none; padding:10px; border-radius:10px; resize:none; font-size:14px; outline:none;"></textarea>
+      <div id="bioCharCount" style="text-align:right; font-size:12px; color:#777; margin-top:4px;">0 / 100</div>
+      
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+        <button id="saveProfileBtn" style="padding:10px 15px; border-radius:10px; border:none; background:#2196F3; color:#fff; font-weight:bold; cursor:pointer;">Save Profile</button>
+        <div class="spinner" id="saveProfileSpinner" style="width:18px; height:18px; border:2px solid #333; border-top:2px solid #fff; border-radius:50%; animation:spin 1s linear infinite; display:none;"></div>
+        <span id="saveProfileStatus" style="font-size:12px; color:#4caf50;"></span>
+      </div>
+    </div>
+
+    <div style="border-top: 1px solid #222; padding-top: 20px;">
+      <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
+        <button onclick="showSocialTab('followers')" id="tabFollowers" style="background:none; border:none; color:#2196F3; font-weight:900; cursor:pointer; font-size:12px; border-bottom: 2px solid #2196F3; padding-bottom:5px;">FOLLOWERS</button>
+        <button onclick="showSocialTab('following')" id="tabFollowing" style="background:none; border:none; color:#555; font-weight:900; cursor:pointer; font-size:12px; padding-bottom:5px;">FOLLOWING</button>
+      </div>
+      <div id="socialList" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .panel-main-scroll::-webkit-scrollbar { width: 4px; }
+  .panel-main-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+  
+  /* This ensures that any image set via JS as a background fits perfectly */
+  #panelProfilePic {
+    background-size: cover !important;
+    background-position: center !important;
+  }
+</style>
+
+<main style="padding:12px; background:#121212; font-family: sans-serif;">
+
+  <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; font-weight:bold; color:white; font-size:14px; letter-spacing:0.5px;">
+    <img width="20" height="20" src="https://img.icons8.com/stickers/100/verified-badge.png" alt="verified"/>
+    FEATURED PROFILES
+    <img width="20" height="20" src="https://img.icons8.com/stickers/100/verified-badge.png" alt="verified"/>
+  </div>
+
+  <div id="userContainer" style="display:flex; overflow-x:auto; gap:12px; padding:8px 0; scrollbar-width:none; margin-bottom:20px;"></div>
+
+  <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; font-weight:bold; color:white; font-size:14px; letter-spacing:0.5px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+    POLLS
+  </div>
+  
+  <div class="status-msg" id="statusMsg"></div>  
+  <div class="poll-feed-container" id="pollFeed"></div>  
+  <div class="spinner" id="spinner"></div>  
+  
+  <div class="confirm-popup" id="confirmPopup">  
+    <div class="popup-content">  
+      <p id="confirmText">Are you sure you want to delete this poll?</p>  
+      <button class="confirm" id="confirmYes">Yes</button>  
+      <button class="cancel" id="confirmNo">Cancel</button>  
+    </div>  
+  </div>
+
+  <hr style="border: 0; height: 1px; background: #333; margin: 20px 0;">
+
+  <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; font-weight:bold; color:white; font-size:14px; letter-spacing:0.5px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+    FEED
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+  </div>
+
+
 <div id="toast-container"></div>
 <div id="feed"></div>
 <div id="end-msg">🛑 YOU'VE REACHED THE END OF THE UNIVERSE</div>
@@ -787,6 +1158,7 @@ saveProfileBtn?.addEventListener('click', async () => {
 
 saveHandleBtn?.addEventListener('click', () => saveProfileBtn.click());
 
+
 /* ================= FEATURED USERS & POLLS ================= */
 async function loadFeaturedUsers() {
     if (!featuredContainer) return;
@@ -797,31 +1169,46 @@ async function loadFeaturedUsers() {
         allUsers.sort(() => 0.5 - Math.random());
         const featured10 = allUsers.slice(0, 10);
         featuredContainer.innerHTML = '';
+        
         let myFollowing = new Set();
         if (currentUser) {
             const fSnap = await get(ref(db, `following/${currentUser.uid}`));
             if (fSnap.exists()) myFollowing = new Set(Object.keys(fSnap.val()));
         }
+
         featured10.forEach(([uid, user]) => {
+            // Check if this featured user is the current logged-in user
+            const isMe = currentUser && currentUser.uid === uid;
+            const profilePath = isMe ? '/profile' : `/profile?user=${uid}`;
+
             const div = document.createElement('div');
             div.style.cssText = "flex:0 0 auto; width:70px; display:flex; flex-direction:column; align-items:center;";
+            
             const imgWrapper = document.createElement('div');
-            imgWrapper.style.cssText = `width:60px;height:60px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #fff;transition:border-color 1s;`;
+            imgWrapper.style.cssText = `width:60px;height:60px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #fff;transition:border-color 1s;cursor:pointer;`;
+            imgWrapper.onclick = () => window.location.href = profilePath; // REDIRECT LOGIC
+
             const img = document.createElement('img');
             img.src = user.profilePic || 'https://via.placeholder.com/60?text=?';
             img.style.cssText = "width:100%;height:100%;object-fit:cover;";
             imgWrapper.appendChild(img); div.appendChild(imgWrapper);
+            
             setInterval(() => { imgWrapper.style.borderColor = randomColor(); }, 1000);
+
             const handleDiv = document.createElement('div');
             handleDiv.textContent = '@' + (user.handle || 'user');
-            handleDiv.style.cssText = "max-width:70px;font-size:10px;color:#fff;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+            handleDiv.style.cssText = "max-width:70px;font-size:10px;color:#fff;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;";
+            handleDiv.onclick = () => window.location.href = profilePath; // REDIRECT LOGIC
             div.appendChild(handleDiv);
+
             const followerDiv = document.createElement('div');
             followerDiv.style.cssText = "font-size:9px;color:#bbb;text-align:center;margin-top:2px;";
             div.appendChild(followerDiv);
+
             const button = document.createElement('button');
             button.style.cssText = "margin-top:4px;font-size:10px;padding:2px 6px;border-radius:4px;border:none;background:#2e89ff;color:#fff;cursor:pointer;text-align:center;";
             div.appendChild(button);
+
             const msg = document.createElement('span');
             msg.style.cssText = "color:#ff6b6b;font-size:10px;margin-top:2px;display:none;text-align:center;";
             div.appendChild(msg);
@@ -829,7 +1216,19 @@ async function loadFeaturedUsers() {
             async function updateButton() {
                 const fSnap = await get(ref(db, `users/${uid}/followers`));
                 followerDiv.textContent = count(fSnap.val()) + ' followers';
-                if (!currentUser) { button.textContent = 'Follow'; button.style.background = '#2e89ff'; return; }
+                
+                if (isMe) {
+                    button.textContent = 'ME';
+                    button.style.background = '#444'; // Grey color for "ME"
+                    return;
+                }
+
+                if (!currentUser) { 
+                    button.textContent = 'Follow'; 
+                    button.style.background = '#2e89ff'; 
+                    return; 
+                }
+
                 const isFollowing = myFollowing.has(uid);
                 button.textContent = isFollowing ? 'Following' : 'Follow';
                 button.style.background = isFollowing ? '#4caf50' : '#2e89ff';
@@ -837,8 +1236,23 @@ async function loadFeaturedUsers() {
             updateButton();
 
             button.addEventListener('click', async () => {
-                if (!currentUser) { msg.textContent = "Only logged in users can follow"; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); return; }
-                const spinnerIcon = createSpinner(); button.innerHTML = ''; button.appendChild(spinnerIcon); button.disabled = true;
+                if (isMe) {
+                    window.location.href = '/profile';
+                    return;
+                }
+
+                if (!currentUser) { 
+                    msg.textContent = "Only logged in users can follow"; 
+                    msg.style.display = 'block'; 
+                    setTimeout(() => msg.style.display = 'none', 2000); 
+                    return; 
+                }
+
+                const spinnerIcon = createSpinner(); 
+                button.innerHTML = ''; 
+                button.appendChild(spinnerIcon); 
+                button.disabled = true;
+
                 const path = ref(db, `following/${currentUser.uid}/${uid}`);
                 const snapF = await get(path);
                 if (!snapF.exists()) {
@@ -851,8 +1265,10 @@ async function loadFeaturedUsers() {
                     myFollowing.delete(uid);
                 }
                 if (statFollowing) statFollowing.textContent = myFollowing.size;
-                updateButton(); button.disabled = false;
+                updateButton(); 
+                button.disabled = false;
             });
+            
             featuredContainer.appendChild(div);
         });
     } catch (e) { console.error(e); }
@@ -862,31 +1278,44 @@ async function loadFeaturedUsers() {
 let allPollData = [];
 let pollsDisplayed = 0;
 const pollBatchSize = 3;
+let isLoadingPolls = false;
 
 async function loadPolls() {
-    if (!pollFeed) return;
+    if (!pollFeed || isLoadingPolls) return;
+    isLoadingPolls = true;
     if (spinner) spinner.style.display = 'block';
+    
     try {
         const snap = await get(ref(db, '/poll'));
-        if (!snap.exists()) return;
+        if (!snap.exists()) {
+            pollFeed.innerHTML = '<div style="text-align:center;padding:20px;opacity:0.5;">No polls found.</div>';
+            return;
+        }
         
         allPollData = shuffleArray(Object.entries(snap.val()));
         pollFeed.innerHTML = '';
         pollsDisplayed = 0;
 
-        renderPollBatch();
+        await renderPollBatch();
+
+        window.onscroll = () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                renderPollBatch();
+            }
+        };
     } catch (e) { 
         console.error(e); 
         showStatus('Error loading polls', 'error'); 
     } finally { 
         if (spinner) spinner.style.display = 'none'; 
+        isLoadingPolls = false;
     }
 }
 
 async function renderPollBatch() {
+    if (pollsDisplayed >= allPollData.length) return;
     const batch = allPollData.slice(pollsDisplayed, pollsDisplayed + pollBatchSize);
-    if (batch.length === 0) return;
-
+    
     let following = [];
     if (currentUser) {
         const followingSnap = await get(ref(db, `/following/${currentUser.uid}`));
@@ -898,30 +1327,52 @@ async function renderPollBatch() {
 }
 
 async function renderPoll(pollId, data, following = []) {
-    const card = document.createElement('div'); card.className = 'poll-card'; card.dataset.uid = data.uid;
+    const card = document.createElement('div'); 
+    card.className = 'poll-card'; 
+    card.dataset.uid = data.uid;
     
+    // --- REDIRECT LOGIC ---
+    const isMe = currentUser && currentUser.uid === data.uid;
+    const profilePath = isMe ? '/profile' : `/profile?user=${data.uid}`;
+
     // --- Author Section ---
-    const authorSection = document.createElement('div'); authorSection.className = 'poll-author';
-    const authorLeft = document.createElement('div'); authorLeft.className = 'author-left';
-    const profileImg = document.createElement('img'); profileImg.src = 'default-avatar.png';
-    const authorHandle = document.createElement('span'); authorHandle.textContent = '@user';
-    authorLeft.append(profileImg, authorHandle); authorSection.append(authorLeft);
+    const authorSection = document.createElement('div'); 
+    authorSection.className = 'poll-author';
+    
+    const authorLeft = document.createElement('div'); 
+    authorLeft.className = 'author-left';
+    authorLeft.style.cursor = 'pointer';
+    authorLeft.onclick = () => window.location.href = profilePath; // Redirect on click
+
+    const profileImg = document.createElement('img'); 
+    profileImg.src = 'default-avatar.png';
+    
+    const authorHandle = document.createElement('span'); 
+    authorHandle.textContent = '@user';
+    authorLeft.append(profileImg, authorHandle); 
+    authorSection.append(authorLeft);
 
     const actionBtn = document.createElement('button');
-    if (currentUser?.uid === data.uid) {
-        actionBtn.className = 'delete-btn'; actionBtn.textContent = 'Delete';
-        actionBtn.addEventListener('click', () => { deletePollId = pollId; confirmPopup.style.display = 'flex'; });
+    if (isMe) {
+        // OWN POST: Show MANAGE and redirect to profile
+        actionBtn.className = 'manage-btn'; 
+        actionBtn.textContent = 'MANAGE';
+        actionBtn.style.cssText = "background:#333; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:900; font-size:10px; cursor:pointer;";
+        actionBtn.onclick = (e) => { 
+            e.stopPropagation();
+            window.location.href = '/profile'; 
+        };
     } else {
+        // OTHER POST: Show Follow
         actionBtn.className = 'follow-btn';
         const isFollowing = following.includes(data.uid);
         actionBtn.textContent = isFollowing ? 'Following' : 'Follow';
         if (isFollowing) actionBtn.classList.add('following');
         
-        actionBtn.addEventListener('click', async () => {
-            if (!currentUser) { showStatus('Login required', 'error'); return; }
+        actionBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!currentUser) return showStatus('Login required', 'error');
             actionBtn.disabled = true;
-            actionBtn.innerHTML = '<div class="spinner-small"></div>'; 
-
             const followRef = ref(db, `/users/${data.uid}/followers/${currentUser.uid}`);
             const followingRef = ref(db, `/following/${currentUser.uid}/${data.uid}`);
             const snap = await get(followRef);
@@ -936,18 +1387,17 @@ async function renderPoll(pollId, data, following = []) {
                     await remove(followingRef); 
                 }
                 document.querySelectorAll(`.poll-card[data-uid="${data.uid}"] .follow-btn`).forEach(btn => {
-                    btn.disabled = false;
                     btn.textContent = state ? 'Following' : 'Follow';
                     btn.classList.toggle('following', state);
+                    btn.disabled = false;
                 });
-            } catch (err) {
-                actionBtn.disabled = false;
-                actionBtn.textContent = isFollowing ? 'Following' : 'Follow';
-            }
-        });
+            } catch (err) { actionBtn.disabled = false; }
+        };
     }
-    authorSection.append(actionBtn); card.appendChild(authorSection);
+    authorSection.append(actionBtn); 
+    card.appendChild(authorSection);
 
+    // Fetch User Info
     get(ref(db, `/users/${data.uid}`)).then(uSnap => {
         const u = uSnap.val() || {}; 
         profileImg.src = u.profilePic || 'default-avatar.png'; 
@@ -955,27 +1405,23 @@ async function renderPoll(pollId, data, following = []) {
         if (u.followers && Object.keys(u.followers).length >= 1000) {
             const badge = document.createElement('img'); 
             badge.src = 'https://img.icons8.com/stickers/100/verified-badge.png';
-            badge.className = 'verified-badge'; badge.style.cssText = 'width:16px;height:16px;margin-left:4px;'; 
+            badge.className = 'verified-badge'; 
+            badge.style.cssText = 'width:14px;height:14px;margin-left:4px;vertical-align:middle;'; 
             authorHandle.appendChild(badge);
         }
     });
 
     const title = document.createElement('h2'); title.textContent = data.question; card.appendChild(title);
 
-    // --- Stats & View Comments Header ---
+    // --- Header Stats ---
     const statsHeader = document.createElement('div');
     statsHeader.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;';
-    
     const counter = document.createElement('div');
-    counter.className = 'comment-counter';
-    counter.style.fontSize = '12px';
-    counter.textContent = 'Comments: 0';
-    
+    counter.className = 'comment-counter'; counter.style.fontSize = '12px'; counter.textContent = 'Comments: 0';
     const viewCommentsBtn = document.createElement('button');
     viewCommentsBtn.textContent = 'VIEW COMMENTS';
     viewCommentsBtn.style.cssText = 'background:var(--accent); color:black; border:none; padding:4px 10px; border-radius:6px; font-weight:900; font-size:10px; cursor:pointer;';
     viewCommentsBtn.onclick = () => window.openComments(pollId, 'poll'); 
-    
     statsHeader.append(counter, viewCommentsBtn);
     card.appendChild(statsHeader);
 
@@ -985,14 +1431,14 @@ async function renderPoll(pollId, data, following = []) {
         const li = document.createElement('li'); 
         li.innerHTML = `<div class="vote-bar"></div><div class="vote-label"><span>${opt}</span><span>0 votes</span></div>`;
         ul.appendChild(li);
-        li.addEventListener('click', async () => {
-            if (!currentUser) { showStatus('Login required', 'error'); return; }
+        li.onclick = async () => {
+            if (!currentUser) return showStatus('Login required', 'error');
             const userVoteRef = ref(db, `/pollVotes/${pollId}/${currentUser.uid}`);
             const votedSnap = await get(userVoteRef);
-            if (votedSnap.exists()) { showStatus('You already voted', 'error'); return; }
+            if (votedSnap.exists()) return showStatus('Already voted', 'error');
             await runTransaction(ref(db, `/poll/${pollId}/votes/${idx}`), v => (v || 0) + 1);
             await update(userVoteRef, { option: idx });
-        });
+        };
     });
 
     onValue(ref(db, `/poll/${pollId}/votes`), snap => {
@@ -1004,7 +1450,7 @@ async function renderPoll(pollId, data, following = []) {
         });
     });
 
-    // --- Inline Comment List (Read Only) ---
+    // --- Inline Comment List ---
     const list = document.createElement('div'); 
     list.className = 'comments-list'; 
     list.style.cssText = 'height:100px; overflow-y:auto; border-top:1px solid #222; margin-top:5px; padding:5px 0;';
@@ -1018,22 +1464,52 @@ async function renderPoll(pollId, data, following = []) {
         for (const [key, c] of sorted) {
             const userSnap = await get(ref(db, `/users/${c.uid}`));
             const u = userSnap.val() || {};
+            const isCommentMe = currentUser && currentUser.uid === c.uid;
+            const cPath = isCommentMe ? '/profile' : `/profile?user=${c.uid}`;
+            
             const div = document.createElement('div');
             div.style.cssText = 'font-size:11px; margin-bottom:4px; display:flex; align-items:center; gap:5px;';
-            div.innerHTML = `<img src="${u.profilePic || 'default-avatar.png'}" style="width:18px;height:18px;border-radius:50%;"> 
-                            <span><strong>@${u.handle || 'user'}</strong>: ${c.text}</span>`;
+            div.innerHTML = `<img src="${u.profilePic || 'default-avatar.png'}" style="width:18px;height:18px;border-radius:50%; object-fit:cover; cursor:pointer;" onclick="window.location.href='${cPath}'"> 
+                            <span><strong style="cursor:pointer;" onclick="window.location.href='${cPath}'">@${u.handle || 'user'}</strong>: ${c.text}</span>`;
             list.appendChild(div);
         }
         list.scrollTop = list.scrollHeight;
     });
 
-    // --- Removed Input Form ---
-    // User must click "VIEW COMMENTS" to add a new comment
+    // --- Action Footer ---
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);';
+    const btnStyle = 'flex:1; background:rgba(255,255,255,0.05); color:#fff; border:1px solid #333; padding:8px; border-radius:10px; font-size:11px; font-weight:900; cursor:pointer;';
+    
+    const shareBtn = document.createElement('button');
+    shareBtn.innerHTML = '🔗 SHARE'; 
+    shareBtn.style.cssText = btnStyle;
+    shareBtn.onclick = async () => {
+        const url = `${window.location.origin}/poll/?id=${pollId}`;
+        try {
+            if (navigator.share) await navigator.share({ title: 'Poll', text: data.question, url: url });
+            else throw new Error();
+        } catch (err) {
+            navigator.clipboard.writeText(url);
+            showStatus('Link Copied!', 'success');
+        }
+    };
 
-    // --- Footer ---
-    const footer = document.createElement('div'); footer.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;opacity:0.5;margin-top:10px;';
-    const timeSpan = document.createElement('span'); timeSpan.textContent = timeAgo(data.timestamp || Date.now());
-    const viewsSpan = document.createElement('span'); viewsSpan.textContent = 'Views: 0';
+    const reportBtn = document.createElement('button');
+    reportBtn.innerHTML = '🚩 REPORT'; 
+    reportBtn.style.cssText = btnStyle + 'background:rgba(255,75,75,0.1); color:#FF4B4B; border-color:rgba(255,75,75,0.2);';
+    reportBtn.onclick = () => { if (window.submitReport) window.submitReport(pollId, 'poll'); };
+
+    actions.append(shareBtn, reportBtn);
+    card.appendChild(actions);
+
+    // --- Footer Metadata ---
+    const footer = document.createElement('div'); 
+    footer.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;opacity:0.5;margin-top:10px;';
+    const timeSpan = document.createElement('span'); 
+    timeSpan.textContent = timeAgo(data.timestamp || Date.now());
+    const viewsSpan = document.createElement('span'); 
+    viewsSpan.textContent = 'Views: 0';
     footer.append(timeSpan, viewsSpan); card.appendChild(footer);
     
     runTransaction(ref(db, `/pollViews/${pollId}`), v => (v || 0) + 1).then(tx => { 
@@ -1042,6 +1518,7 @@ async function renderPoll(pollId, data, following = []) {
 
     pollFeed.appendChild(card);
 }
+
 
 /* ================= FEED (POSTS) LOGIC ================= */
 /* ================= FEED (POSTS) LOGIC ================= */
@@ -1055,6 +1532,7 @@ async function startUniverse() {
     displayedCount = 0; 
     renderBatch();
 }
+
 
 function renderBatch() {
     const feed = document.getElementById('feed'); 
@@ -1072,8 +1550,6 @@ function renderBatch() {
         card.className = 'card'; 
         feed.appendChild(card);
 
-        // --- UPDATE VIEWS ON LOAD/REFRESH ---
-        // This triggers immediately when the post appears in the batch
         runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
 
         onValue(ref(db, `post/${id}`), (pSnap) => {
@@ -1085,17 +1561,56 @@ function renderBatch() {
                 const fc = count(u.followers); 
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
                 
+                // Logic for Self-Check
+                const isMe = auth.currentUser && auth.currentUser.uid === p.uid;
+                const profileLink = isMe ? '/profile' : `/profile?user=${p.uid}`;
+
+                // --- SLIDESHOW TITLE LOGIC ---
+                const titleHTML = p.title.length > 20 
+                    ? `<div class="title-scroll-wrap"><div class="scrolling-text">${p.title} &nbsp;&nbsp;&nbsp; ${p.title} &nbsp;&nbsp;&nbsp;</div></div>`
+                    : p.title;
+
+                // --- UPDATED MONETIZATION UI ---
+                const sponsoredSection = p.sponsored ? `
+                  <div style="margin-top: 15px; text-align: center;">
+                    <button onclick="window.open('${p.link}', '_blank')" 
+                            style="width:100%; padding:14px; border:none; border-radius:12px; 
+                            background:#fff; color:#000; font-weight:900; font-size:14px; 
+                            cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;
+                            display:flex; align-items:center; justify-content:center; gap:8px;">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="black"><path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/></svg>
+                      VISIT SPONSORED
+                    </button>
+                    <div style="color:#00E052; font-size:10px; font-weight:800; margin-top:8px; text-transform:uppercase; letter-spacing:0.3px; line-height:1.4;">
+                      By clicking, you are supporting this creator.<br>
+                      <span style="color:#ff453a;">The creator monetized this post.</span>
+                    </div>
+                  </div>
+                ` : '';
+
                 card.innerHTML = `
                 <div class="header">
-                  <img src="${u.profilePic || ''}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
-                  <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='/profile?user=${p.uid}'">
+                  <img src="${u.profilePic || ''}" class="avatar" style="cursor:pointer;" onclick="window.location.href='${profileLink}'">
+                  <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='${profileLink}'">
                     <div style="font-weight:900; display:flex; align-items:center; gap:4px;">@${u.handle || 'user'} ${fc >= 1000 ? '✅' : ''}</div>
                     <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                   </div>
-                  <button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                  
+                  ${isMe 
+                    ? `<button class="btn-action" style="background:#333; color:#fff; border-bottom-color:#555;" onclick="window.location.href='/profile'">MANAGE</button>`
+                    : `<button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>`
+                  }
                 </div>
-                <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
-                <div class="glass-title-row"><h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${p.title}</h3></div>
+
+                <div style="position:relative;">
+                   <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
+                   ${p.sponsored ? '<span style="position:absolute; top:10px; right:10px; background:rgba(0,191,255,0.9); padding:4px 8px; border-radius:6px; font-size:9px; font-weight:900; color:#000; text-transform:uppercase;">Monetized</span>' : ''}
+                </div>
+
+                <div class="glass-title-row">
+                    <h3 style="margin:0; font-size:17px; font-weight:900; color:white;">${titleHTML}</h3>
+                </div>
+
                 <div style="padding:0 16px 15px 16px;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                     <div style="display:flex; gap:20px;">
@@ -1110,14 +1625,19 @@ function renderBatch() {
                     </div>
                     <span style="font-size:10px; color:var(--text-dim); font-weight:900;">${timeAgo(p.timestamp)}</span>
                   </div>
-                  <div style="font-size:10px; color:var(--accent); font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
+                  <div style="font-size:10px; color:var(--accent); font-weight:800; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
                   <div style="font-size:14px; line-height:1.4;">${p.description ? p.description.substring(0, 70) : ''}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="openReadMore('${id}')">Read More</span></div>
+                  
+                  ${sponsoredSection}
                 </div>`;
             });
         });
     });
     displayedCount += batchSize;
 }
+
+
+
 
 /* ================= UPDATED MODAL VIEW LOGIC ================= */
 // We removed the transaction from here so we don't double-count views
@@ -1245,12 +1765,27 @@ window.openReadMore = async (id) => {
         const p = snap.val();
         if (!p) return;
 
+        // Generate the unique link
+        const shareURL = `${window.location.origin}/post?id=${id}`;
+
         document.getElementById('detTitle').innerText = p.title || "No Title";
         document.getElementById('detCategory').innerText = `CATEGORY: ${(p.category || 'General').toUpperCase()}`;
         document.getElementById('detStats').innerHTML = `
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${p.views || 0} Views</div>
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${p.likeCount || 0} Likes</div>`;
-        document.getElementById('detDesc').innerText = p.description || "";
+        
+        // Added the Share Section here
+        document.getElementById('detDesc').innerHTML = `
+            <div>${p.description || ""}</div>
+            
+            <div class="share-container">
+                <div class="share-label">Share with friends</div>
+                <div class="share-link-row">
+                    <input type="text" class="share-input" value="${shareURL}" id="shareInput-${id}" readonly>
+                    <button class="btn-copy" onclick="window.copyPostLink('${id}')">COPY</button>
+                </div>
+            </div>
+        `;
         
         const repBtn = document.getElementById('repBtnMain');
         if (repBtn) {
@@ -1261,6 +1796,7 @@ window.openReadMore = async (id) => {
         document.getElementById('detailsModal').classList.add('active');
     } catch(e) { console.error("Error opening details:", e); }
 };
+
 
 window.submitReport = async (tid, type) => {
     if(!auth.currentUser) return notify("Login required", "error");
@@ -1288,6 +1824,7 @@ onAuthStateChanged(auth, async user => {
     // --- LOADING INITIALIZATION ---
     const pctLabel = document.getElementById('load-pct');
     const loader = document.getElementById('ios-loader');
+    const authBtn = document.getElementById('authActionBtn'); // Get the button element
     const updatePct = (val) => { if(pctLabel) pctLabel.innerText = val + '%'; };
 
     // 15-second Rescue Timer (Failsafe)
@@ -1301,20 +1838,39 @@ onAuthStateChanged(auth, async user => {
     }, 15000);
 
     try {
-        updatePct(10); // Start
+        updatePct(10); 
         
         currentUser = user || null;
+
+        // --- DYNAMIC LOGIN/LOGOUT BUTTON LOGIC ---
+        if (authBtn) {
+            if (user) {
+                // USER LOGGED IN: SHOW RED LOGOUT
+                authBtn.innerText = "Logout";
+                authBtn.style.background = "#FF4B4B"; // Red
+                authBtn.style.color = "white";
+                authBtn.onclick = () => {
+                    auth.signOut().then(() => location.reload());
+                };
+            } else {
+                // USER LOGGED OUT: SHOW GREEN LOGIN
+                authBtn.innerText = "Login";
+                authBtn.style.background = "#00E052"; // Green
+                authBtn.style.color = "black";
+                authBtn.onclick = () => {
+                    window.location.href = '/login'; // Adjust path as needed
+                };
+            }
+        }
+
         if (user) {
             const uid = user.uid;
             userLinkInput.value = `${location.origin}/profile?uid=${uid}`;
             
-            // --- 1. START SECURITY & ANNOUNCEMENT WATCHER ---
             checkUserSecurity(user); 
             updatePct(25);
             
             refreshStats();
-            
-            // Load social tab data early
             showSocialTab('followers'); 
             
             const snap = await get(ref(db, `users/${uid}`));
@@ -1335,7 +1891,6 @@ onAuthStateChanged(auth, async user => {
             updatePct(45);
         }
 
-        // --- FETCH CONTENT (PERCENTAGE UPDATES) ---
         await loadFeaturedUsers();
         updatePct(65);
         
@@ -1345,34 +1900,23 @@ onAuthStateChanged(auth, async user => {
         await startUniverse();
         updatePct(100);
 
-        // --- SUCCESS & EXIT ---
         clearTimeout(rescueTimer);
 
-        // 3 SECOND DELAY (iOS premium feel)
         setTimeout(() => {
             if (loader) {
                 loader.style.opacity = '0';
-                // Restore scroll
                 document.body.style.overflow = 'auto';
                 document.body.style.setProperty('overflow', 'auto', 'important');
-                
-                setTimeout(() => {
-                    loader.remove();
-                }, 800);
+                setTimeout(() => loader.remove(), 800);
             }
         }, 3000);
 
     } catch (error) {
         console.error("Loading Error:", error);
-        // Force unlock if something breaks
         if (loader) loader.remove();
         document.body.style.overflow = 'auto';
     }
 });
-
-
-
-
 
 // Confirm Popups
 confirmNo?.addEventListener('click', () => { confirmPopup.style.display = 'none'; deletePollId = null; });
@@ -1551,22 +2095,27 @@ document.getElementById('socialList').addEventListener('scroll', function(e) {
     }
 });
 
-/* --- FIXED SECURITY & ANNOUNCEMENT LOGIC --- */
-window.isBlacklisted = false; // Global flag
+/* --- FINALIZED SECURITY & ANNOUNCEMENT SYSTEM --- */
+window.isBlacklisted = false;
+let securityListener = null;
+let announceListener = null;
 
 async function checkUserSecurity(user) {
+    // Cleanup previous listeners to prevent memory leaks/duplicate popups
+    if (securityListener) securityListener();
+    if (announceListener) announceListener();
+
     if (!user) return;
     
-    // 1. Real-time Security Watch
-    // We target the specific securityStatus node for better performance
-    onValue(ref(db, `users/${user.uid}/securityStatus`), (snap) => {
+    // 1. REAL-TIME SECURITY WATCH
+    const securityRef = ref(db, `users/${user.uid}/securityStatus`);
+    securityListener = onValue(securityRef, (snap) => {
         const status = snap.val() || { type: 'clear' };
 
         if (status.type === 'banned') {
-            showBanModal(status.reason || "Violation of terms");
+            showBanModal(status.reason || "Violation of terms", user.uid);
         } else if (status.type === 'blacklisted') {
             window.isBlacklisted = true;
-            // Notify only once per session
             if (!sessionStorage.getItem('notified_blacklist')) {
                 notify("Account Blacklisted: Interactions restricted", "error");
                 sessionStorage.setItem('notified_blacklist', 'true');
@@ -1577,70 +2126,86 @@ async function checkUserSecurity(user) {
         }
     });
 
-    // 2. Global & Personal Announcements
+    // 2. PERMANENT & EXPIRING ANNOUNCEMENTS
     const announceRef = ref(db, 'announcements');
-    onValue(announceRef, (snap) => {
+    announceListener = onValue(announceRef, async (snap) => {
         if (!snap.exists()) return;
-        
+
+        // Fetch user's "seen" history from Firebase
+        const seenSnap = await get(ref(db, `users/${user.uid}/seenAnnouncements`));
+        const seenAnnouncements = seenSnap.val() || {};
+        const now = Date.now();
+
         snap.forEach(child => {
             const announcement = child.val();
             const announceId = child.key;
-            
-            // Check if user has already seen this specific announcement this session
-            if (sessionStorage.getItem(`seen_announce_${announceId}`)) return;
 
-            // Show if global OR if specifically for this user UID
-            if (announcement.target === 'all' || announcement.target === user.uid) {
-                showAnnouncement(announcement, announceId);
+            // Logic Check: Not expired + Not seen before + Correct target
+            const isExpired = announcement.expiry && now > announcement.expiry;
+            const alreadySeen = seenAnnouncements[announceId];
+            const isTargeted = announcement.target === 'all' || announcement.target === user.uid;
+
+            if (!isExpired && !alreadySeen && isTargeted) {
+                // Check if already on screen to prevent duplicates
+                if (!document.getElementById(`announce-${announceId}`)) {
+                    showAnnouncement(announcement, announceId, user.uid);
+                }
             }
         });
     });
 }
 
-async function showBanModal(reason) {
-    const user = auth.currentUser;
-    let appealStatus = null;
+function showAnnouncement(data, id, uid) {
+    const notifyDiv = document.createElement('div');
+    notifyDiv.id = `announce-${id}`;
+    notifyDiv.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+        width: 90%; max-width: 400px; background: #000; color: #fff; 
+        padding: 15px; border-radius: 20px; z-index: 10000; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 2px solid #fff; 
+        font-weight: 900; display: flex; flex-direction: column; 
+        animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    `;
+    
+    notifyDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:8px;">
+            <span style="font-size:10px; letter-spacing:1px; color:#fff;">📢 RBX UPDATE</span>
+            <button id="close-${id}" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <p style="margin:0; font-size:13px; font-weight:700; color:#ccc;">${data.message}</p>
+    `;
+    
+    document.body.appendChild(notifyDiv);
 
-    try {
-        const snapshot = await get(ref(db, `users/${user.uid}/appealStatus`));
-        appealStatus = snapshot.val();
-    } catch (e) {
-        console.error("Error fetching appeal status:", e);
-    }
+    document.getElementById(`close-${id}`).onclick = async () => {
+        // Mark as seen in Database so it never shows again for this user
+        try {
+            await update(ref(db, `users/${uid}/seenAnnouncements`), {
+                [id]: true
+            });
+        } catch (e) { console.error("History sync failed", e); }
 
-    let appealHTML = '';
-    if (appealStatus === "pending") {
-        appealHTML = `
-            <p style="color:#00E052; font-weight:900; background:rgba(0,224,82,0.1); padding:15px; border-radius:12px; border: 1px solid #00E052;">
-                APPEAL UNDER REVIEW<br>
-                <span style="font-size:11px; font-weight:400; color:#aaa;">Check back later for a decision.</span>
-            </p>`;
-    } else {
-        appealHTML = `
-            <button id="submitAppealBtn" 
-                    style="background:#fff; color:#000; border:none; width:100%; padding:15px; border-radius:15px; font-weight:900; cursor:pointer; transition: 0.2s;">
-                SUBMIT APPEAL
-            </button>`;
-    }
+        notifyDiv.style.opacity = "0";
+        setTimeout(() => notifyDiv.remove(), 400);
+    };
+}
+
+// --- BAN MODAL & UTILS ---
+async function showBanModal(reason, uid) {
+    const snapshot = await get(ref(db, `users/${uid}/appealStatus`));
+    const appealStatus = snapshot.val();
+
+    let appealHTML = appealStatus === "pending" 
+        ? `<p style="color:#00E052; font-weight:900; background:rgba(0,224,82,0.1); padding:15px; border-radius:12px; border: 1px solid #00E052;">APPEAL UNDER REVIEW</p>`
+        : `<button id="submitAppealBtn" style="background:#fff; color:#000; border:none; width:100%; padding:15px; border-radius:15px; font-weight:900; cursor:pointer;">SUBMIT APPEAL</button>`;
 
     document.body.innerHTML = `
-        <div style="position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:99999; color:white; text-align:center; padding:20px; font-family:sans-serif;">
-            <div style="position:relative; max-width:400px; width:100%; background:#000; padding:40px; border-radius:30px; border:2px solid #fff; box-shadow:0 0 50px rgba(255,255,255,0.1);">
-                
-                <img src="https://i.imgur.com/cM3Givj.jpeg" 
-                     alt="RBX Community" 
-                     style="height:40px; width:auto; max-width:100%; object-fit:contain; margin-bottom:20px; display:block; margin-left:auto; margin-right:auto;">
-
-                <div style="font-size:50px; margin-bottom:10px;">🚫</div>
-                <h1 style="color:#fff; font-size:24px; font-weight:900; letter-spacing:1px;">ACCESS REVOKED</h1>
-                <p style="margin:20px 0; color:#aaa; line-height:1.6;">Your account has been suspended for:<br>
-                <strong style="color:#fff; display:block; margin-top:10px; font-size:16px; text-transform:uppercase;">${reason}</strong></p>
-                
-                <div id="appealArea">
-                    ${appealHTML}
-                </div>
-                
-                <p style="font-size:10px; color:#555; margin-top:20px; letter-spacing:2px;">RBX COMMUNITY SECURITY SYSTEM</p>
+        <div style="position:fixed; inset:0; background:#000; display:flex; align-items:center; justify-content:center; z-index:99999; color:white; text-align:center; font-family:sans-serif;">
+            <div style="max-width:400px; width:100%; padding:40px; border-radius:30px; border:2px solid #fff;">
+                <div style="font-size:50px;">🚫</div>
+                <h1 style="font-size:24px; font-weight:900;">ACCESS REVOKED</h1>
+                <p style="color:#aaa;">Reason: <strong>${reason}</strong></p>
+                <div id="appealArea">${appealHTML}</div>
             </div>
         </div>`;
 
@@ -1648,75 +2213,12 @@ async function showBanModal(reason) {
     if (btn) {
         btn.onclick = async () => {
             btn.innerText = "SENDING...";
-            btn.disabled = true;
-            try {
-                await update(ref(db, `users/${user.uid}`), {
-                    appealStatus: "pending",
-                    appealTimestamp: Date.now()
-                });
-                document.getElementById('appealArea').innerHTML = `
-                    <p style="color:#00E052; font-weight:900; background:rgba(0,224,82,0.1); padding:15px; border-radius:12px; border: 1px solid #00E052;">
-                        APPEAL SUBMITTED.<br><span style="font-size:11px; font-weight:400; color:#aaa;">Our admins will review your request.</span>
-                    </p>`;
-            } catch (e) {
-                btn.innerText = "ERROR - TRY AGAIN";
-                btn.disabled = false;
-            }
+            await update(ref(db, `users/${uid}`), { appealStatus: "pending", appealTimestamp: Date.now() });
+            location.reload(); // Reload to show the "Under Review" state
         };
     }
-
     window.stop(); 
 }
-
-
-
-
-
-
-
-function showAnnouncement(data, id) {
-    const notifyDiv = document.createElement('div');
-    // Styling: Black background, white border, white text
-    notifyDiv.style.cssText = `
-        position: fixed; 
-        top: 20px; 
-        left: 50%; 
-        transform: translateX(-50%); 
-        width: 90%; 
-        max-width: 400px; 
-        background: #000; 
-        color: #fff; 
-        padding: 15px; 
-        border-radius: 20px; 
-        z-index: 10000; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-        border: 2px solid #fff; 
-        font-weight: 900; 
-        display: flex; 
-        flex-direction: column; 
-        animation: slideDown 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    `;
-    
-    notifyDiv.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:8px;">
-            <span style="font-size:10px; letter-spacing:1px; color:#fff;">📢 RBX COMMUNITY UPDATE</span>
-            <button id="close-announce-${id}" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; font-weight:bold;">&times;</button>
-        </div>
-        <p style="margin:0; font-size:13px; font-weight:700; line-height:1.4; color:#ccc;">${data.message}</p>
-    `;
-    
-    document.body.appendChild(notifyDiv);
-
-    document.getElementById(`close-announce-${id}`).onclick = () => {
-        notifyDiv.style.transform = "translateX(-50%) translateY(-100px)";
-        notifyDiv.style.opacity = "0";
-        setTimeout(() => {
-            notifyDiv.remove();
-            sessionStorage.setItem(`seen_announce_${id}`, 'true');
-        }, 400);
-    };
-}
-
 
 </script>
 
