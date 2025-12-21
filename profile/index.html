@@ -114,6 +114,7 @@
         <div class="info-row"><span class="info-label">Story Count</span><span id="info-stories">0</span></div>
         <button class="btn btn-msg" style="width:100%; margin-top:20px; background:#fff; color:#000;" onclick="closeAbout()">Close</button>
     </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
@@ -131,10 +132,8 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // Get the user whose profile we are viewing
     const targetUID = new URLSearchParams(window.location.search).get('user');
 
-    // UI Helpers
     window.openAbout = () => { 
         document.getElementById('aboutModal').classList.add('open'); 
         document.getElementById('overlay').style.display = 'block'; 
@@ -152,51 +151,33 @@
     };
 
     async function init() {
-        if (!targetUID) {
-            console.error("No target user UID found in URL.");
-            return;
-        }
+        if (!targetUID) return;
 
-        // 1. Load Profile Header Data
         onValue(ref(db, `users/${targetUID}`), (snap) => {
             const d = snap.val() || {};
             document.getElementById('uHandle').innerText = d.handle || "user";
             document.getElementById('bioText').innerText = d.bio || "No bio available.";
             document.getElementById('info-date').innerText = d.createdAt || "Long ago";
-            
-            if (d.profilePic) {
-                document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
-            }
-            
+            if (d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
             const followers = d.followers ? Object.keys(d.followers).length : 0;
             document.getElementById('info-followers').innerText = followers;
             document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
         });
 
-        // 2. Handle Follow/Message Logic
         onAuthStateChanged(auth, (user) => {
             const fBtn = document.getElementById('followBtn');
             const mBtn = document.getElementById('msgBtn');
-            
-            // Hide buttons if viewing own profile or not logged in
-            if (!user || user.uid === targetUID) {
-                fBtn.style.display = 'none';
-                mBtn.style.display = 'none';
-                return;
-            }
+            if (!user || user.uid === targetUID) return;
 
             fBtn.style.display = 'block';
             mBtn.style.display = 'block';
-            
-            // Clean Path Redirect for Messages
-            mBtn.onclick = () => window.location.href = `/messages/${targetUID}`;
+            // Keeping messages standard for now, but following the folder pattern
+            mBtn.onclick = () => window.location.href = `/messages/?chat=${targetUID}`;
 
-            // Check following status
             onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
                 const isF = snap.exists();
                 fBtn.innerText = isF ? "Unfollow" : "Follow";
                 fBtn.className = isF ? "btn btn-unfollow" : "btn btn-follow";
-                
                 fBtn.onclick = () => {
                     const updates = {};
                     updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
@@ -206,7 +187,6 @@
             });
         });
 
-        // 3. Dynamic Section Loader (Posts, Polls, Stories)
         const loadSection = (path, divId, type) => {
             onValue(ref(db, path), (snap) => {
                 const box = document.getElementById(divId);
@@ -217,41 +197,33 @@
                     Object.entries(snap.val()).forEach(([id, item]) => {
                         if (item.uid !== targetUID) return;
                         count++;
-                        
                         const el = document.createElement('div');
                         
                         if (type === 'grid') {
                             el.className = "grid-item";
                             el.style.backgroundImage = `url('${item.image || item.url}')`;
-                            // REDIRECT FIX: Uses /post/ID or /story/ID
-                            el.onclick = () => window.location.href = `/${path}/${id}`;
+                            // FIXED REDIRECT: Goes to /post/?id=... or /story/?id=...
+                            el.onclick = () => window.location.href = `/${path}/?id=${id}`;
                         } else {
-                            // Style for Polls list
                             el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222; cursor:pointer;";
                             el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
-                            // REDIRECT FIX: Uses /poll/ID
-                            el.onclick = () => window.location.href = `/${path}/${id}`;
+                            // FIXED REDIRECT: Goes to /poll/?id=...
+                            el.onclick = () => window.location.href = `/${path}/?id=${id}`;
                         }
                         box.appendChild(el);
                     });
                 }
 
-                if (count === 0) {
-                    box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
-                }
-                
-                // Update the count in the "About" modal
+                if (count === 0) box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
                 const counterEl = document.getElementById(`info-${path}s`);
-                if (counterEl) counterEl.innerText = count;
+                if(counterEl) counterEl.innerText = count;
             });
         };
 
-        // Initialize sections
         loadSection('post', 'posts', 'grid');
         loadSection('poll', 'polls', 'list');
         loadSection('story', 'stories', 'grid');
 
-        // 4. Loader Fade Out
         setTimeout(() => {
             const loader = document.getElementById('loader');
             if (loader) {
