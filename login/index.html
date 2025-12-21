@@ -3,35 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>Profile | RBX Community</title>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; padding: 40px 20px; }
-        .profile-card { text-align: center; width: 100%; max-width: 350px; }
+        :root { --accent: #0A84FF; }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .back-btn { background: none; color: var(--accent); border: none; cursor: pointer; float: left; }
         
-        /* Matching your Signup UI style */
-        .pfp-display { 
+        .profile-container { margin-top: 50px; }
+        .pfp { 
             width: 110px; height: 110px; border-radius: 50%; 
             border: 1.5px solid rgba(255,255,255,0.9); 
-            margin: 0 auto 20px; background-size: cover; background-position: center;
+            margin: 0 auto; background-size: cover; background-position: center;
             background-color: #111;
         }
-        .handle-display { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-        .status-msg { color: #555; margin-top: 10px; font-size: 14px; }
+        .handle { font-size: 22px; font-weight: 800; margin-top: 15px; }
+        .bio { color: #888; font-size: 14px; margin-top: 5px; }
+        
+        #loading-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="profile-card">
-        <div id="pfp" class="pfp-display"></div>
-        <div id="handle" class="handle-display">Loading...</div>
-        <div id="status" class="status-msg"></div>
+    <div id="loading-overlay">Loading...</div>
+
+    <button class="back-btn" onclick="window.history.back()">← Back</button>
+
+    <div class="profile-container">
+        <div id="uPfp" class="pfp"></div>
+        <div id="uHandle" class="handle">@username</div>
+        <div id="uBio" class="bio">RBX Community Member</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // Using your exact config from your signup page
         const config = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -43,44 +52,56 @@
         const app = initializeApp(config);
         const db = getDatabase(app);
 
-        // 1. Get the UID from the URL (?user=...)
-        const params = new URLSearchParams(window.location.search);
-        const uidFromUrl = params.get('user');
+        // BULLETPROOF UID DETECTION
+        const getUID = () => {
+            const params = new URLSearchParams(window.location.search);
+            let uid = params.get('user');
+            if(!uid) {
+                // Backup check if Vercel strips the query key
+                uid = window.location.href.split('user=')[1];
+            }
+            return uid;
+        };
 
-        async function fetchUserProfile() {
-            if (!uidFromUrl) {
-                document.getElementById('handle').innerText = "No UID provided";
+        const targetUid = getUID();
+
+        async function loadProfile() {
+            if (!targetUid) {
+                document.getElementById('uHandle').innerText = "User ID Missing";
+                document.getElementById('loading-overlay').style.display = 'none';
                 return;
             }
 
             try {
-                // 2. Point exactly to 'users/UID'
-                const userRef = ref(db, `users/${uidFromUrl}`);
+                // Fetching from your 'users' node
+                const userRef = ref(db, 'users/' + targetUid);
                 const snapshot = await get(userRef);
 
                 if (snapshot.exists()) {
-                    const userData = snapshot.val();
+                    const data = snapshot.val();
                     
-                    // 3. Load the specific data your signup stored
-                    document.getElementById('handle').innerText = "@" + userData.handle;
+                    // Set Data
+                    document.getElementById('uHandle').innerText = "@" + data.handle;
                     
-                    if (userData.profilePic) {
-                        document.getElementById('pfp').style.backgroundImage = `url('${userData.profilePic}')`;
+                    if (data.profilePic) {
+                        document.getElementById('uPfp').style.backgroundImage = `url('${data.profilePic}')`;
                     }
                     
-                    document.getElementById('status').innerText = "Profile verified";
+                    // Hide loader
+                    document.getElementById('loading-overlay').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loading-overlay').remove(), 500);
+                    
                 } else {
-                    document.getElementById('handle').innerText = "User not found";
-                    document.getElementById('status').innerText = "This UID does not exist in our database.";
+                    document.getElementById('uHandle').innerText = "User Not Found";
+                    document.getElementById('loading-overlay').innerText = "Error: User ID not in Database";
                 }
-            } catch (error) {
-                console.error(error);
-                document.getElementById('handle').innerText = "Error";
-                document.getElementById('status').innerText = "Check your connection or Firebase rules.";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading-overlay').innerText = "Connection Error";
             }
         }
 
-        fetchUserProfile();
+        loadProfile();
     </script>
 </body>
 </html>
