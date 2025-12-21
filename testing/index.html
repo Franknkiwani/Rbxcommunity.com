@@ -1774,15 +1774,27 @@ window.openReadMore = async (id) => {
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${p.views || 0} Views</div>
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${p.likeCount || 0} Likes</div>`;
         
-        // Added the Share Section here
+        // UI for Description + Integrated Share API and Copy
         document.getElementById('detDesc').innerHTML = `
-            <div>${p.description || ""}</div>
+            <div style="margin-bottom:20px; line-height:1.6;">${p.description || ""}</div>
             
-            <div class="share-container">
-                <div class="share-label">Share with friends</div>
-                <div class="share-link-row">
-                    <input type="text" class="share-input" value="${shareURL}" id="shareInput-${id}" readonly>
-                    <button class="btn-copy" onclick="window.copyPostLink('${id}')">COPY</button>
+            <div class="share-container" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
+                <div class="share-label" style="font-weight:900; font-size:12px; margin-bottom:10px; color:var(--accent);">SHARE THIS POST</div>
+                
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <button class="btn-action" style="flex:1; background:var(--accent); color:#000; font-weight:900;" 
+                        onclick="window.systemShare('${p.title}', '${shareURL}')">
+                        📲 SHARE NOW
+                    </button>
+                </div>
+
+                <div class="share-link-row" style="display:flex; gap:5px; background:#000; padding:5px; border-radius:8px;">
+                    <input type="text" class="share-input" value="${shareURL}" id="shareInput-${id}" readonly 
+                        style="background:transparent; border:none; color:#fff; font-size:11px; flex-grow:1; padding-left:5px; outline:none;">
+                    <button class="btn-copy" onclick="window.copyPostLink('${id}')" 
+                        style="background:#333; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:900; cursor:pointer; font-size:11px;">
+                        COPY
+                    </button>
                 </div>
             </div>
         `;
@@ -1796,6 +1808,7 @@ window.openReadMore = async (id) => {
         document.getElementById('detailsModal').classList.add('active');
     } catch(e) { console.error("Error opening details:", e); }
 };
+
 
 
 window.submitReport = async (tid, type) => {
@@ -2219,6 +2232,50 @@ async function showBanModal(reason, uid) {
     }
     window.stop(); 
 }
+// 1. Web Share API (System Share)
+window.systemShare = async (title, url) => {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: `Check out this post on our app!`,
+                url: url
+            });
+        } catch (err) {
+            console.log("Share cancelled or failed");
+        }
+    } else {
+        // Fallback if system share isn't supported (mostly desktop browsers)
+        window.copyPostLinkManual(url);
+    }
+};
+
+// 2. Manual Copy Logic
+window.copyPostLink = (id) => {
+    const copyText = document.getElementById(`shareInput-${id}`);
+    
+    // Select the text field
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        // Show success status
+        if (typeof showStatus === 'function') {
+            showStatus("Link copied to clipboard!", "success");
+        } else {
+            alert("Copied!");
+        }
+    }).catch(err => {
+        console.error("Could not copy text: ", err);
+    });
+};
+
+// 3. Fallback Manual Copy (Used by systemShare if API is missing)
+window.copyPostLinkManual = (url) => {
+    navigator.clipboard.writeText(url);
+    showStatus("System share not supported. Link copied to clipboard!", "success");
+};
 
 </script>
 
