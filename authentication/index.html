@@ -1011,7 +1011,11 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     
     <div class="panel-top" style="display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:25px;">
       <div id="panelProfilePic" style="width:90px; height:90px; border-radius:50%; background:#222; overflow:hidden; border:2px solid #333; background-size:cover; background-position:center; background-repeat:no-repeat;"></div>
-      
+  <div id="handleDisplayContainer" style="background:#000; border:1px solid #fff; padding:6px 20px; border-radius:20px; margin-top:10px; display: inline-block;">
+  <span id="uniqueHandleDisplay" style="font-weight:900; font-size:14px; color:#fff; letter-spacing:0.5px; text-transform:lowercase;">@loading...</span>
+</div>
+
+
       <div id="userInfo" style="text-align:center; font-weight:bold; font-size:16px;"></div>
 
       <div style="display:flex; flex-direction:column; gap:8px; width:80%; margin-top:5px;">
@@ -1339,21 +1343,26 @@ headerProfile?.addEventListener('click', () => { profilePanel.classList.add('act
 closeProfile?.addEventListener('click', () => { profilePanel.classList.remove('active'); document.body.style.overflow = 'auto'; });
 copyBtn?.addEventListener('click', () => { if (!userLinkInput.value || userLinkInput.value.includes('Login')) return; navigator.clipboard.writeText(userLinkInput.value); notify(copyStatus, 'Copied'); });
 
-// Handle Input: Enforce 12-character limit
+// --- HANDLE INPUT LOGIC ---
 handleInput?.addEventListener('input', () => {
+    // Sync character counter if it exists in your HTML
+    const counterEl = document.getElementById('handleCharCount');
+    if (counterEl) counterEl.innerText = `${handleInput.value.length} / 12`;
+
     if (handleInput.value.length > 12) {
         handleInput.value = handleInput.value.substring(0, 12);
         notify(handleStatus, 'Max 12 characters', false);
     }
 });
 
-// Profile Picture Upload
+// --- PROFILE PICTURE UPLOAD ---
 panelProfilePic?.addEventListener('click', () => profileInput.click());
 profileInput?.addEventListener('change', async () => {
     if (!profileInput.files[0] || !currentUser) return;
 
+    // Pic limit check (shows on bio status as general feedback)
     const newHistory = await checkWeeklyLimit('profilePic');
-    if (!newHistory) return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+    if (!newHistory) return notify(saveProfileStatus, 'Pic Limit: 2 per week', false);
 
     uploadSpinner.style.display = 'block';
     const formData = new FormData();
@@ -1386,23 +1395,22 @@ profileInput?.addEventListener('change', async () => {
     uploadSpinner.style.display = 'none';
 });
 
-// Consolidated Profile Save
-saveProfileBtn?.addEventListener('click', async () => {
+// --- 1. SAVE HANDLE ONLY (Independence Fix) ---
+saveHandleBtn?.addEventListener('click', async () => {
     if (!currentUser) return;
-
     const h = handleInput.value.trim();
-    const b = userBioTextarea.value;
 
-    if (h.length < 3) return notify(saveProfileStatus, 'Handle too short', false);
-    if (h.length > 12) return notify(saveProfileStatus, 'Handle max 12 chars', false);
+    if (h.length < 3) return notify(handleStatus, 'Too short (min 3)', false);
+    if (h.length > 12) return notify(handleStatus, 'Too long (max 12)', false);
 
-    saveProfileSpinner.style.display = 'block';
-
+    saveHandleBtn.disabled = true;
     try {
+        // Weekly Limit: Moved notification to handleStatus
         const newHistory = await checkWeeklyLimit('profileInfo');
         if (!newHistory) {
-            saveProfileSpinner.style.display = 'none';
-            return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+            notify(handleStatus, 'Limit: 2 changes per week', false);
+            saveHandleBtn.disabled = false;
+            return;
         }
 
         const allSnap = await get(ref(db, 'users'));
@@ -1412,27 +1420,38 @@ saveProfileBtn?.addEventListener('click', async () => {
         );
 
         if (taken) {
-            saveProfileSpinner.style.display = 'none';
-            return notify(saveProfileStatus, 'Handle already taken!', false);
+            notify(handleStatus, 'Handle already taken!', false);
+        } else {
+            const updates = {};
+            updates[`users/${currentUser.uid}/handle`] = h;
+            updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+            
+            await update(ref(db), updates);
+            notify(handleStatus, 'Handle saved!');
         }
+    } catch (e) {
+        console.error(e);
+        notify(handleStatus, 'Save error!', false);
+    }
+    saveHandleBtn.disabled = false;
+});
 
-        const updates = {};
-        updates[`users/${currentUser.uid}/handle`] = h;
-        updates[`users/${currentUser.uid}/bio`] = b;
-        updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+// --- 2. SAVE BIO ONLY ---
+saveProfileBtn?.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const b = userBioTextarea.value;
 
-        await update(ref(db), updates);
-        await refreshStats();
-        notify(saveProfileStatus, 'Profile saved!');
+    saveProfileSpinner.style.display = 'block';
+    try {
+        // Updated: Bio saves independently and has no weekly limit
+        await update(ref(db, `users/${currentUser.uid}`), { bio: b });
+        notify(saveProfileStatus, 'Bio updated!');
     } catch (e) {
         console.error(e);
         notify(saveProfileStatus, 'Save error!', false);
     }
     saveProfileSpinner.style.display = 'none';
 });
-
-saveHandleBtn?.addEventListener('click', () => saveProfileBtn.click());
-
 
 /* ================= FEATURED USERS & POLLS ================= */
 async function loadFeaturedUsers() {
@@ -2647,6 +2666,32 @@ window.copyPostLinkManual = (url) => {
 document.getElementById('uploadBtn').addEventListener('click', () => {
     window.location.href = '/upload'; 
 });
+// Unique observer for the new black-and-white handle box
+function syncUniqueHandle() {
+    auth.onAuthStateChanged((user) => {
+        const display = document.getElementById('uniqueHandleDisplay');
+        if (!display) return;
+
+        if (user) {
+            // Reference to the current user's data in your 'users' node
+            const userRef = ref(db, `users/${user.uid}`);
+            
+            onValue(userRef, (snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.handle) {
+                    display.innerText = `@${userData.handle.replace('@', '')}`;
+                } else {
+                    display.innerText = `@user${user.uid.slice(0, 4)}`;
+                }
+            });
+        } else {
+            display.innerText = "@guest";
+        }
+    });
+}
+
+// Initialize the unique display
+syncUniqueHandle();
 
 </script>
 
