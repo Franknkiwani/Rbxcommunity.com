@@ -3,57 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile View</title>
+    <title>User Profile</title>
     <style>
-        :root { --bg: #000; --text: #fff; --gray: #888; --border: #222; --accent: #0A84FF; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; padding: 40px 20px; }
+        .profile-card { text-align: center; width: 100%; max-width: 350px; }
         
-        /* Profile Header */
-        .profile-header { text-align: center; padding-top: 20px; }
-        .pfp { width: 100px; height: 100px; border-radius: 50%; background: #111; margin: 0 auto; 
-               background-size: cover; background-position: center; border: 1.5px solid rgba(255,255,255,0.9); }
-        .handle { font-size: 1.5rem; margin: 15px 0 5px; font-weight: bold; }
-        .stats { color: var(--gray); font-size: 0.9rem; margin-bottom: 30px; }
-
-        /* Tabs */
-        .tabs { display: flex; justify-content: center; border-top: 1px solid var(--border); margin-top: 20px; }
-        .tab { padding: 15px 25px; cursor: pointer; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; font-weight: 600; }
-        .tab.active { color: var(--text); border-top: 2px solid var(--text); margin-top: -1px; }
-
-        /* Content */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding-top: 2px; }
-        .grid-item { aspect-ratio: 1/1; background-color: #111; background-size: cover; background-position: center; }
-        .empty-msg { text-align: center; color: var(--gray); margin-top: 50px; font-size: 14px; }
-        
-        .back-btn { background: none; color: var(--accent); border: none; font-size: 16px; cursor: pointer; padding: 0; margin-bottom: 10px; }
+        /* Matching your Signup UI style */
+        .pfp-display { 
+            width: 110px; height: 110px; border-radius: 50%; 
+            border: 1.5px solid rgba(255,255,255,0.9); 
+            margin: 0 auto 20px; background-size: cover; background-position: center;
+            background-color: #111;
+        }
+        .handle-display { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .status-msg { color: #555; margin-top: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.history.back()">← Back</button>
-
-    <div id="profileUI">
-        <div class="profile-header">
-            <div id="uPfp" class="pfp"></div>
-            <div id="uHandle" class="handle">Loading...</div>
-            <div id="uStats" class="stats">0 posts</div>
-        </div>
-
-        <div class="tabs">
-            <div class="tab active">Posts</div>
-        </div>
-
-        <div id="postsSection">
-            <div id="postsGrid" class="grid"></div>
-            <div id="noPosts" class="empty-msg" style="display:none;">No posts yet</div>
-        </div>
+    <div class="profile-card">
+        <div id="pfp" class="pfp-display"></div>
+        <div id="handle" class="handle-display">Loading...</div>
+        <div id="status" class="status-msg"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // Your specific config from the signup page
+        // Using your exact config from your signup page
         const config = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -65,53 +43,44 @@
         const app = initializeApp(config);
         const db = getDatabase(app);
 
-        // Get UID from URL (?user=ID)
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUid = urlParams.get('user');
+        // 1. Get the UID from the URL (?user=...)
+        const params = new URLSearchParams(window.location.search);
+        const uidFromUrl = params.get('user');
 
-        if (!targetUid) {
-            document.getElementById('uHandle').innerText = "User not found";
-        } else {
-            loadProfile();
-        }
+        async function fetchUserProfile() {
+            if (!uidFromUrl) {
+                document.getElementById('handle').innerText = "No UID provided";
+                return;
+            }
 
-        async function loadProfile() {
             try {
-                // 1. Fetch User Data (matching your set(ref(db, `users/${cred.user.uid}`)) structure)
-                const userSnap = await get(ref(db, `users/${targetUid}`));
-                
-                if (userSnap.exists()) {
-                    const user = userSnap.val();
-                    document.getElementById('uHandle').innerText = `@${user.handle}`;
-                    document.getElementById('uStats').innerText = `${user.posts || 0} posts`;
-                    if (user.profilePic) {
-                        document.getElementById('uPfp').style.backgroundImage = `url(${user.profilePic})`;
+                // 2. Point exactly to 'users/UID'
+                const userRef = ref(db, `users/${uidFromUrl}`);
+                const snapshot = await get(userRef);
+
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    
+                    // 3. Load the specific data your signup stored
+                    document.getElementById('handle').innerText = "@" + userData.handle;
+                    
+                    if (userData.profilePic) {
+                        document.getElementById('pfp').style.backgroundImage = `url('${userData.profilePic}')`;
                     }
+                    
+                    document.getElementById('status').innerText = "Profile verified";
                 } else {
-                    document.getElementById('uHandle').innerText = "User not found";
-                    return;
+                    document.getElementById('handle').innerText = "User not found";
+                    document.getElementById('status').innerText = "This UID does not exist in our database.";
                 }
-
-                // 2. Fetch User's Posts
-                // This assumes your posts also have a 'uid' field matching the user
-                const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(targetUid));
-                const postsSnap = await get(postsQ);
-                const grid = document.getElementById('postsGrid');
-
-                if (postsSnap.exists()) {
-                    const posts = Object.values(postsSnap.val()).reverse();
-                    grid.innerHTML = posts.map(post => 
-                        `<div class="grid-item" style="background-image: url('${post.imageUrl}')"></div>`
-                    ).join('');
-                } else {
-                    document.getElementById('noPosts').style.display = 'block';
-                }
-
             } catch (error) {
                 console.error(error);
-                document.getElementById('uHandle').innerText = "Error loading";
+                document.getElementById('handle').innerText = "Error";
+                document.getElementById('status').innerText = "Check your connection or Firebase rules.";
             }
         }
+
+        fetchUserProfile();
     </script>
 </body>
 </html>
