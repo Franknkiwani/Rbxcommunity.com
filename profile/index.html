@@ -5,69 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profile | RBX</title>
     <style>
-        :root { --accent: #0095f6; --red: #ff453a; --bg: #000; --card: #111; --border: #222; }
+        :root { --accent: #0095f6; --bg: #000; --card: #111; --border: #262626; --glass: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; }
-        
-        .profile-header { padding: 40px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; overflow-x: hidden; }
+
+        /* Glassy Loader */
+        #loader {
+            position: fixed; inset: 0; background: #000; z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .shimmer {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+            background-size: 200% 100%; animation: shine 1.5s infinite;
+        }
+        @keyframes shine { to { background-position: -200% 0; } }
+
+        /* Profile Header */
+        .profile-header { padding: 40px 20px 10px; text-align: center; }
         #uPfp { 
             width: 85px; height: 85px; border-radius: 50%; border: 2px solid #333; 
             margin: 0 auto 12px; background-size: cover; background-position: center; background-color: var(--card);
         }
-        
-        /* Handle & Verified Badge */
-        .handle-container { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .handle-container { display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
         #uHandle { font-size: 20px; font-weight: 700; }
         .v-badge { width: 18px; height: 18px; display: none; }
-
-        #uBio { color: #efefef; font-size: 14px; margin: 8px auto; max-width: 90%; line-height: 1.4; white-space: pre-wrap; }
         
-        .stats-row { display: flex; justify-content: center; gap: 30px; margin: 15px 0; }
-        .stat-item { display: flex; flex-direction: column; min-width: 70px; }
-        .stat-num { font-weight: 700; font-size: 18px; }
-        .stat-label { font-size: 12px; color: #a8a8a8; }
+        .view-bio-btn { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: 8px; cursor: pointer; border: none; background: none; }
 
-        .btn-container { display: flex; justify-content: center; padding: 0 20px 15px; }
-        #followBtn {
-            width: 100%; max-width: 300px; padding: 8px; border-radius: 8px; font-weight: 600;
-            border: none; cursor: pointer; font-size: 14px; transition: 0.2s; display: none;
-        }
+        /* Actions */
+        .action-btns { display: flex; gap: 8px; justify-content: center; padding: 15px 20px; }
+        .btn { flex: 1; max-width: 150px; padding: 8px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
         .btn-follow { background: var(--accent); color: #fff; }
-        .btn-unfollow { background: #333; color: #fff; border: 1px solid #444 !important; }
+        .btn-unfollow { background: #333; color: #fff; }
+        .btn-msg { background: #333; color: #fff; }
 
-        /* Tabs */
-        .tabs { display: flex; border-top: 1px solid var(--border); }
-        .tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #a8a8a8; cursor: pointer; }
+        /* About Modal */
+        #aboutModal {
+            position: fixed; bottom: -100%; left: 0; width: 100%; background: #181818;
+            border-radius: 20px 20px 0 0; padding: 30px 20px; z-index: 2000;
+            transition: bottom 0.4s cubic-bezier(0,1,0,1); border-top: 1px solid #333;
+        }
+        #aboutModal.open { bottom: 0; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1999; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .info-label { color: #888; }
+
+        /* Content Sections */
+        .tabs { display: flex; border-top: 1px solid var(--border); margin-top: 10px; }
+        .tab { flex: 1; padding: 12px; text-align: center; color: #888; cursor: pointer; font-size: 12px; font-weight: 700; }
         .tab.active { color: #fff; border-top: 2px solid #fff; margin-top: -1px; }
 
-        .content-container { padding: 2px; display: none; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .content-container { display: none; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; min-height: 200px; }
         .content-container.active { display: grid; }
-        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; }
-        
-        .back-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; z-index: 20; }
+        .empty-msg { grid-column: 1/4; text-align: center; padding: 60px 20px; color: #555; font-size: 14px; }
+        .grid-item { aspect-ratio: 1/1; background: var(--card); background-size: cover; background-position: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <button class="back-btn" onclick="window.history.back()">‹</button>
+    <div id="loader">
+        <div class="shimmer"></div>
+        <p style="margin-top: 15px; color: #555; font-weight: 600; font-size: 12px; letter-spacing: 2px;">LOADING PROFILE</p>
+    </div>
 
     <div class="profile-header">
         <div id="uPfp"></div>
-        <div class="handle-container">
-            <span id="uHandle">loading...</span>
+        <div class="handle-container" onclick="openAbout()">
+            <span id="uHandle">@loading</span>
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" class="v-badge" id="vBadge">
         </div>
-        
-        <div class="stats-row">
-            <div class="stat-item"><span class="stat-num" id="count-followers">0</span><span class="stat-label">followers</span></div>
-            <div class="stat-item"><span class="stat-num" id="count-following">0</span><span class="stat-label">following</span></div>
-        </div>
-        
-        <div id="uBio"></div>
+        <button class="view-bio-btn" onclick="openAbout()">View Bio & Info</button>
     </div>
 
-    <div class="btn-container">
-        <button id="followBtn">Follow</button>
+    <div class="action-btns">
+        <button id="followBtn" class="btn btn-follow" style="display:none;">Follow</button>
+        <button id="msgBtn" class="btn btn-msg" style="display:none;">Message</button>
     </div>
 
     <div class="tabs">
@@ -79,6 +93,18 @@
     <div id="posts" class="content-container active"></div>
     <div id="polls" class="content-container" style="grid-template-columns: 1fr; padding: 15px;"></div>
     <div id="stories" class="content-container"></div>
+
+    <div class="modal-overlay" id="overlay" onclick="closeAbout()"></div>
+    <div id="aboutModal">
+        <h3 style="margin-top:0">About Account</h3>
+        <div id="bioText" style="margin-bottom:20px; color:#ccc; font-size:14px;"></div>
+        <div class="info-row"><span class="info-label">Joined</span><span id="info-date">-</span></div>
+        <div class="info-row"><span class="info-label">Followers</span><span id="info-followers">0</span></div>
+        <div class="info-row"><span class="info-label">Post Count</span><span id="info-posts">0</span></div>
+        <div class="info-row"><span class="info-label">Poll Count</span><span id="info-polls">0</span></div>
+        <div class="info-row"><span class="info-label">Story Count</span><span id="info-stories">0</span></div>
+        <button class="btn btn-msg" style="width:100%; margin-top:20px; background:#fff; color:#000;" onclick="closeAbout()">Close</button>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -98,84 +124,94 @@
         const auth = getAuth(app);
         const targetUID = new URLSearchParams(window.location.search).get('user');
 
+        // Modal Helpers
+        window.openAbout = () => { document.getElementById('aboutModal').classList.add('open'); document.getElementById('overlay').style.display='block'; };
+        window.closeAbout = () => { document.getElementById('aboutModal').classList.remove('open'); document.getElementById('overlay').style.display='none'; };
+        
         window.switchTab = (id, el) => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content-container').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById(id).classList.add('active');
+            el.classList.add('active'); document.getElementById(id).classList.add('active');
         };
 
-        function init() {
+        async function init() {
             if (!targetUID) return;
 
-            // 1. Core Profile Data (Bio, Handle, Pfp)
+            // Load Main Data
             onValue(ref(db, `users/${targetUID}`), (snap) => {
-                const d = snap.val();
-                if (!d) return;
-
+                const d = snap.val() || {};
                 document.getElementById('uHandle').innerText = d.handle || "user";
-                document.getElementById('uBio').innerText = d.bio || "";
+                document.getElementById('bioText').innerText = d.bio || "No bio available.";
+                document.getElementById('info-date').innerText = d.createdAt || "Long ago";
                 if (d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
                 
-                // Follower Count & Verified Badge
-                const followerCount = d.followers ? Object.keys(d.followers).length : 0;
-                document.getElementById('count-followers').innerText = followerCount;
-                document.getElementById('vBadge').style.display = followerCount >= 1000 ? "block" : "none";
+                const followers = d.followers ? Object.keys(d.followers).length : 0;
+                document.getElementById('info-followers').innerText = followers;
+                document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
             });
 
-            // 2. Following Count
-            onValue(ref(db, `following/${targetUID}`), (snap) => {
-                document.getElementById('count-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
-            });
-
-            // 3. Auth & Follow Interaction
+            // Auth & Chat Redirect
             onAuthStateChanged(auth, (user) => {
                 const fBtn = document.getElementById('followBtn');
-                if (!user || user.uid === targetUID) {
-                    fBtn.style.display = 'none';
-                    return;
-                }
+                const mBtn = document.getElementById('msgBtn');
+                if (!user || user.uid === targetUID) return;
+
                 fBtn.style.display = 'block';
+                mBtn.style.display = 'block';
+                mBtn.onclick = () => window.location.href = `/messages?chat=${targetUID}`;
 
                 onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
                     const isF = snap.exists();
                     fBtn.innerText = isF ? "Unfollow" : "Follow";
-                    fBtn.className = isF ? "btn-unfollow" : "btn-follow";
-
+                    fBtn.className = isF ? "btn btn-unfollow" : "btn btn-follow";
                     fBtn.onclick = () => {
                         const updates = {};
                         updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
                         updates[`users/${targetUID}/followers/${user.uid}`] = isF ? null : true;
-                        update(ref(db), updates); 
+                        update(ref(db), updates);
                     };
                 });
             });
 
-            // 4. Content Sections
-            const loadData = (path, divId, isGrid) => {
+            // Dynamic Content Loader
+            const loadSection = (path, divId, type) => {
                 onValue(ref(db, path), (snap) => {
                     const box = document.getElementById(divId);
                     box.innerHTML = "";
-                    if (!snap.exists()) return;
+                    let count = 0;
 
-                    Object.entries(snap.val()).forEach(([id, item]) => {
-                        if (item.uid !== targetUID) return;
-                        const el = document.createElement('div');
-                        if (isGrid) {
-                            el.className = "grid-item";
-                            el.style.backgroundImage = `url('${item.image || item.url}')`;
-                        } else {
-                            el.style.cssText = "background:#111; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #222";
-                            el.innerHTML = `<div style="font-weight:700">${item.question}</div>`;
-                        }
-                        box.appendChild(el);
-                    });
+                    if (snap.exists()) {
+                        Object.entries(snap.val()).forEach(([id, item]) => {
+                            if (item.uid !== targetUID) return;
+                            count++;
+                            const el = document.createElement('div');
+                            if (type === 'grid') {
+                                el.className = "grid-item";
+                                el.style.backgroundImage = `url('${item.image || item.url}')`;
+                                el.onclick = () => window.location.href = `/${path}/${id}`;
+                            } else {
+                                el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222";
+                                el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
+                                el.onclick = () => window.location.href = `/poll?id=${id}`;
+                            }
+                            box.appendChild(el);
+                        });
+                    }
+
+                    if (count === 0) box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
+                    document.getElementById(`info-${path}s`).innerText = count;
                 });
             };
 
-            loadData('post', 'posts', true);
-            loadData('poll', 'polls', false);
-            loadData('story', 'stories', true);
+            loadSection('post', 'posts', 'grid');
+            loadSection('poll', 'polls', 'list');
+            loadSection('story', 'stories', 'grid');
+
+            // Force 2 second loader delay
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            }, 2000);
         }
 
         init();
