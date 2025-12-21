@@ -15,6 +15,7 @@
             --ios-green: #32D74B;
         }
 
+        /* STOP TEXT SELECTION */
         * { -webkit-user-select: none; user-select: none; box-sizing: border-box; }
         input { -webkit-user-select: text; user-select: text; }
 
@@ -44,7 +45,6 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { from { background: #fff; } to { background: transparent; } }
-        /* 12-bar generation */
         .spinner div:nth-child(1) { transform: translate(-50%, -150%) rotate(0deg); animation-delay: -1s; }
         .spinner div:nth-child(2) { transform: translate(-50%, -150%) rotate(30deg); animation-delay: -0.916s; }
         .spinner div:nth-child(3) { transform: translate(-50%, -150%) rotate(60deg); animation-delay: -0.833s; }
@@ -171,7 +171,9 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const REDIRECT_URL = "https://itzhoyoo-f9f7e.firebaseapp.com"; 
+    // DYNAMIC REDIRECT: Goes to the root of whatever domain the user is on
+    const REDIRECT_URL = window.location.origin; 
+
     let handleValid = false;
     let checkTimeout;
 
@@ -195,11 +197,8 @@
     handleInput.oninput = (e) => {
         clearTimeout(checkTimeout);
         let val = e.target.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-        
-        // Block more than 12 manually just in case
         if(val.length > 12) val = val.substring(0, 12);
         e.target.value = val; 
-        
         charCounter.innerText = `${val.length}/12`;
         charCounter.style.color = val.length >= 12 ? 'var(--ios-red)' : '#555';
 
@@ -210,8 +209,8 @@
         }
 
         statusDiv.style.display = 'block';
-        statusDiv.style.color = '#888';
         statusDiv.innerText = "Checking availability...";
+        statusDiv.style.color = '#888';
 
         checkTimeout = setTimeout(async () => {
             const handleRef = ref(db, 'handles/' + val);
@@ -264,13 +263,10 @@
         const isSignup = document.getElementById('signup-extra').style.display === 'block';
 
         if(!email || !pass) return notify("Fields required");
-        
-        if(isSignup) {
-            if(!handleValid || handleInput.value.length > 12) {
-                handleInput.classList.add('shake');
-                setTimeout(() => handleInput.classList.remove('shake'), 400);
-                return notify("Invalid handle");
-            }
+        if(isSignup && (!handleValid || handleInput.value.length > 12)) {
+            handleInput.classList.add('shake');
+            setTimeout(() => handleInput.classList.remove('shake'), 400);
+            return notify("Invalid handle");
         }
 
         btn.disabled = true; 
