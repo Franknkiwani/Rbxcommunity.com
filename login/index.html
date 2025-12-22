@@ -148,21 +148,39 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const mainDomain = "https://rbxcommunity.com"; // redirect target
+
+// Use current domain dynamically
+const currentDomain = window.location.origin;
 
 window.addEventListener('load', ()=>{ document.getElementById('fullLoader').style.display='none'; });
 
 // Toast
 const toastContainer = document.getElementById('toastContainer');
-function showToast(msg,type="success"){ const toast=document.createElement('div'); toast.className=`toast ${type}`; toast.textContent=msg; toastContainer.appendChild(toast); setTimeout(()=>toast.remove(),3000); }
+function showToast(msg,type="success"){ 
+    const toast=document.createElement('div'); 
+    toast.className=`toast ${type}`; 
+    toast.textContent=msg; 
+    toastContainer.appendChild(toast); 
+    setTimeout(()=>toast.remove(),3000); 
+}
 
 // Tab switcher
 const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
-loginTab.addEventListener('click', ()=>{ loginForm.style.display='flex'; registerForm.style.display='none'; loginTab.classList.add('active'); registerTab.classList.remove('active'); });
-registerTab.addEventListener('click', ()=>{ loginForm.style.display='none'; registerForm.style.display='flex'; loginTab.classList.remove('active'); registerTab.classList.add('active'); });
+loginTab.addEventListener('click', ()=>{
+    loginForm.style.display='flex'; 
+    registerForm.style.display='none'; 
+    loginTab.classList.add('active'); 
+    registerTab.classList.remove('active'); 
+});
+registerTab.addEventListener('click', ()=>{
+    loginForm.style.display='none'; 
+    registerForm.style.display='flex'; 
+    loginTab.classList.remove('active'); 
+    registerTab.classList.add('active'); 
+});
 
 // Profile upload
 let profilePicUrl="";
@@ -176,27 +194,39 @@ profilePicInput.addEventListener('change', async e=>{
   document.getElementById('loadingOverlay').style.display='flex';
   try{
     const res = await fetch("https://api.imgur.com/3/image",{method:"POST",headers:{ Authorization:`Client-ID 891e5bb4aa94282` },body:formData});
-    const data = await res.json(); profilePicUrl=data.data.link;
+    const data = await res.json(); 
+    profilePicUrl=data.data.link;
     profilePicPlaceholder.innerHTML=`<img src="${profilePicUrl}" alt="Profile">`;
     showToast("Profile image uploaded!","success");
-  }catch(err){ showToast("Imgur upload failed, pick a fallback image","error"); }
-  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+  }catch(err){ 
+    showToast("Imgur upload failed, pick a fallback image","error"); 
+  }finally{ 
+    document.getElementById('loadingOverlay').style.display='none'; 
+  }
 });
 
 // Fallback images
-document.querySelectorAll('.fallback-img').forEach(img=>{ img.addEventListener('click',()=>{ profilePicUrl=img.src; profilePicPlaceholder.innerHTML=`<img src="${profilePicUrl}" alt="Profile">`; showToast("Profile selected!","success"); }); });
+document.querySelectorAll('.fallback-img').forEach(img=>{
+  img.addEventListener('click',()=>{
+    profilePicUrl=img.src; 
+    profilePicPlaceholder.innerHTML=`<img src="${profilePicUrl}" alt="Profile">`; 
+    showToast("Profile selected!","success"); 
+  }); 
+});
 
 // Handle live check
 const regHandle = document.getElementById('regHandle');
 const handleFeedback = document.getElementById('handleFeedback');
 let handleTimer;
 regHandle.addEventListener('input', ()=>{
-  clearTimeout(handleTimer); handleFeedback.textContent='';
+  clearTimeout(handleTimer); 
+  handleFeedback.textContent='';
   const val=regHandle.value.trim();
   if(!val) return;
   if(val.length>12){ handleFeedback.textContent='Max 12 characters'; return; }
   handleTimer=setTimeout(async ()=>{
-    const snapshot = await get(ref(db,'users')); const users=snapshot.val()||{};
+    const snapshot = await get(ref(db,'users')); 
+    const users=snapshot.val()||{};
     const taken=Object.values(users).some(u=>u.handle.toLowerCase()===val.toLowerCase());
     handleFeedback.textContent = taken?'Handle taken':'Handle available';
     handleFeedback.style.color = taken?'#ff4d4f':'#4caf50';
@@ -213,14 +243,15 @@ registerForm.addEventListener('submit', async e=>{
   if(!handle||!email||!password||!bio||!profilePicUrl){ showToast("All fields required!","warning"); return; }
   document.getElementById('loadingOverlay').style.display='flex';
   try{
-    const snapshot = await get(ref(db,'users')); const users=snapshot.val()||{};
+    const snapshot = await get(ref(db,'users')); 
+    const users=snapshot.val()||{};
     if(Object.values(users).some(u=>u.handle.toLowerCase()===handle.toLowerCase())){ showToast("Handle already taken","error"); return; }
     const userCredential = await createUserWithEmailAndPassword(auth,email,password);
     const user=userCredential.user;
     await updateProfile(user,{displayName:handle,photoURL:profilePicUrl});
     await set(ref(db,'users/'+user.uid),{ handle,bio,profilePic:profilePicUrl, joined:new Date().toISOString(), followers:{} });
     showToast("Registration successful","success");
-    setTimeout(()=>window.location.href=mainDomain,1000);
+    setTimeout(()=>window.location.href=currentDomain,1000); // dynamic redirect
   }catch(err){ showToast(err.message,"error"); }
   finally{ document.getElementById('loadingOverlay').style.display='none'; }
 });
@@ -235,19 +266,24 @@ loginForm.addEventListener('submit', async e=>{
   try{
     await signInWithEmailAndPassword(auth,email,password);
     showToast("Login successful","success");
-    setTimeout(()=>window.location.href=mainDomain,800);
+    setTimeout(()=>window.location.href=currentDomain,800); // dynamic redirect
   }catch(err){ showToast(err.message,"error"); }
   finally{ document.getElementById('loadingOverlay').style.display='none'; }
 });
 
-// Forgot password (uses login email)
+// Forgot password
 document.getElementById('forgotPassword').addEventListener('click', async ()=>{
   const email=document.getElementById('loginEmail').value.trim();
   if(!email){ showToast("Enter your email in the email field","warning"); return; }
   document.getElementById('loadingOverlay').style.display='flex';
-  try{ await sendPasswordResetEmail(auth,email); showToast("Reset email sent","success"); }
-  catch(err){ showToast(err.message,"error"); }
-  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+  try{ 
+    await sendPasswordResetEmail(auth,email); 
+    showToast("Reset email sent","success"); 
+  } catch(err){ 
+    showToast(err.message,"error"); 
+  } finally{ 
+    document.getElementById('loadingOverlay').style.display='none'; 
+  }
 });
 </script>
 </body>
