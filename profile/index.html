@@ -114,10 +114,12 @@
         <div class="info-row"><span class="info-label">Story Count</span><span id="info-stories">0</span></div>
         <button class="btn btn-msg" style="width:100%; margin-top:20px; background:#fff; color:#000;" onclick="closeAbout()">Close</button>
     </div>
+<!-- Toast container -->
+<div id="toastContainer" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 const config = {
@@ -134,13 +136,36 @@ const auth = getAuth(app);
 
 const targetUID = new URLSearchParams(window.location.search).get('user');
 
+// Relative time helper
+function timeAgo(date){
+    const seconds = Math.floor((new Date() - date) / 1000);
+    const intervals = [
+        {label:'year', seconds:31536000},
+        {label:'month', seconds:2592000},
+        {label:'day', seconds:86400},
+        {label:'hour', seconds:3600},
+        {label:'minute', seconds:60},
+        {label:'second', seconds:1}
+    ];
+    for(const i of intervals){
+        const count = Math.floor(seconds/i.seconds);
+        if(count>0) return `${count} ${i.label}${count>1?'s':''} ago`;
+    }
+    return 'just now';
+}
+
 // Toast helper
-function showToast(msg, type="success") {
+function showToast(msg, type="success"){
     const container = document.getElementById('toastContainer');
     if(!container) return;
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
     toast.innerText = msg;
+    toast.style.padding = '10px 15px';
+    toast.style.borderRadius = '10px';
+    toast.style.background = type==='warning'?'#ff4d4f':'#00bfff';
+    toast.style.color = '#fff';
+    toast.style.fontWeight = '600';
+    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
     container.appendChild(toast);
     setTimeout(()=>toast.remove(),3000);
 }
@@ -161,91 +186,83 @@ window.switchTab = (id, el) => {
     document.getElementById(id).classList.add('active');
 };
 
-async function init() {
+async function init(){
     if(!targetUID) return;
 
-    // Load profile
-    onValue(ref(db, `users/${targetUID}`), (snap) => {
+    const fBtn = document.getElementById('followBtn');
+    const mBtn = document.getElementById('msgBtn');
+
+    // Load profile info
+    onValue(ref(db, `users/${targetUID}`), snap=>{
         const d = snap.val() || {};
         document.getElementById('uHandle').innerText = d.handle || "user";
         document.getElementById('bioText').innerText = d.bio || "No bio available.";
-        // Correct join date
+
         if(d.joined){
-            const date = new Date(d.joined);
-            document.getElementById('info-date').innerText = date.toLocaleDateString();
-        } else {
-            document.getElementById('info-date').innerText = "Long ago";
-        }
+            document.getElementById('info-date').innerText = "Joined " + timeAgo(new Date(d.joined));
+        } else document.getElementById('info-date').innerText = "Joined long ago";
+
         if(d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
         const followers = d.followers ? Object.keys(d.followers).length : 0;
         document.getElementById('info-followers').innerText = followers;
-        document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
+        document.getElementById('vBadge').style.display = followers>=1000?"block":"none";
     });
 
-    // Show buttons regardless of auth
-    const fBtn = document.getElementById('followBtn');
-    const mBtn = document.getElementById('msgBtn');
-    fBtn.style.display = 'block';
-    mBtn.style.display = 'block';
+    // Show buttons always
+    fBtn.style.display='block';
+    mBtn.style.display='block';
+    fBtn.onclick = ()=>showToast("Login to follow users","warning");
+    mBtn.onclick = ()=>showToast("Login to send messages","warning");
 
-    // Default inline messages if user not logged in
-    const handleFollow = () => showToast("Login to follow users","warning");
-    const handleMessage = () => showToast("Login to send messages","warning");
+    // Auth check
+    onAuthStateChanged(auth,user=>{
+        if(!user || user.uid===targetUID) return;
 
-    onAuthStateChanged(auth, (user) => {
-        if(!user || user.uid === targetUID){
-            fBtn.onclick = handleFollow;
-            mBtn.onclick = handleMessage;
-            fBtn.innerText = "Follow";
-            fBtn.className = "btn btn-follow";
-            return;
-        }
+        // Messages click
+        mBtn.onclick = ()=>window.location.href=`/messages/?chat=${targetUID}`;
 
-        // Logged in user logic
-        mBtn.onclick = () => window.location.href = `/messages/?chat=${targetUID}`;
-
-        onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
+        // Follow/Unfollow logic
+        onValue(ref(db, `following/${user.uid}/${targetUID}`), snap=>{
             const isF = snap.exists();
-            fBtn.innerText = isF ? "Unfollow" : "Follow";
-            fBtn.className = isF ? "btn btn-unfollow" : "btn btn-follow";
-            fBtn.onclick = () => {
+            fBtn.innerText = isF?"Unfollow":"Follow";
+            fBtn.className = isF?"btn btn-unfollow":"btn btn-follow";
+            fBtn.onclick = ()=>{
                 const updates = {};
-                updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
-                updates[`users/${targetUID}/followers/${user.uid}`] = isF ? null : true;
+                updates[`following/${user.uid}/${targetUID}`] = isF?null:true;
+                updates[`users/${targetUID}/followers/${user.uid}`] = isF?null:true;
                 update(ref(db), updates);
             };
         });
     });
 
-    // Sections loader
-    const loadSection = (path, divId, type) => {
-        onValue(ref(db, path), (snap) => {
+    // Load sections
+    const loadSection = (path, divId, type)=>{
+        onValue(ref(db,path), snap=>{
             const box = document.getElementById(divId);
-            box.innerHTML = "";
-            let count = 0;
+            box.innerHTML="";
+            let count=0;
 
             if(snap.exists()){
                 Object.entries(snap.val()).forEach(([id,item])=>{
-                    if(item.uid !== targetUID) return;
+                    if(item.uid!==targetUID) return;
                     count++;
                     const el = document.createElement('div');
-
                     if(type==='grid'){
-                        el.className="grid-item";
-                        el.style.backgroundImage = `url('${item.image||item.url}')`;
-                        el.onclick = () => window.location.href = `/${path}/?id=${id}`;
+                        el.className='grid-item';
+                        el.style.backgroundImage=`url('${item.image||item.url}')`;
+                        el.onclick = ()=>window.location.href=`/${path}/?id=${id}`;
                     } else {
-                        el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222; cursor:pointer;";
-                        el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
-                        el.onclick = () => window.location.href = `/${path}/?id=${id}`;
+                        el.style.cssText="background:#111;padding:15px;border-radius:12px;margin-bottom:8px;border:1px solid #222;cursor:pointer;";
+                        el.innerHTML=`<div style="font-weight:700">${item.question||'View Poll'}</div>`;
+                        el.onclick = ()=>window.location.href=`/${path}/?id=${id}`;
                     }
                     box.appendChild(el);
                 });
             }
 
-            if(count===0) box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
+            if(count===0) box.innerHTML=`<div class="empty-msg">No ${path}s yet</div>`;
             const counterEl = document.getElementById(`info-${path}s`);
-            if(counterEl) counterEl.innerText = count;
+            if(counterEl) counterEl.innerText=count;
         });
     };
 
@@ -253,6 +270,7 @@ async function init() {
     loadSection('poll','polls','list');
     loadSection('story','stories','grid');
 
+    // Hide loader
     setTimeout(()=>{
         const loader = document.getElementById('loader');
         if(loader){
@@ -264,6 +282,5 @@ async function init() {
 
 init();
 </script>
-
 </body>
 </html>
