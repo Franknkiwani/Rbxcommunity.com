@@ -1,107 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile | RBX Community</title>
-    <style>
-        :root { --accent: #0A84FF; }
-        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .back-btn { background: none; color: var(--accent); border: none; cursor: pointer; float: left; }
-        
-        .profile-container { margin-top: 50px; }
-        .pfp { 
-            width: 110px; height: 110px; border-radius: 50%; 
-            border: 1.5px solid rgba(255,255,255,0.9); 
-            margin: 0 auto; background-size: cover; background-position: center;
-            background-color: #111;
-        }
-        .handle { font-size: 22px; font-weight: 800; margin-top: 15px; }
-        .bio { color: #888; font-size: 14px; margin-top: 5px; }
-        
-        #loading-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RBX Auth</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+body, html { width:100%; height:100%; }
+body {
+  background: url('https://i.pinimg.com/736x/b5/98/3d/b5983db843fc8ce01875afb40ba36b81.jpg') center/cover no-repeat;
+  display:flex; justify-content:center; align-items:center;
+  color:#fff;
+}
+
+/* Loader */
+#fullLoader { position: fixed; inset:0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; }
+.spinner { border:4px solid rgba(255,255,255,0.2); border-top:4px solid #fff; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite; }
+@keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+#fullLoader p { margin-top:15px; font-weight:600; color:#ccc; letter-spacing:2px; font-size:14px; }
+
+/* Container */
+.container {
+  width:100%; max-width:420px;
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(10px);
+  border-radius:24px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  padding:30px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Tab Switcher */
+.tab-switcher { display:flex; border-radius:12px; overflow:hidden; margin-bottom:20px; border:1px solid #333; }
+.tab-switcher button { flex:1; padding:12px; border:none; background:#1f1f1f; color:#888; font-weight:600; cursor:pointer; transition:0.3s; }
+.tab-switcher button.active { background:#fff; color:#000; font-weight:700; }
+
+/* Form */
+form { display:flex; flex-direction:column; gap:15px; transition: all 0.3s ease; }
+input, textarea { padding:14px 12px; border:2px solid #fff; border-radius:12px; background:#000; color:#fff; outline:none; font-weight:600; }
+input:focus, textarea:focus { border-color:#fff; }
+textarea { resize:none; min-height:60px; }
+
+/* Buttons Roblox-style */
+button.submit-btn {
+  padding:14px; background:#fff; color:#000; border:none; border-radius:16px; font-size:16px; cursor:pointer;
+  box-shadow: 0 5px #999;
+  font-weight:700;
+}
+button.submit-btn:hover { transform:translateY(-2px); box-shadow:0 3px #666; }
+
+/* Profile Pic */
+.profile-pic-container { display:flex; justify-content:center; margin-bottom:15px; }
+.profile-pic { width:80px; height:80px; border-radius:50%; background:#333; display:flex; justify-content:center; align-items:center; font-size:32px; color:#777; cursor:pointer; overflow:hidden; border:2px solid #fff; }
+.profile-pic img { width:100%; height:100%; object-fit:cover; }
+input[type="file"] { display:none; }
+
+/* Fallback images */
+#fallbackProfiles { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:10px; }
+.fallback-img { width:50px; height:50px; border-radius:50%; cursor:pointer; border:2px solid #fff; }
+
+/* Loading overlay */
+#loadingOverlay { position:absolute; inset:0; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); display:flex; justify-content:center; align-items:center; border-radius:24px; display:none; z-index:10; }
+
+/* Toast */
+.toast-container { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:10px; z-index:20; }
+.toast { padding:12px 20px; border-radius:14px; min-width:200px; text-align:center; font-size:14px; backdrop-filter: blur(10px); background: rgba(50,50,50,0.9); color:#fff; opacity:0; animation:fadeinout 3s forwards; }
+.toast.success { background:#4caf50; }
+.toast.error { background:#ff4d4f; }
+.toast.warning { background:#ffd700; color:#000; }
+@keyframes fadeinout {0% { opacity:0; transform:translateY(20px);}10%{opacity:1; transform:translateY(0);}90%{opacity:1;}100%{opacity:0; transform:translateY(-20px);}}
+</style>
 </head>
 <body>
 
-    <div id="loading-overlay">Loading...</div>
+<div id="fullLoader">
+  <div class="spinner"></div>
+  <p>LOADING...</p>
+</div>
 
-    <button class="back-btn" onclick="window.history.back()">← Back</button>
+<div class="container">
 
-    <div class="profile-container">
-        <div id="uPfp" class="pfp"></div>
-        <div id="uHandle" class="handle">@username</div>
-        <div id="uBio" class="bio">RBX Community Member</div>
+  <!-- Switcher -->
+  <div class="tab-switcher">
+    <button id="loginTab" class="active">Login</button>
+    <button id="registerTab">Register</button>
+  </div>
+
+  <!-- Login Form -->
+  <form id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email" required>
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <button type="submit" class="submit-btn">Login</button>
+    <button type="button" id="forgotPassword" class="submit-btn" style="background:#ff4d4f;">Forgot Password?</button>
+  </form>
+
+  <!-- Register Form -->
+  <form id="registerForm" style="display:none; flex-direction:column; gap:15px;">
+    <div class="profile-pic-container">
+      <div class="profile-pic" id="profilePicPlaceholder">+</div>
+      <input type="file" id="profilePicInput" accept="image/*">
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    <div id="fallbackProfiles">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp4FMoCef-M7Wk4AlOLUiBw8H28lctvm2r-9rq2cr6GQ&s=10" class="fallback-img">
+      <img src="https://i.pinimg.com/736x/08/e7/ca/08e7ca12ae6b52a533918eb49c36dbe4.jpg" class="fallback-img">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQy4K_b2mhwsC2jVurblWQCFiympXGgppIVeODfrF8-tdiBR98_gNuLIwGK&s=10" class="fallback-img">
+      <img src="https://i.pinimg.com/736x/1d/f1/1c/1df11cbf1369672cf98d2e57eca35781.jpg" class="fallback-img">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1RVsm9XS7K64VbZMVy6pNqaIZmr2e7fvje6E4lTw1bw&s=10" class="fallback-img">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEcO_z3JbSCT_5opl9VFhwh9K7R52dZWLH00lkK1AjfYN_fdmamwPHpTaH&s=10" class="fallback-img">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQofUbtyvMFn9KzIvYi5umUP-c63DkHNLWI2MqIiXY-jhSy94cu5cRLRx8&s=10" class="fallback-img">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZAinRg8pDRSYgrCaxmUZtPNEw2muEsOmFs2CTNBC7sDThudUwHqy4Ruv-&s=10" class="fallback-img">
+      <img src="https://i.pinimg.com/736x/53/2b/46/532b46f776a154bc2bf100df7d8941b4.jpg" class="fallback-img">
+      <img src="https://i.pinimg.com/736x/7c/53/3b/7c533b00e3566b020123e031a5c29b43.jpg" class="fallback-img">
+      <img src="https://i.pinimg.com/736x/b5/98/3d/b5983db843fc8ce01875afb40ba36b81.jpg" class="fallback-img">
+    </div>
 
-        const config = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-            projectId: "itzhoyoo-f9f7e",
-            appId: "1:1094792075584:web:d49e9cd31082a5"
-        };
+    <input type="text" id="regHandle" placeholder="Handle (@username)" maxlength="12" required>
+    <small id="handleFeedback" style="color:#ccc;font-size:12px;"></small>
+    <input type="email" id="regEmail" placeholder="Email" required>
+    <input type="password" id="regPassword" placeholder="Password" required>
+    <textarea id="regBio" placeholder="Bio (short)" maxlength="150" required></textarea>
+    <button type="submit" class="submit-btn">Register</button>
+  </form>
 
-        const app = initializeApp(config);
-        const db = getDatabase(app);
+  <div id="loadingOverlay"><div class="spinner"></div></div>
+</div>
 
-        // BULLETPROOF UID DETECTION
-        const getUID = () => {
-            const params = new URLSearchParams(window.location.search);
-            let uid = params.get('user');
-            if(!uid) {
-                // Backup check if Vercel strips the query key
-                uid = window.location.href.split('user=')[1];
-            }
-            return uid;
-        };
+<div class="toast-container" id="toastContainer"></div>
 
-        const targetUid = getUID();
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        async function loadProfile() {
-            if (!targetUid) {
-                document.getElementById('uHandle').innerText = "User ID Missing";
-                document.getElementById('loading-overlay').style.display = 'none';
-                return;
-            }
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-filestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9cd31082a5"
+};
 
-            try {
-                // Fetching from your 'users' node
-                const userRef = ref(db, 'users/' + targetUid);
-                const snapshot = await get(userRef);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const mainDomain = "https://rbxcommunity.com"; // redirect target
 
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    
-                    // Set Data
-                    document.getElementById('uHandle').innerText = "@" + data.handle;
-                    
-                    if (data.profilePic) {
-                        document.getElementById('uPfp').style.backgroundImage = `url('${data.profilePic}')`;
-                    }
-                    
-                    // Hide loader
-                    document.getElementById('loading-overlay').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loading-overlay').remove(), 500);
-                    
-                } else {
-                    document.getElementById('uHandle').innerText = "User Not Found";
-                    document.getElementById('loading-overlay').innerText = "Error: User ID not in Database";
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading-overlay').innerText = "Connection Error";
-            }
-        }
+window.addEventListener('load', ()=>{ document.getElementById('fullLoader').style.display='none'; });
 
-        loadProfile();
-    </script>
+// Toast
+const toastContainer = document.getElementById('toastContainer');
+function showToast(msg,type="success"){ const toast=document.createElement('div'); toast.className=`toast ${type}`; toast.textContent=msg; toastContainer.appendChild(toast); setTimeout(()=>toast.remove(),3000); }
+
+// Tab switcher
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+loginTab.addEventListener('click', ()=>{ loginForm.style.display='flex'; registerForm.style.display='none'; loginTab.classList.add('active'); registerTab.classList.remove('active'); });
+registerTab.addEventListener('click', ()=>{ loginForm.style.display='none'; registerForm.style.display='flex'; loginTab.classList.remove('active'); registerTab.classList.add('active'); });
+
+// Profile upload
+let profilePicUrl="";
+const profilePicPlaceholder = document.getElementById('profilePicPlaceholder');
+const profilePicInput = document.getElementById('profilePicInput');
+profilePicPlaceholder.addEventListener('click', ()=>profilePicInput.click());
+profilePicInput.addEventListener('change', async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const formData = new FormData(); formData.append("image",file);
+  document.getElementById('loadingOverlay').style.display='flex';
+  try{
+    const res = await fetch("https://api.imgur.com/3/image",{method:"POST",headers:{ Authorization:`Client-ID 891e5bb4aa94282` },body:formData});
+    const data = await res.json(); profilePicUrl=data.data.link;
+    profilePicPlaceholder.innerHTML=`<img src="${profilePicUrl}" alt="Profile">`;
+    showToast("Profile image uploaded!","success");
+  }catch(err){ showToast("Imgur upload failed, pick a fallback image","error"); }
+  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+});
+
+// Fallback images
+document.querySelectorAll('.fallback-img').forEach(img=>{ img.addEventListener('click',()=>{ profilePicUrl=img.src; profilePicPlaceholder.innerHTML=`<img src="${profilePicUrl}" alt="Profile">`; showToast("Profile selected!","success"); }); });
+
+// Handle live check
+const regHandle = document.getElementById('regHandle');
+const handleFeedback = document.getElementById('handleFeedback');
+let handleTimer;
+regHandle.addEventListener('input', ()=>{
+  clearTimeout(handleTimer); handleFeedback.textContent='';
+  const val=regHandle.value.trim();
+  if(!val) return;
+  if(val.length>12){ handleFeedback.textContent='Max 12 characters'; return; }
+  handleTimer=setTimeout(async ()=>{
+    const snapshot = await get(ref(db,'users')); const users=snapshot.val()||{};
+    const taken=Object.values(users).some(u=>u.handle.toLowerCase()===val.toLowerCase());
+    handleFeedback.textContent = taken?'Handle taken':'Handle available';
+    handleFeedback.style.color = taken?'#ff4d4f':'#4caf50';
+  },400);
+});
+
+// Register
+registerForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const handle=regHandle.value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const password=document.getElementById('regPassword').value.trim();
+  const bio=document.getElementById('regBio').value.trim();
+  if(!handle||!email||!password||!bio||!profilePicUrl){ showToast("All fields required!","warning"); return; }
+  document.getElementById('loadingOverlay').style.display='flex';
+  try{
+    const snapshot = await get(ref(db,'users')); const users=snapshot.val()||{};
+    if(Object.values(users).some(u=>u.handle.toLowerCase()===handle.toLowerCase())){ showToast("Handle already taken","error"); return; }
+    const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+    const user=userCredential.user;
+    await updateProfile(user,{displayName:handle,photoURL:profilePicUrl});
+    await set(ref(db,'users/'+user.uid),{ handle,bio,profilePic:profilePicUrl, joined:new Date().toISOString(), followers:{} });
+    showToast("Registration successful","success");
+    setTimeout(()=>window.location.href=mainDomain,1000);
+  }catch(err){ showToast(err.message,"error"); }
+  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+});
+
+// Login
+loginForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value.trim();
+  if(!email||!password){ showToast("Email and password required","warning"); return; }
+  document.getElementById('loadingOverlay').style.display='flex';
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    showToast("Login successful","success");
+    setTimeout(()=>window.location.href=mainDomain,800);
+  }catch(err){ showToast(err.message,"error"); }
+  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+});
+
+// Forgot password (uses login email)
+document.getElementById('forgotPassword').addEventListener('click', async ()=>{
+  const email=document.getElementById('loginEmail').value.trim();
+  if(!email){ showToast("Enter your email in the email field","warning"); return; }
+  document.getElementById('loadingOverlay').style.display='flex';
+  try{ await sendPasswordResetEmail(auth,email); showToast("Reset email sent","success"); }
+  catch(err){ showToast(err.message,"error"); }
+  finally{ document.getElementById('loadingOverlay').style.display='none'; }
+});
+</script>
 </body>
 </html>
