@@ -116,124 +116,153 @@
     </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    const config = {
-        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-        projectId: "itzhoyoo-f9f7e",
-        appId: "1:1094792075584:web:d49e9cd31082a5"
-    };
+const config = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    appId: "1:1094792075584:web:d49e9cd31082a5"
+};
 
-    const app = initializeApp(config);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+const app = initializeApp(config);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-    const targetUID = new URLSearchParams(window.location.search).get('user');
+const targetUID = new URLSearchParams(window.location.search).get('user');
 
-    window.openAbout = () => { 
-        document.getElementById('aboutModal').classList.add('open'); 
-        document.getElementById('overlay').style.display = 'block'; 
-    };
-    window.closeAbout = () => { 
-        document.getElementById('aboutModal').classList.remove('open'); 
-        document.getElementById('overlay').style.display = 'none'; 
-    };
-    
-    window.switchTab = (id, el) => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.content-container').forEach(c => c.classList.remove('active'));
-        el.classList.add('active'); 
-        document.getElementById(id).classList.add('active');
-    };
+// Toast helper
+function showToast(msg, type="success") {
+    const container = document.getElementById('toastContainer');
+    if(!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerText = msg;
+    container.appendChild(toast);
+    setTimeout(()=>toast.remove(),3000);
+}
 
-    async function init() {
-        if (!targetUID) return;
+window.openAbout = () => { 
+    document.getElementById('aboutModal').classList.add('open'); 
+    document.getElementById('overlay').style.display = 'block'; 
+};
+window.closeAbout = () => { 
+    document.getElementById('aboutModal').classList.remove('open'); 
+    document.getElementById('overlay').style.display = 'none'; 
+};
 
-        onValue(ref(db, `users/${targetUID}`), (snap) => {
-            const d = snap.val() || {};
-            document.getElementById('uHandle').innerText = d.handle || "user";
-            document.getElementById('bioText').innerText = d.bio || "No bio available.";
-            document.getElementById('info-date').innerText = d.createdAt || "Long ago";
-            if (d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
-            const followers = d.followers ? Object.keys(d.followers).length : 0;
-            document.getElementById('info-followers').innerText = followers;
-            document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
+window.switchTab = (id, el) => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content-container').forEach(c => c.classList.remove('active'));
+    el.classList.add('active'); 
+    document.getElementById(id).classList.add('active');
+};
+
+async function init() {
+    if(!targetUID) return;
+
+    // Load profile
+    onValue(ref(db, `users/${targetUID}`), (snap) => {
+        const d = snap.val() || {};
+        document.getElementById('uHandle').innerText = d.handle || "user";
+        document.getElementById('bioText').innerText = d.bio || "No bio available.";
+        // Correct join date
+        if(d.joined){
+            const date = new Date(d.joined);
+            document.getElementById('info-date').innerText = date.toLocaleDateString();
+        } else {
+            document.getElementById('info-date').innerText = "Long ago";
+        }
+        if(d.profilePic) document.getElementById('uPfp').style.backgroundImage = `url('${d.profilePic}')`;
+        const followers = d.followers ? Object.keys(d.followers).length : 0;
+        document.getElementById('info-followers').innerText = followers;
+        document.getElementById('vBadge').style.display = followers >= 1000 ? "block" : "none";
+    });
+
+    // Show buttons regardless of auth
+    const fBtn = document.getElementById('followBtn');
+    const mBtn = document.getElementById('msgBtn');
+    fBtn.style.display = 'block';
+    mBtn.style.display = 'block';
+
+    // Default inline messages if user not logged in
+    const handleFollow = () => showToast("Login to follow users","warning");
+    const handleMessage = () => showToast("Login to send messages","warning");
+
+    onAuthStateChanged(auth, (user) => {
+        if(!user || user.uid === targetUID){
+            fBtn.onclick = handleFollow;
+            mBtn.onclick = handleMessage;
+            fBtn.innerText = "Follow";
+            fBtn.className = "btn btn-follow";
+            return;
+        }
+
+        // Logged in user logic
+        mBtn.onclick = () => window.location.href = `/messages/?chat=${targetUID}`;
+
+        onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
+            const isF = snap.exists();
+            fBtn.innerText = isF ? "Unfollow" : "Follow";
+            fBtn.className = isF ? "btn btn-unfollow" : "btn btn-follow";
+            fBtn.onclick = () => {
+                const updates = {};
+                updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
+                updates[`users/${targetUID}/followers/${user.uid}`] = isF ? null : true;
+                update(ref(db), updates);
+            };
         });
+    });
 
-        onAuthStateChanged(auth, (user) => {
-            const fBtn = document.getElementById('followBtn');
-            const mBtn = document.getElementById('msgBtn');
-            if (!user || user.uid === targetUID) return;
+    // Sections loader
+    const loadSection = (path, divId, type) => {
+        onValue(ref(db, path), (snap) => {
+            const box = document.getElementById(divId);
+            box.innerHTML = "";
+            let count = 0;
 
-            fBtn.style.display = 'block';
-            mBtn.style.display = 'block';
-            // Keeping messages standard for now, but following the folder pattern
-            mBtn.onclick = () => window.location.href = `/messages/?chat=${targetUID}`;
+            if(snap.exists()){
+                Object.entries(snap.val()).forEach(([id,item])=>{
+                    if(item.uid !== targetUID) return;
+                    count++;
+                    const el = document.createElement('div');
 
-            onValue(ref(db, `following/${user.uid}/${targetUID}`), (snap) => {
-                const isF = snap.exists();
-                fBtn.innerText = isF ? "Unfollow" : "Follow";
-                fBtn.className = isF ? "btn btn-unfollow" : "btn btn-follow";
-                fBtn.onclick = () => {
-                    const updates = {};
-                    updates[`following/${user.uid}/${targetUID}`] = isF ? null : true;
-                    updates[`users/${targetUID}/followers/${user.uid}`] = isF ? null : true;
-                    update(ref(db), updates);
-                };
-            });
-        });
-
-        const loadSection = (path, divId, type) => {
-            onValue(ref(db, path), (snap) => {
-                const box = document.getElementById(divId);
-                box.innerHTML = "";
-                let count = 0;
-
-                if (snap.exists()) {
-                    Object.entries(snap.val()).forEach(([id, item]) => {
-                        if (item.uid !== targetUID) return;
-                        count++;
-                        const el = document.createElement('div');
-                        
-                        if (type === 'grid') {
-                            el.className = "grid-item";
-                            el.style.backgroundImage = `url('${item.image || item.url}')`;
-                            // FIXED REDIRECT: Goes to /post/?id=... or /story/?id=...
-                            el.onclick = () => window.location.href = `/${path}/?id=${id}`;
-                        } else {
-                            el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222; cursor:pointer;";
-                            el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
-                            // FIXED REDIRECT: Goes to /poll/?id=...
-                            el.onclick = () => window.location.href = `/${path}/?id=${id}`;
-                        }
-                        box.appendChild(el);
-                    });
-                }
-
-                if (count === 0) box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
-                const counterEl = document.getElementById(`info-${path}s`);
-                if(counterEl) counterEl.innerText = count;
-            });
-        };
-
-        loadSection('post', 'posts', 'grid');
-        loadSection('poll', 'polls', 'list');
-        loadSection('story', 'stories', 'grid');
-
-        setTimeout(() => {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
+                    if(type==='grid'){
+                        el.className="grid-item";
+                        el.style.backgroundImage = `url('${item.image||item.url}')`;
+                        el.onclick = () => window.location.href = `/${path}/?id=${id}`;
+                    } else {
+                        el.style.cssText = "background:#111; padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid #222; cursor:pointer;";
+                        el.innerHTML = `<div style="font-weight:700">${item.question || 'View Poll'}</div>`;
+                        el.onclick = () => window.location.href = `/${path}/?id=${id}`;
+                    }
+                    box.appendChild(el);
+                });
             }
-        }, 2000);
-    }
 
-    init();
+            if(count===0) box.innerHTML = `<div class="empty-msg">No ${path}s yet</div>`;
+            const counterEl = document.getElementById(`info-${path}s`);
+            if(counterEl) counterEl.innerText = count;
+        });
+    };
+
+    loadSection('post','posts','grid');
+    loadSection('poll','polls','list');
+    loadSection('story','stories','grid');
+
+    setTimeout(()=>{
+        const loader = document.getElementById('loader');
+        if(loader){
+            loader.style.opacity='0';
+            setTimeout(()=>loader.style.display='none',500);
+        }
+    },2000);
+}
+
+init();
 </script>
 
 </body>
