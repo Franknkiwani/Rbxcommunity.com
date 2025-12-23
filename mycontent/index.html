@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Studio</title>
+    <title>RBX Creator Studio</title>
     <style>
         :root {
             --bg: #000000;
@@ -13,82 +13,68 @@
             --border: #2C2C2E;
             --red: #FF453A;
         }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 100px; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
         
+        /* Dashboard Styling */
         header { padding: 40px 20px 20px; }
         .view-title { font-size: 32px; font-weight: 800; margin: 0; }
-        .view-subtitle { color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
-
+        
         .mgmt-section { display: none; padding: 0 20px; animation: slideUp 0.4s ease; }
         .active { display: block; }
 
-        /* Dashboard Style */
         .balance-card { background: var(--accent); padding: 30px 20px; border-radius: 24px; color: #000; margin-bottom: 20px; position: relative; }
-        .payout-info { background: rgba(0,0,0,0.05); padding: 8px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; margin-top: 15px; display: inline-block; }
-        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
-        .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
-        .stat-val { font-size: 20px; font-weight: 800; }
+        .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+        .stat-val { font-size: 19px; font-weight: 800; }
 
-        /* Content List */
+        /* Content List Styling */
         .content-card { background: var(--card); border-radius: 20px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-        .content-thumb { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
-        .mon-toggle { border: none; padding: 8px 12px; border-radius: 10px; font-weight: 800; font-size: 10px; cursor: pointer; }
+        .content-thumb { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: #222; }
+        .btn-icon { background: #2C2C2E; border: none; padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Navigation */
-        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); display: flex; border-top: 1px solid var(--border); }
-        .nav-btn { flex: 1; background: none; border: none; color: var(--text-dim); font-size: 9px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+        /* Custom Modal System */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
+        .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 25px; width: 100%; max-width: 340px; text-align: center; }
+        .modal-btn { width: 100%; padding: 14px; border-radius: 15px; border: none; font-weight: 800; font-size: 13px; margin-top: 10px; cursor: pointer; background: #2C2C2E; color: #fff; }
+
+        /* Nav */
+        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); display: flex; border-top: 1px solid var(--border); z-index: 1000; }
+        .nav-btn { flex: 1; background: none; border: none; color: var(--text-dim); font-size: 9px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
         .nav-btn.active { color: var(--accent); }
-        
-        svg { width: 20px; height: 20px; }
+
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="view-subtitle" id="view-indicator">Creator Dashboard</div>
+    <div id="view-indicator" style="color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Studio</div>
     <h1 class="view-title" id="view-name">Analysis</h1>
 </header>
 
 <section id="view-analysis" class="mgmt-section active">
     <div class="balance-card">
-        <div style="font-size: 11px; font-weight: 700; opacity: 0.7;">TOTAL BALANCE</div>
-        <div id="balance" style="font-size: 48px; font-weight: 900; letter-spacing: -1px;">$0.00</div>
-        
-        <div id="payout-notice" style="display:none;">
-            <div class="payout-info">PAID MONTHLY BETWEEN 5-10</div>
-        </div>
+        <div style="font-size: 11px; font-weight: 800; opacity: 0.6;">AVAILABLE BALANCE</div>
+        <div id="balance" style="font-size: 44px; font-weight: 900; letter-spacing: -1px;">$0.00</div>
+        <div id="payout-notice" style="display:none; margin-top:15px; font-size:10px; font-weight:900; background:rgba(0,0,0,0.1); padding:6px 10px; border-radius:8px; display:inline-block;">PAID MONTHLY BETWEEN 5-10</div>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <span class="stat-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> Valid Clicks
-            </span>
+            <span class="stat-label">Valid Clicks</span>
             <span id="valid-clicks" class="stat-val" style="color:var(--accent);">0</span>
         </div>
         <div class="stat-card">
-            <span class="stat-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg> Invalid
-            </span>
+            <span class="stat-label">Invalid</span>
             <span id="invalid-clicks" class="stat-val" style="color:var(--red);">0</span>
         </div>
         <div class="stat-card" style="grid-column: span 2;">
-            <span class="stat-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg> Dynamic CPM
-            </span>
+            <span class="stat-label">Dynamic CPM</span>
             <span id="dynamic-cpm" class="stat-val">$2.50</span>
         </div>
-        <div class="stat-card">
-            <span class="stat-label">Click Revenue</span>
-            <span id="click-rev-val" class="stat-val">$0.00</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-label">Ad Revenue</span>
-            <span id="ad-rev-val" class="stat-val">$0.00</span>
-        </div>
+        <div class="stat-card"><span class="stat-label">Click Rev</span><span id="click-rev" class="stat-val">$0.00</span></div>
+        <div class="stat-card"><span class="stat-label">Ad Rev</span><span id="ad-rev" class="stat-val">$0.00</span></div>
     </div>
 </section>
 
@@ -96,20 +82,25 @@
     <div id="content-list"></div>
 </section>
 
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="m-title" style="margin:0 0 8px 0;">Action</h3>
+        <p id="m-desc" style="font-size:13px; color:var(--text-dim); margin:0 0 20px 0;"></p>
+        <div id="m-input-area" style="display:none; margin-bottom:15px;">
+            <input type="text" id="m-input" placeholder="https://" style="width:100%; padding:12px; border-radius:12px; background:#2C2C2E; border:1px solid #444; color:#fff; box-sizing:border-box;">
+        </div>
+        <div id="m-actions"></div>
+    </div>
+</div>
+
 <nav>
-    <button class="nav-btn active" onclick="showTab('analysis')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-        ANALYSIS
-    </button>
-    <button class="nav-btn" onclick="showTab('manage')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 3v18M3 9h18"/></svg>
-        MANAGE
-    </button>
+    <button class="nav-btn active" onclick="switchTab('analysis')">ANALYSIS</button>
+    <button class="nav-btn" onclick="switchTab('manage')">MANAGE</button>
 </nav>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -126,7 +117,28 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    window.showTab = (tab) => {
+    // --- MODAL SYSTEM ---
+    window.ui = {
+        show: (cfg) => {
+            document.getElementById('m-title').innerText = cfg.title;
+            document.getElementById('m-desc').innerText = cfg.desc;
+            document.getElementById('m-input-area').style.display = cfg.input ? 'block' : 'none';
+            const area = document.getElementById('m-actions');
+            area.innerHTML = "";
+            cfg.btns.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = 'modal-btn';
+                btn.innerText = b.text;
+                if(b.color) btn.style.color = b.color;
+                btn.onclick = b.cb;
+                area.appendChild(btn);
+            });
+            document.getElementById('custom-modal').style.display = 'flex';
+        },
+        close: () => document.getElementById('custom-modal').style.display = 'none'
+    };
+
+    window.switchTab = (tab) => {
         document.querySelectorAll('.mgmt-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         event.currentTarget.classList.add('active');
@@ -135,95 +147,134 @@
         if(tab === 'analysis') runAnalysis();
     };
 
+    // --- ANALYSIS LOGIC ($2-$5 CPM) ---
     async function runAnalysis() {
         const user = auth.currentUser;
         if (!user) return;
-
-        let vClicks = 0, iClicks = 0, vCount = 0;
-        const types = ['post', 'poll', 'story'];
-        const userItems = [];
+        let vClicks = 0, iClicks = 0, totalViews = 0;
+        const types = ['post', 'story'];
+        const userIds = [];
 
         for (const t of types) {
             const snap = await get(ref(db, t));
             if (snap.exists()) {
                 Object.entries(snap.val()).forEach(([id, item]) => {
                     if (item.uid === user.uid && item.sponsored) {
-                        userItems.push(id);
-                        vCount += (item.views || 0);
+                        userIds.push(id);
+                        totalViews += (item.views || 0);
                     }
                 });
             }
         }
 
-        for (const id of userItems) {
+        for (const id of userIds) {
             const cSnap = await get(ref(db, `clicks/${id}`));
             if (cSnap.exists()) {
-                Object.values(cSnap.val()).forEach(c => {
-                    if (c.valid) vClicks++; else iClicks++;
-                });
+                Object.values(cSnap.val()).forEach(c => { if(c.valid) vClicks++; else iClicks++; });
             }
         }
 
-        const cpm = 2.50 + (vClicks * 0.05);
-        const cRev = vClicks * 0.10;
-        const aRev = (vCount / 1000) * cpm;
+        const cpm = Math.min(5.00, 2.00 + (vClicks * 0.05));
+        const cRev = vClicks * 0.12; 
+        const aRev = (totalViews / 1000) * cpm;
         const total = cRev + aRev;
 
         document.getElementById('valid-clicks').innerText = vClicks;
         document.getElementById('invalid-clicks').innerText = iClicks;
         document.getElementById('dynamic-cpm').innerText = `$${cpm.toFixed(2)}`;
-        document.getElementById('click-rev-val').innerText = `$${cRev.toFixed(2)}`;
-        document.getElementById('ad-rev-val').innerText = `$${aRev.toFixed(2)}`;
+        document.getElementById('click-rev').innerText = `$${cRev.toFixed(2)}`;
+        document.getElementById('ad-rev').innerText = `$${aRev.toFixed(2)}`;
         document.getElementById('balance').innerText = `$${total.toFixed(2)}`;
-        
         document.getElementById('payout-notice').style.display = total >= 10 ? 'block' : 'none';
     }
 
+    // --- MANAGEMENT LOGIC ---
     async function loadManage() {
-        const container = document.getElementById('content-list');
-        container.innerHTML = "";
-        const types = ['post', 'poll', 'story'];
+        const list = document.getElementById('content-list');
+        list.innerHTML = "";
+        const types = ['post', 'story', 'poll'];
 
         for (const t of types) {
             const snap = await get(ref(db, t));
             if (!snap.exists()) continue;
-
             Object.entries(snap.val()).forEach(([id, item]) => {
                 if (item.uid === auth.currentUser.uid) {
                     const isMon = item.sponsored === true;
+                    const canMon = t !== 'poll';
                     const div = document.createElement('div');
                     div.className = 'content-card';
                     div.innerHTML = `
                         <img src="${item.image || 'https://via.placeholder.com/50'}" class="content-thumb">
                         <div style="flex:1">
-                            <div style="font-size:13px; font-weight:700;">${(item.title || item.question || 'Post').substring(0,18)}</div>
-                            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase;">${t} • ${item.views || 0} Views</div>
+                            <div style="font-size:13px; font-weight:700;">${(item.title || item.question || 'Item').substring(0,18)}</div>
+                            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase;">${t} • ${item.views || 0} VIEWS</div>
                         </div>
-                        <button class="mon-toggle" style="background:${isMon ? 'var(--accent)' : '#333'}; color:${isMon ? '#000' : '#888'};">
-                            ${isMon ? 'MONETIZED' : 'MONETIZE'}
-                        </button>
+                        <div style="display:flex; gap:8px;">
+                            ${canMon ? `<button id="mon-btn-${id}" style="background:${isMon?'var(--accent)':'#2C2C2E'}; color:${isMon?'#000':'#fff'}; border:none; padding:8px 10px; border-radius:10px; font-size:10px; font-weight:800;">${isMon?'ON':'MONETIZE'}</button>` : ''}
+                            <button class="btn-icon" id="del-btn-${id}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#FF453A" stroke-width="2" style="width:14px; height:14px;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
+                        </div>
                     `;
-                    container.appendChild(div);
-                    div.querySelector('button').onclick = () => toggleMon(t, id, isMon);
+                    list.appendChild(div);
+                    if(canMon) div.querySelector(`#mon-btn-${id}`).onclick = () => openMonFlow(t, id, isMon);
+                    div.querySelector(`#del-btn-${id}`).onclick = () => openDeleteFlow(t, id);
                 }
             });
         }
     }
 
-    async function toggleMon(type, id, status) {
-        const path = ref(db, `${type}/${id}`);
-        if (!status) {
-            const url = prompt("Enter Payout Link (https://):");
-            if (url && url.includes('http')) {
-                await update(path, { sponsored: true, link: url });
-                loadManage();
-            }
+    function openDeleteFlow(t, id) {
+        ui.show({
+            title: "Delete Content?",
+            desc: "This action cannot be undone.",
+            btns: [
+                { text: "DELETE", color: "var(--red)", cb: async () => { await remove(ref(db, `${t}/${id}`)); ui.close(); loadManage(); }},
+                { text: "CANCEL", cb: ui.close }
+            ]
+        });
+    }
+
+    function openMonFlow(t, id, isMon) {
+        if(isMon) {
+            ui.show({
+                title: "Disable Ads?",
+                desc: "Stop earning from this post.",
+                btns: [
+                    { text: "DISABLE", color: "var(--red)", cb: async () => { await update(ref(db, `${t}/${id}`), { sponsored: null, monType: null, link: null }); ui.close(); loadManage(); }},
+                    { text: "CANCEL", cb: ui.close }
+                ]
+            });
         } else {
-            if (confirm("Disable monetization?")) {
-                await update(path, { sponsored: null, link: null });
-                loadManage();
-            }
+            ui.show({
+                title: "Monetize Method",
+                desc: "Choose how you want to earn ($2-$5 CPM).",
+                btns: [
+                    { text: "BOTH (RECOMMENDED)", color: "var(--accent)", cb: () => collectLink(t, id, 'both') },
+                    { text: "BANNER ADS ONLY", cb: async () => { await update(ref(db, `${t}/${id}`), { sponsored: true, monType: 'banner' }); ui.close(); loadManage(); }},
+                    { text: "DIRECT LINK ONLY", cb: () => collectLink(t, id, 'link') },
+                    { text: "CANCEL", cb: ui.close }
+                ]
+            });
         }
+    }
+
+    function collectLink(t, id, method) {
+        ui.show({
+            title: "Destination Link",
+            desc: "Enter the link for your ad button.",
+            input: true,
+            btns: [
+                { text: "ACTIVATE", color: "var(--accent)", cb: async () => {
+                    const val = document.getElementById('m-input').value;
+                    if(val.includes('http')) {
+                        await update(ref(db, `${t}/${id}`), { sponsored: true, monType: method, link: val });
+                        ui.close(); loadManage();
+                    }
+                }},
+                { text: "BACK", cb: () => openMonFlow(t, id, false) }
+            ]
+        });
     }
 
     onAuthStateChanged(auth, u => { if(u) { runAnalysis(); loadManage(); } });
