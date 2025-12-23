@@ -419,6 +419,295 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     transform: translateX(0);
     visibility: visible;
 }
+.story-feed-block {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 16px 16px 16px;
+}
+
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 120px; /* Small neat height */
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: transform 0.3s;
+}
+
+.story-card-small:hover .story-img {
+    transform: scale(1.05);
+}
+
+.story-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 4px 10px 4px 4px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+.story-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story-badge span {
+    font-size: 10px;
+    font-weight: 900;
+    color: #fff;
+}
+/* Vertical Story Container */
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 16px 16px 16px;
+}
+
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+/* Header UI */
+.story-header-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    padding: 6px 10px;
+    border-radius: 14px;
+    z-index: 2;
+}
+
+.story-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--accent);
+}
+
+.story-user-handle {
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.story-verified-icon {
+    width: 11px;
+    height: 11px;
+}
+
+.story-follower-count {
+    font-size: 8px;
+    color: #aaa;
+    font-weight: 700;
+    margin-top: -2px;
+}
+
+.story-follow-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    font-size: 7px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.story-follow-btn.following {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* Action Buttons */
+.story-report-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.3);
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.story-bottom-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
+.story-title-text {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+
+.story-view-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Full View Monetization */
+.story-monetization-box {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.story-sponsor-btn {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-weight: 900;
+}
+/* --- GLOBAL FEED EDGES --- */
+
+/* Main Post Cards */
+.card {
+    border: 1.5px solid rgba(255, 255, 255, 0.9); /* Bright white edges */
+    border-radius: 24px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Story Cards */
+.story-card-small {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #111;
+    /* White edges for stories */
+    border: 1.5px solid rgba(255, 255, 255, 0.8); 
+    box-sizing: border-box;
+}
+
+/* Post Images Edge (Optional: adds a line between header and image) */
+.post-img {
+    width: 100%;
+    display: block;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- ENHANCED STORY UI --- */
+
+.story-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spacing between bordered stories */
+    padding: 0 16px 20px 16px;
+}
+
+.story-header-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    padding: 6px 10px;
+    border-radius: 14px;
+    z-index: 2;
+    border: 0.5px solid rgba(255, 255, 255, 0.2); /* Thin inner border */
+}
+
+.story-verified-icon {
+    width: 12px;
+    height: 12px;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+.story-view-btn {
+    background: #ffffff; /* Solid white button */
+    color: #000;
+    border: none;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 7px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.story-report-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 6px;
+    cursor: pointer;
+    z-index: 5;
+}
 
 </style>  
     <style>
@@ -558,146 +847,6 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
 }
 
     </style>
-<div id="ios-loader" style="position:fixed; inset:0; background:#000; z-index:100000; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 0.8s ease; font-family: -apple-system, sans-serif;">
-    
-    <style>
-        /* Lock background scroll while loader exists */
-        body { overflow: hidden !important; }
-        
-        .ios-tick-spinner { position: relative; width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; }
-        .ios-tick-spinner .bar {
-            width: 3px; height: 10px; background: #636366; position: absolute;
-            left: 50%; top: 50%; transform-origin: 50% 100%; border-radius: 2px;
-            animation: ios-fade 1s linear infinite;
-        }
-        /* Radial positioning for 12 bars */
-        .bar:nth-child(1) { transform: translate(-50%, -150%) rotate(0deg); animation-delay: 0s; }
-        .bar:nth-child(2) { transform: translate(-50%, -150%) rotate(30deg); animation-delay: -0.916s; }
-        .bar:nth-child(3) { transform: translate(-50%, -150%) rotate(60deg); animation-delay: -0.833s; }
-        .bar:nth-child(4) { transform: translate(-50%, -150%) rotate(90deg); animation-delay: -0.75s; }
-        .bar:nth-child(5) { transform: translate(-50%, -150%) rotate(120deg); animation-delay: -0.666s; }
-        .bar:nth-child(6) { transform: translate(-50%, -150%) rotate(150deg); animation-delay: -0.583s; }
-        .bar:nth-child(7) { transform: translate(-50%, -150%) rotate(180deg); animation-delay: -0.5s; }
-        .bar:nth-child(8) { transform: translate(-50%, -150%) rotate(210deg); animation-delay: -0.416s; }
-        .bar:nth-child(9) { transform: translate(-50%, -150%) rotate(240deg); animation-delay: -0.333s; }
-        .bar:nth-child(10) { transform: translate(-50%, -150%) rotate(270deg); animation-delay: -0.25s; }
-        .bar:nth-child(11) { transform: translate(-50%, -150%) rotate(300deg); animation-delay: -0.166s; }
-        .bar:nth-child(12) { transform: translate(-50%, -150%) rotate(330deg); animation-delay: -0.083s; }
-
-        @keyframes ios-fade { from { background: #fff; } to { background: #2c2c2e; } }
-    </style>
-<div id="desktop-warning-modal" class="modal-overlay">
-  <div class="modal-content">
-    <svg class="sad-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="M8 15s1.5 2 4 2 4-2 4-2"></path>
-      <line x1="9" y1="9" x2="9.01" y2="9"></line>
-      <line x1="15" y1="9" x2="15.01" y2="9"></line>
-    </svg>
-
-    <h2>Oops! Desktop detected.</h2>
-    <p>This website wasn't designed for larger screens. For the best experience, try switching to a phone or tablet.</p>
-    
-    <button id="continue-btn" class="continue-link">Continue anyway</button>
-  </div>
-</div>
-
-<style>
-  /* Fade-in Animation */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .modal-overlay {
-    display: none; 
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    z-index: 10000;
-    justify-content: center;
-    align-items: center;
-    font-family: sans-serif;
-  }
-
-  .modal-content {
-    background: white;
-    padding: 40px;
-    border-radius: 30px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-    text-align: center;
-    max-width: 400px;
-    width: 85%;
-    animation: fadeIn 0.4s ease-out forwards;
-  }
-
-  .sad-icon {
-    width: 80px;
-    height: 80px;
-    color: #cbd5e0;
-    margin-bottom: 20px;
-  }
-
-  h2 { color: #2d3748; margin-bottom: 15px; font-size: 1.5rem; }
-  p { color: #718096; line-height: 1.5; margin-bottom: 30px; }
-
-  .continue-link {
-    background: none;
-    border: none;
-    color: #a0aec0;
-    text-decoration: underline;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 5px;
-  }
-</style>
-
-<script>
-  (function() {
-    const modal = document.getElementById('desktop-warning-modal');
-    const continueBtn = document.getElementById('continue-btn');
-
-    function checkScreen() {
-      // 992px is the standard 'Desktop' breakpoint
-      // If the browser (or Desktop Mode) reports a width above this, show modal
-      if (window.innerWidth >= 992) {
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; 
-      } else {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-      }
-    }
-
-    continueBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-      document.body.style.overflow = 'auto';
-      // Optional: Stop checking once they've dismissed it for this session
-      window.removeEventListener('resize', checkScreen);
-    });
-
-    window.addEventListener('load', checkScreen);
-    window.addEventListener('resize', checkScreen);
-  })();
-</script>
-
-    <div style="margin-bottom:30px;">
-        <img src="https://i.imgur.com/cM3Givj.jpeg" style="max-width: 130px; height: auto; border-radius: 25px;">
-    </div>
-
-    <div class="ios-tick-spinner">
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        
-        <span id="load-pct" style="color: #fff; font-size: 10px; font-weight: 700; position: absolute; top: 50%; transform: translateY(-50%);">0%</span>
-    </div>
-</div>
 
 <header>
   <img src="https://i.imgur.com/cM3Givj.jpeg" alt="RBX Community" class="logo">
@@ -709,6 +858,116 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
     <div class="hamburger" id="hamburger"><div></div><div></div><div></div></div>
   </div>
 </header>
+<div id="ios-loader" style="position:fixed; inset:0; background: #000; z-index:100000; display:flex; align-items:center; justify-content:center; transition: opacity 1s ease; font-family: 'Segoe UI', sans-serif; overflow:hidden;">
+    
+    <style>
+        body { overflow: hidden !important; }
+
+        /* The Main Obsidian Card */
+        .glass-panel {
+            position: relative;
+            width: 320px;
+            padding: 30px;
+            background: #000000; /* Pure Black */
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Sharp border to define the edge in the dark */
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            box-shadow: 0 30px 60px rgba(0,0,0,1);
+            animation: panel-pop 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        /* Full Image - No Cropping */
+        .loader-logo {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            z-index: 1;
+        }
+
+        /* High-Gloss Mirror Shine Animation */
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+                105deg, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.2) 45%, 
+                rgba(255, 255, 255, 0.4) 50%, 
+                rgba(255, 255, 255, 0.2) 55%, 
+                transparent 70%
+            );
+            transform: skewX(-20deg);
+            animation: mirror-sweep 3.5s infinite ease-in-out;
+            z-index: 2;
+        }
+
+        /* Big Clean White Percentage */
+        #load-pct {
+            font-size: 72px;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 5px 0;
+            letter-spacing: -3px;
+            z-index: 3;
+        }
+
+        /* Minimal White Spinner */
+        .glow-spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            z-index: 3;
+        }
+
+        /* Community Text */
+        .loading-sub {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 700;
+            margin-top: 20px;
+            z-index: 3;
+        }
+
+        /* Animations */
+        @keyframes mirror-sweep { 
+            0% { left: -150%; } 
+            40% { left: 150%; } 
+            100% { left: 150%; } 
+        }
+
+        @keyframes panel-pop { 
+            from { opacity: 0; transform: scale(0.9) translateY(20px); } 
+            to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+    </style>
+ 
+    <div class="glass-panel">
+        <img src="https://i.imgur.com/cM3Givj.jpeg" class="loader-logo">
+        <div class="glow-spinner"></div>
+        <div id="load-pct">0%</div>
+        <div class="loading-sub">Loading Community</div>
+    </div>
+</div>
+
 
 <div class="menu-overlay" id="menuOverlay">
   <a href="/" class="menu-link">
@@ -750,33 +1009,32 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
 
   <div class="panel-main-scroll" style="flex:1; overflow-y:auto; padding:20px;">
     
-    <div class="panel-top" style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px;">
-      <div id="panelProfilePic" style="width:80px; height:80px; border-radius:50%; background:#222; overflow:hidden; border:2px solid #333; background-size:cover; background-position:center; background-repeat:no-repeat;"></div>
-      <div id="authBtnContainer" style="margin-top: 10px; width: 30%;">
-  <button id="authActionBtn" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 900; border: none; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;">
-    Loading...
-  </button>
+    <div class="panel-top" style="display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:25px;">
+      <div id="panelProfilePic" style="width:90px; height:90px; border-radius:50%; background:#222; overflow:hidden; border:2px solid #333; background-size:cover; background-position:center; background-repeat:no-repeat;"></div>
+  <div id="handleDisplayContainer" style="background:#000; border:1px solid #fff; padding:6px 20px; border-radius:20px; margin-top:10px; display: inline-block;">
+  <span id="uniqueHandleDisplay" style="font-weight:900; font-size:14px; color:#fff; letter-spacing:0.5px; text-transform:lowercase;">@loading...</span>
 </div>
-      <div id="userInfo" style="text-align:center; font-weight:bold;"></div>
+
+
+      <div id="userInfo" style="text-align:center; font-weight:bold; font-size:16px;"></div>
+
+      <div style="display:flex; flex-direction:column; gap:8px; width:80%; margin-top:5px;">
+        <div id="authBtnContainer" style="width:100%;">
+          <button id="authActionBtn" style="width:100%; padding:12px; border-radius:12px; font-weight:900; border:none; cursor:pointer; transition:0.3s; text-transform:uppercase; letter-spacing:1px; font-size:13px;">
+            Loading...
+          </button>
+        </div>
+
+        <button id="manageContentBtn" onclick="window.location.href='/mycontent'" style="width:100%; padding:12px; border-radius:12px; font-weight:900; border:none; cursor:pointer; background:#fff; color:#000; text-transform:uppercase; letter-spacing:1px; font-size:13px;">
+          Manage Content
+        </button>
+      </div>
       
       <div class="spinner" id="uploadSpinner" style="display:none;"></div>
       <input type="file" id="profileInput" accept="image/*" style="display:none;">
-
-      <div id="handleContainer" style="display:flex; flex-direction:column; align-items:center; gap:8px; width:100%;">
-        <input type="text" id="handleInput" placeholder="Username / Handle" 
-               style="padding:8px 12px; border-radius:12px; border:1px solid #333; background:#222; color:#fff; text-align:center; font-size:14px; width:80%;">
-        <button id="saveHandleBtn" style="background:#fff; color:#000; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">Save Handle</button>
-        <span id="handleStatus" style="font-size:12px; color:#ccc;"></span>
-      </div>
-
-      <div id="copyLinkContainer" style="display:flex; gap:5px; width:100%; margin-top:10px;">
-        <input type="text" id="userLink" readonly style="flex:1; background:#111; border:1px solid #333; color:#aaa; padding:8px; border-radius:8px; font-size:12px;">
-        <button id="copyLinkBtn" style="background:#333; color:#fff; border:none; padding:8px; border-radius:8px; cursor:pointer;">Copy</button>
-      </div>
-      <span id="copyStatus" style="font-size:11px;"></span>
     </div>
 
-    <div class="profile-stats" style="display:flex; justify-content:space-around; width:100%; margin-bottom:25px; background:#111; padding:15px 0; border-radius:15px;">
+    <div class="profile-stats" style="display:flex; justify-content:space-around; width:100%; margin-bottom:25px; background:#111; padding:15px 0; border-radius:15px; border:1px solid #222;">
       <div style="text-align:center;">
         <span style="font-weight:bold; font-size:18px; display:block;" id="statPosts">0</span>
         <p style="font-size:12px; color:#aaa; margin:0;">Posts</p>
@@ -791,25 +1049,46 @@ li { background:#181818; padding:10px 12px; border-radius:12px; margin-bottom:8p
       </div>
     </div>
 
-    <div style="width:100%; background:#1a1a1a; padding:15px; border-radius:15px; margin-bottom:20px;">
-      <h3 style="margin:0 0 8px 0; font-size:14px; color:#fff; text-transform:uppercase; letter-spacing:1px;">About Me</h3>
-      <textarea id="userBioTextarea" maxlength="100" placeholder="Write something about yourself..." 
-                style="width:100%; height:80px; background:#222; color:#ccc; border:none; padding:10px; border-radius:10px; resize:none; font-size:14px; outline:none;"></textarea>
-      <div id="bioCharCount" style="text-align:right; font-size:12px; color:#777; margin-top:4px;">0 / 100</div>
-      
-      <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-        <button id="saveProfileBtn" style="padding:10px 15px; border-radius:10px; border:none; background:#2196F3; color:#fff; font-weight:bold; cursor:pointer;">Save Profile</button>
-        <div class="spinner" id="saveProfileSpinner" style="width:18px; height:18px; border:2px solid #333; border-top:2px solid #fff; border-radius:50%; animation:spin 1s linear infinite; display:none;"></div>
-        <span id="saveProfileStatus" style="font-size:12px; color:#4caf50;"></span>
+    <div style="background:#111; padding:15px; border-radius:15px; margin-bottom:20px; border:1px solid #222;">
+      <div id="handleContainer" style="display:flex; flex-direction:column; gap:8px; width:100%;">
+        <label style="font-size:10px; color:#777; text-transform:uppercase; font-weight:900; letter-spacing:0.5px;">Your Handle</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="handleInput" placeholder="Username / Handle" 
+                 style="flex:1; padding:10px; border-radius:10px; border:1px solid #333; background:#222; color:#fff; font-size:14px;">
+          <button id="saveHandleBtn" style="background:#fff; color:#000; border:none; padding:0 15px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:12px;">Save</button>
+        </div>
+        <span id="handleStatus" style="font-size:11px; color:#ccc; text-align:center;"></span>
+      </div>
+
+      <div id="copyLinkContainer" style="display:flex; flex-direction:column; gap:5px; width:100%; margin-top:15px; border-top:1px solid #222; padding-top:15px;">
+        <label style="font-size:10px; color:#777; text-transform:uppercase; font-weight:900; letter-spacing:0.5px;">Profile Link</label>
+        <div style="display:flex; gap:5px;">
+          <input type="text" id="userLink" readonly style="flex:1; background:#000; border:1px solid #333; color:#aaa; padding:10px; border-radius:10px; font-size:12px;">
+          <button id="copyLinkBtn" style="background:#333; color:#fff; border:none; padding:0 15px; border-radius:10px; cursor:pointer; font-size:12px;">Copy</button>
+        </div>
+        <span id="copyStatus" style="font-size:11px; text-align:center; color:#4caf50;"></span>
       </div>
     </div>
 
-    <div style="border-top: 1px solid #222; padding-top: 20px;">
-      <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
-        <button onclick="showSocialTab('followers')" id="tabFollowers" style="background:none; border:none; color:#2196F3; font-weight:900; cursor:pointer; font-size:12px; border-bottom: 2px solid #2196F3; padding-bottom:5px;">FOLLOWERS</button>
-        <button onclick="showSocialTab('following')" id="tabFollowing" style="background:none; border:none; color:#555; font-weight:900; cursor:pointer; font-size:12px; padding-bottom:5px;">FOLLOWING</button>
+    <div style="width:100%; background:#1a1a1a; padding:15px; border-radius:15px; margin-bottom:20px; border:1px solid #222;">
+      <h3 style="margin:0 0 10px 0; font-size:12px; color:#777; text-transform:uppercase; letter-spacing:1px; font-weight:900;">About Me</h3>
+      <textarea id="userBioTextarea" maxlength="100" placeholder="Write something about yourself..." 
+                style="width:100%; height:70px; background:#222; color:#ccc; border:none; padding:12px; border-radius:10px; resize:none; font-size:14px; outline:none;"></textarea>
+      <div id="bioCharCount" style="text-align:right; font-size:11px; color:#555; margin-top:5px;">0 / 100</div>
+      
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+        <button id="saveProfileBtn" style="flex:1; padding:12px; border-radius:10px; border:none; background:#2196F3; color:#fff; font-weight:bold; cursor:pointer; font-size:13px;">Save Bio</button>
+        <div class="spinner" id="saveProfileSpinner" style="width:18px; height:18px; border:2px solid #333; border-top:2px solid #fff; border-radius:50%; animation:spin 1s linear infinite; display:none;"></div>
       </div>
-      <div id="socialList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <div id="saveProfileStatus" style="font-size:11px; color:#4caf50; text-align:center; margin-top:8px;"></div>
+    </div>
+
+    <div style="border-top: 1px solid #222; padding-top: 10px;">
+      <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+        <button onclick="showSocialTab('followers')" id="tabFollowers" style="background:none; border:none; color:#2196F3; font-weight:900; cursor:pointer; font-size:12px; border-bottom: 2px solid #2196F3; padding-bottom:8px; transition:0.3s;">FOLLOWERS</button>
+        <button onclick="showSocialTab('following')" id="tabFollowing" style="background:none; border:none; color:#555; font-weight:900; cursor:pointer; font-size:12px; padding-bottom:8px; transition:0.3s;">FOLLOWING</button>
+      </div>
+      <div id="socialList" style="display:flex; flex-direction:column; gap:12px; padding-bottom:20px;"></div>
     </div>
   </div>
 </div>
@@ -1064,21 +1343,26 @@ headerProfile?.addEventListener('click', () => { profilePanel.classList.add('act
 closeProfile?.addEventListener('click', () => { profilePanel.classList.remove('active'); document.body.style.overflow = 'auto'; });
 copyBtn?.addEventListener('click', () => { if (!userLinkInput.value || userLinkInput.value.includes('Login')) return; navigator.clipboard.writeText(userLinkInput.value); notify(copyStatus, 'Copied'); });
 
-// Handle Input: Enforce 12-character limit
+// --- HANDLE INPUT LOGIC ---
 handleInput?.addEventListener('input', () => {
+    // Sync character counter if it exists in your HTML
+    const counterEl = document.getElementById('handleCharCount');
+    if (counterEl) counterEl.innerText = `${handleInput.value.length} / 12`;
+
     if (handleInput.value.length > 12) {
         handleInput.value = handleInput.value.substring(0, 12);
         notify(handleStatus, 'Max 12 characters', false);
     }
 });
 
-// Profile Picture Upload
+// --- PROFILE PICTURE UPLOAD ---
 panelProfilePic?.addEventListener('click', () => profileInput.click());
 profileInput?.addEventListener('change', async () => {
     if (!profileInput.files[0] || !currentUser) return;
 
+    // Pic limit check (shows on bio status as general feedback)
     const newHistory = await checkWeeklyLimit('profilePic');
-    if (!newHistory) return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+    if (!newHistory) return notify(saveProfileStatus, 'Pic Limit: 2 per week', false);
 
     uploadSpinner.style.display = 'block';
     const formData = new FormData();
@@ -1111,23 +1395,22 @@ profileInput?.addEventListener('change', async () => {
     uploadSpinner.style.display = 'none';
 });
 
-// Consolidated Profile Save
-saveProfileBtn?.addEventListener('click', async () => {
+// --- 1. SAVE HANDLE ONLY (Independence Fix) ---
+saveHandleBtn?.addEventListener('click', async () => {
     if (!currentUser) return;
-
     const h = handleInput.value.trim();
-    const b = userBioTextarea.value;
 
-    if (h.length < 3) return notify(saveProfileStatus, 'Handle too short', false);
-    if (h.length > 12) return notify(saveProfileStatus, 'Handle max 12 chars', false);
+    if (h.length < 3) return notify(handleStatus, 'Too short (min 3)', false);
+    if (h.length > 12) return notify(handleStatus, 'Too long (max 12)', false);
 
-    saveProfileSpinner.style.display = 'block';
-
+    saveHandleBtn.disabled = true;
     try {
+        // Weekly Limit: Moved notification to handleStatus
         const newHistory = await checkWeeklyLimit('profileInfo');
         if (!newHistory) {
-            saveProfileSpinner.style.display = 'none';
-            return notify(saveProfileStatus, 'Limit: 2 changes per week', false);
+            notify(handleStatus, 'Limit: 2 changes per week', false);
+            saveHandleBtn.disabled = false;
+            return;
         }
 
         const allSnap = await get(ref(db, 'users'));
@@ -1137,26 +1420,38 @@ saveProfileBtn?.addEventListener('click', async () => {
         );
 
         if (taken) {
-            saveProfileSpinner.style.display = 'none';
-            return notify(saveProfileStatus, 'Handle already taken!', false);
+            notify(handleStatus, 'Handle already taken!', false);
+        } else {
+            const updates = {};
+            updates[`users/${currentUser.uid}/handle`] = h;
+            updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+            
+            await update(ref(db), updates);
+            notify(handleStatus, 'Handle saved!');
         }
+    } catch (e) {
+        console.error(e);
+        notify(handleStatus, 'Save error!', false);
+    }
+    saveHandleBtn.disabled = false;
+});
 
-        const updates = {};
-        updates[`users/${currentUser.uid}/handle`] = h;
-        updates[`users/${currentUser.uid}/bio`] = b;
-        updates[`users/${currentUser.uid}/updateHistory/profileInfo`] = newHistory;
+// --- 2. SAVE BIO ONLY ---
+saveProfileBtn?.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const b = userBioTextarea.value;
 
-        await update(ref(db), updates);
-        await refreshStats();
-        notify(saveProfileStatus, 'Profile saved!');
+    saveProfileSpinner.style.display = 'block';
+    try {
+        // Updated: Bio saves independently and has no weekly limit
+        await update(ref(db, `users/${currentUser.uid}`), { bio: b });
+        notify(saveProfileStatus, 'Bio updated!');
     } catch (e) {
         console.error(e);
         notify(saveProfileStatus, 'Save error!', false);
     }
     saveProfileSpinner.style.display = 'none';
 });
-
-saveHandleBtn?.addEventListener('click', () => saveProfileBtn.click());
 
 /* ================= FEATURED USERS & POLLS ================= */
 async function loadFeaturedUsers() {
@@ -1168,31 +1463,46 @@ async function loadFeaturedUsers() {
         allUsers.sort(() => 0.5 - Math.random());
         const featured10 = allUsers.slice(0, 10);
         featuredContainer.innerHTML = '';
+        
         let myFollowing = new Set();
         if (currentUser) {
             const fSnap = await get(ref(db, `following/${currentUser.uid}`));
             if (fSnap.exists()) myFollowing = new Set(Object.keys(fSnap.val()));
         }
+
         featured10.forEach(([uid, user]) => {
+            // Check if this featured user is the current logged-in user
+            const isMe = currentUser && currentUser.uid === uid;
+            const profilePath = isMe ? '/profile' : `/profile?user=${uid}`;
+
             const div = document.createElement('div');
             div.style.cssText = "flex:0 0 auto; width:70px; display:flex; flex-direction:column; align-items:center;";
+            
             const imgWrapper = document.createElement('div');
-            imgWrapper.style.cssText = `width:60px;height:60px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #fff;transition:border-color 1s;`;
+            imgWrapper.style.cssText = `width:60px;height:60px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:3px solid #fff;transition:border-color 1s;cursor:pointer;`;
+            imgWrapper.onclick = () => window.location.href = profilePath; // REDIRECT LOGIC
+
             const img = document.createElement('img');
             img.src = user.profilePic || 'https://via.placeholder.com/60?text=?';
             img.style.cssText = "width:100%;height:100%;object-fit:cover;";
             imgWrapper.appendChild(img); div.appendChild(imgWrapper);
+            
             setInterval(() => { imgWrapper.style.borderColor = randomColor(); }, 1000);
+
             const handleDiv = document.createElement('div');
             handleDiv.textContent = '@' + (user.handle || 'user');
-            handleDiv.style.cssText = "max-width:70px;font-size:10px;color:#fff;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+            handleDiv.style.cssText = "max-width:70px;font-size:10px;color:#fff;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;";
+            handleDiv.onclick = () => window.location.href = profilePath; // REDIRECT LOGIC
             div.appendChild(handleDiv);
+
             const followerDiv = document.createElement('div');
             followerDiv.style.cssText = "font-size:9px;color:#bbb;text-align:center;margin-top:2px;";
             div.appendChild(followerDiv);
+
             const button = document.createElement('button');
             button.style.cssText = "margin-top:4px;font-size:10px;padding:2px 6px;border-radius:4px;border:none;background:#2e89ff;color:#fff;cursor:pointer;text-align:center;";
             div.appendChild(button);
+
             const msg = document.createElement('span');
             msg.style.cssText = "color:#ff6b6b;font-size:10px;margin-top:2px;display:none;text-align:center;";
             div.appendChild(msg);
@@ -1200,7 +1510,19 @@ async function loadFeaturedUsers() {
             async function updateButton() {
                 const fSnap = await get(ref(db, `users/${uid}/followers`));
                 followerDiv.textContent = count(fSnap.val()) + ' followers';
-                if (!currentUser) { button.textContent = 'Follow'; button.style.background = '#2e89ff'; return; }
+                
+                if (isMe) {
+                    button.textContent = 'ME';
+                    button.style.background = '#444'; // Grey color for "ME"
+                    return;
+                }
+
+                if (!currentUser) { 
+                    button.textContent = 'Follow'; 
+                    button.style.background = '#2e89ff'; 
+                    return; 
+                }
+
                 const isFollowing = myFollowing.has(uid);
                 button.textContent = isFollowing ? 'Following' : 'Follow';
                 button.style.background = isFollowing ? '#4caf50' : '#2e89ff';
@@ -1208,8 +1530,23 @@ async function loadFeaturedUsers() {
             updateButton();
 
             button.addEventListener('click', async () => {
-                if (!currentUser) { msg.textContent = "Only logged in users can follow"; msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 2000); return; }
-                const spinnerIcon = createSpinner(); button.innerHTML = ''; button.appendChild(spinnerIcon); button.disabled = true;
+                if (isMe) {
+                    window.location.href = '/profile';
+                    return;
+                }
+
+                if (!currentUser) { 
+                    msg.textContent = "Only logged in users can follow"; 
+                    msg.style.display = 'block'; 
+                    setTimeout(() => msg.style.display = 'none', 2000); 
+                    return; 
+                }
+
+                const spinnerIcon = createSpinner(); 
+                button.innerHTML = ''; 
+                button.appendChild(spinnerIcon); 
+                button.disabled = true;
+
                 const path = ref(db, `following/${currentUser.uid}/${uid}`);
                 const snapF = await get(path);
                 if (!snapF.exists()) {
@@ -1222,12 +1559,15 @@ async function loadFeaturedUsers() {
                     myFollowing.delete(uid);
                 }
                 if (statFollowing) statFollowing.textContent = myFollowing.size;
-                updateButton(); button.disabled = false;
+                updateButton(); 
+                button.disabled = false;
             });
+            
             featuredContainer.appendChild(div);
         });
     } catch (e) { console.error(e); }
 }
+
 /* ================= POLL STATE FOR LAZY LOADING ================= */
 let allPollData = [];
 let pollsDisplayed = 0;
@@ -1281,26 +1621,50 @@ async function renderPollBatch() {
 }
 
 async function renderPoll(pollId, data, following = []) {
-    const card = document.createElement('div'); card.className = 'poll-card'; card.dataset.uid = data.uid;
+    const card = document.createElement('div'); 
+    card.className = 'poll-card'; 
+    card.dataset.uid = data.uid;
     
+    // --- REDIRECT LOGIC ---
+    const isMe = currentUser && currentUser.uid === data.uid;
+    const profilePath = isMe ? '/profile' : `/profile?user=${data.uid}`;
+
     // --- Author Section ---
-    const authorSection = document.createElement('div'); authorSection.className = 'poll-author';
-    const authorLeft = document.createElement('div'); authorLeft.className = 'author-left';
-    const profileImg = document.createElement('img'); profileImg.src = 'default-avatar.png';
-    const authorHandle = document.createElement('span'); authorHandle.textContent = '@user';
-    authorLeft.append(profileImg, authorHandle); authorSection.append(authorLeft);
+    const authorSection = document.createElement('div'); 
+    authorSection.className = 'poll-author';
+    
+    const authorLeft = document.createElement('div'); 
+    authorLeft.className = 'author-left';
+    authorLeft.style.cursor = 'pointer';
+    authorLeft.onclick = () => window.location.href = profilePath; // Redirect on click
+
+    const profileImg = document.createElement('img'); 
+    profileImg.src = 'default-avatar.png';
+    
+    const authorHandle = document.createElement('span'); 
+    authorHandle.textContent = '@user';
+    authorLeft.append(profileImg, authorHandle); 
+    authorSection.append(authorLeft);
 
     const actionBtn = document.createElement('button');
-    if (currentUser?.uid === data.uid) {
-        actionBtn.className = 'delete-btn'; actionBtn.textContent = 'Delete';
-        actionBtn.onclick = () => { window.deletePollId = pollId; confirmPopup.style.display = 'flex'; };
+    if (isMe) {
+        // OWN POST: Show MANAGE and redirect to profile
+        actionBtn.className = 'manage-btn'; 
+        actionBtn.textContent = 'MANAGE';
+        actionBtn.style.cssText = "background:#333; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:900; font-size:10px; cursor:pointer;";
+        actionBtn.onclick = (e) => { 
+            e.stopPropagation();
+            window.location.href = '/profile'; 
+        };
     } else {
+        // OTHER POST: Show Follow
         actionBtn.className = 'follow-btn';
         const isFollowing = following.includes(data.uid);
         actionBtn.textContent = isFollowing ? 'Following' : 'Follow';
         if (isFollowing) actionBtn.classList.add('following');
         
-        actionBtn.onclick = async () => {
+        actionBtn.onclick = async (e) => {
+            e.stopPropagation();
             if (!currentUser) return showStatus('Login required', 'error');
             actionBtn.disabled = true;
             const followRef = ref(db, `/users/${data.uid}/followers/${currentUser.uid}`);
@@ -1324,8 +1688,10 @@ async function renderPoll(pollId, data, following = []) {
             } catch (err) { actionBtn.disabled = false; }
         };
     }
-    authorSection.append(actionBtn); card.appendChild(authorSection);
+    authorSection.append(actionBtn); 
+    card.appendChild(authorSection);
 
+    // Fetch User Info
     get(ref(db, `/users/${data.uid}`)).then(uSnap => {
         const u = uSnap.val() || {}; 
         profileImg.src = u.profilePic || 'default-avatar.png'; 
@@ -1333,7 +1699,8 @@ async function renderPoll(pollId, data, following = []) {
         if (u.followers && Object.keys(u.followers).length >= 1000) {
             const badge = document.createElement('img'); 
             badge.src = 'https://img.icons8.com/stickers/100/verified-badge.png';
-            badge.className = 'verified-badge'; badge.style.cssText = 'width:14px;height:14px;margin-left:4px;'; 
+            badge.className = 'verified-badge'; 
+            badge.style.cssText = 'width:14px;height:14px;margin-left:4px;vertical-align:middle;'; 
             authorHandle.appendChild(badge);
         }
     });
@@ -1377,7 +1744,7 @@ async function renderPoll(pollId, data, following = []) {
         });
     });
 
-    // --- CORRECTED Inline Comment List (With Profile/Handle) ---
+    // --- Inline Comment List ---
     const list = document.createElement('div'); 
     list.className = 'comments-list'; 
     list.style.cssText = 'height:100px; overflow-y:auto; border-top:1px solid #222; margin-top:5px; padding:5px 0;';
@@ -1389,73 +1756,54 @@ async function renderPoll(pollId, data, following = []) {
         counter.textContent = `Comments: ${sorted.length}`;
         
         for (const [key, c] of sorted) {
-            // Fetch commenter details in real-time
             const userSnap = await get(ref(db, `/users/${c.uid}`));
             const u = userSnap.val() || {};
+            const isCommentMe = currentUser && currentUser.uid === c.uid;
+            const cPath = isCommentMe ? '/profile' : `/profile?user=${c.uid}`;
+            
             const div = document.createElement('div');
             div.style.cssText = 'font-size:11px; margin-bottom:4px; display:flex; align-items:center; gap:5px;';
-            div.innerHTML = `<img src="${u.profilePic || 'default-avatar.png'}" style="width:18px;height:18px;border-radius:50%; object-fit:cover;"> 
-                            <span><strong>@${u.handle || 'user'}</strong>: ${c.text}</span>`;
+            div.innerHTML = `<img src="${u.profilePic || 'default-avatar.png'}" style="width:18px;height:18px;border-radius:50%; object-fit:cover; cursor:pointer;" onclick="window.location.href='${cPath}'"> 
+                            <span><strong style="cursor:pointer;" onclick="window.location.href='${cPath}'">@${u.handle || 'user'}</strong>: ${c.text}</span>`;
             list.appendChild(div);
         }
         list.scrollTop = list.scrollHeight;
     });
 
-    // --- Action Footer (Corrected Report/Share) ---
+    // --- Action Footer ---
     const actions = document.createElement('div');
     actions.style.cssText = 'display:flex; gap:10px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);';
     const btnStyle = 'flex:1; background:rgba(255,255,255,0.05); color:#fff; border:1px solid #333; padding:8px; border-radius:10px; font-size:11px; font-weight:900; cursor:pointer;';
     
-const shareBtn = document.createElement('button');
-shareBtn.innerHTML = '🔗 SHARE'; 
-shareBtn.style.cssText = btnStyle;
-
-shareBtn.onclick = async () => {
-    // UPDATED: Now forces the redirect to the /poll/ directory
-    const url = `${window.location.origin}/poll/?id=${pollId}`;
-    
-    try {
-        if (navigator.share) {
-            await navigator.share({ 
-                title: 'Check out this Poll!', 
-                text: data.question, 
-                url: url 
-            });
-        } else {
-            throw new Error('Share API not supported'); 
+    const shareBtn = document.createElement('button');
+    shareBtn.innerHTML = '🔗 SHARE'; 
+    shareBtn.style.cssText = btnStyle;
+    shareBtn.onclick = async () => {
+        const url = `${window.location.origin}/poll/?id=${pollId}`;
+        try {
+            if (navigator.share) await navigator.share({ title: 'Poll', text: data.question, url: url });
+            else throw new Error();
+        } catch (err) {
+            navigator.clipboard.writeText(url);
+            showStatus('Link Copied!', 'success');
         }
-    } catch (err) {
-        navigator.clipboard.writeText(url).then(() => {
-            if (typeof showStatus === 'function') {
-                showStatus('Link Copied to Clipboard!', 'success');
-            } else {
-                alert('Link Copied!');
-            }
-        });
-    }
-};
-
+    };
 
     const reportBtn = document.createElement('button');
     reportBtn.innerHTML = '🚩 REPORT'; 
     reportBtn.style.cssText = btnStyle + 'background:rgba(255,75,75,0.1); color:#FF4B4B; border-color:rgba(255,75,75,0.2);';
-    reportBtn.onclick = () => {
-        // Updated to use the variable your app uses for identifying the item to report
-        if (typeof window.submitReport === 'function') {
-            window.submitReport(pollId, 'poll');
-        } else {
-            // Fallback if the function is named differently
-            console.error("Report function not found.");
-        }
-    };
+    reportBtn.onclick = () => { if (window.submitReport) window.submitReport(pollId, 'poll'); };
 
     actions.append(shareBtn, reportBtn);
     card.appendChild(actions);
 
     // --- Footer Metadata ---
-    const footer = document.createElement('div'); footer.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;opacity:0.5;margin-top:10px;';
-    const timeSpan = document.createElement('span'); timeSpan.textContent = timeAgo(data.timestamp || Date.now());
-    const viewsSpan = document.createElement('span'); viewsSpan.textContent = 'Views: 0';
+    const footer = document.createElement('div'); 
+    footer.style.cssText = 'display:flex;justify-content:space-between;font-size:10px;opacity:0.5;margin-top:10px;';
+    const timeSpan = document.createElement('span'); 
+    timeSpan.textContent = timeAgo(data.timestamp || Date.now());
+    const viewsSpan = document.createElement('span'); 
+    viewsSpan.textContent = 'Views: 0';
     footer.append(timeSpan, viewsSpan); card.appendChild(footer);
     
     runTransaction(ref(db, `/pollViews/${pollId}`), v => (v || 0) + 1).then(tx => { 
@@ -1465,18 +1813,44 @@ shareBtn.onclick = async () => {
     pollFeed.appendChild(card);
 }
 
+/* ================= REVENUE & AD CONFIG ================= */
+const TIER_1 = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France'];
+const adLinks = [
+    "https://otieu.com/4/7147552", "https://otieu.com/4/7197808", "https://otieu.com/4/9474299",
+    "https://otieu.com/4/7197807", "https://otieu.com/4/8784016", "https://otieu.com/4/7197806",
+    "https://otieu.com/4/8272145", "https://otieu.com/4/7165724", "https://otieu.com/4/7950037"
+];
 
+async function trackPay(creatorUid, type) {
+    if (!creatorUid) return;
+    try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const country = data.country_name || "Unknown";
+        const isHigh = TIER_1.includes(country);
+        let reward = type === 'view' ? (isHigh ? 0.02 : 0.01) : (isHigh ? 0.05 : 0.02);
+        runTransaction(ref(db, `users/${creatorUid}/balance`), (c) => (c || 0) + reward);
+    } catch (e) { console.error("Pay tracking failed"); }
+}
+
+window.handleAdClick = (creatorUid, originalLink) => {
+    trackPay(creatorUid, 'click');
+    const randomAd = adLinks[Math.floor(Math.random() * adLinks.length)];
+    // Opens the Adsterra link, but you could also open originalLink if preferred
+    window.open(randomAd, '_blank'); 
+};
 
 /* ================= FEED (POSTS) LOGIC ================= */
-/* ================= FEED (POSTS) LOGIC ================= */
+let postsSinceStory = 0; 
+
 async function startUniverse() {
     const snap = await get(ref(db, 'post'));
     if (!snap.exists()) return;
-    // Shuffle posts and reset feed
     allPostIds = Object.entries(snap.val()).sort(() => Math.random() - 0.5);
     const feed = document.getElementById('feed'); 
     if (feed) feed.innerHTML = '';
-    displayedCount = 0; 
+    displayedCount = 0;
+    postsSinceStory = 0; 
     renderBatch();
 }
 
@@ -1485,17 +1859,27 @@ function renderBatch() {
     if (!feed) return;
     
     if (displayedCount >= allPostIds.length) { 
-        document.getElementById('end-msg').style.display = 'block'; 
+        if(document.getElementById('end-msg')) document.getElementById('end-msg').style.display = 'block'; 
         return; 
     }
     
     const batch = allPostIds.slice(displayedCount, displayedCount + batchSize);
     
     batch.forEach(([id, post]) => {
+        postsSinceStory++;
+        if (postsSinceStory === 4) {
+            const sw = document.createElement('div');
+            sw.className = 'story-feed-block';
+            feed.appendChild(sw);
+            renderStorySection(sw);
+            postsSinceStory = 0; 
+        }
+
         const card = document.createElement('div'); 
         card.className = 'card'; 
         feed.appendChild(card);
 
+        trackPay(post.uid, 'view');
         runTransaction(ref(db, `post/${id}/views`), v => (v || 0) + 1);
 
         onValue(ref(db, `post/${id}`), (pSnap) => {
@@ -1504,19 +1888,25 @@ function renderBatch() {
             
             onValue(ref(db, `users/${p.uid}`), (uSnap) => {
                 const u = uSnap.val() || {}; 
-                const fc = count(u.followers); 
+                const fc = u.followers ? Object.keys(u.followers).length : 0;
                 const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+                const isMe = auth.currentUser && auth.currentUser.uid === p.uid;
+                const profileLink = isMe ? '/myprofile' : `/profile?user=${p.uid}`;
 
-                // --- SLIDESHOW TITLE LOGIC ---
-                // If title > 20 chars, make it scroll. Otherwise, keep it static.
                 const titleHTML = p.title.length > 20 
-                    ? `<div class="title-scroll-wrap"><div class="scrolling-text">${p.title} &nbsp;&nbsp;&nbsp; ${p.title} &nbsp;&nbsp;&nbsp;</div></div>`
+                    ? `<div class="title-scroll-wrap"><div class="scrolling-text">${p.title}</div></div>`
                     : p.title;
 
-                // --- UPDATED MONETIZATION UI ---
+                // Restored your original design + Sandboxed Adsterra Banner
                 const sponsoredSection = p.sponsored ? `
                   <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="window.open('${p.link}', '_blank')" 
+                    <div style="border-radius:20px; overflow:hidden; margin-bottom:12px; border:1px solid #333; background:#000; height:52px; display:flex; justify-content:center;">
+                        <iframe 
+                            style="border:none; width:320px; height:50px;" 
+                            srcdoc="<html><body style='margin:0; display:flex; justify-content:center;'><script type='text/javascript'>atOptions={'key':'2a9930a498db1f8096726619a2fe13ff','format':'iframe','height':50,'width':320,'params':{}};<\/script><script type='text/javascript' src='https://www.highperformanceformat.com/2a9930a498db1f8096726619a2fe13ff/invoke.js'><\/script></body></html>">
+                        </iframe>
+                    </div>
+                    <button onclick="handleAdClick('${p.uid}', '${p.link}')" 
                             style="width:100%; padding:14px; border:none; border-radius:12px; 
                             background:#fff; color:#000; font-weight:900; font-size:14px; 
                             cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;
@@ -1533,12 +1923,15 @@ function renderBatch() {
 
                 card.innerHTML = `
                 <div class="header">
-                  <img src="${u.profilePic || ''}" class="avatar" onclick="window.location.href='/profile?user=${p.uid}'">
-                  <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='/profile?user=${p.uid}'">
+                  <img src="${u.profilePic || ''}" class="avatar" style="cursor:pointer;" onclick="window.location.href='${profileLink}'">
+                  <div style="flex-grow:1; cursor:pointer;" onclick="window.location.href='${profileLink}'">
                     <div style="font-weight:900; display:flex; align-items:center; gap:4px;">@${u.handle || 'user'} ${fc >= 1000 ? '✅' : ''}</div>
                     <div style="font-size:10px; color:var(--accent); font-weight:800;">${fc} Followers</div>
                   </div>
-                  <button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>
+                  ${isMe 
+                    ? `<button class="btn-action" style="background:#333; color:#fff; border-bottom-color:#555;" onclick="window.location.href='/myprofile'">MANAGE</button>`
+                    : `<button class="btn-action follow-btn-${p.uid} ${isF ? 'following' : ''}" onclick="doFollow('${p.uid}')">${isF ? 'FOLLOWING' : 'FOLLOW'}</button>`
+                  }
                 </div>
                 <div style="position:relative;">
                    <img src="${p.image}" class="post-img" onclick="viewFull('${p.image}')" ondblclick="doLike('${id}')">
@@ -1561,9 +1954,8 @@ function renderBatch() {
                     </div>
                     <span style="font-size:10px; color:var(--text-dim); font-weight:900;">${timeAgo(p.timestamp)}</span>
                   </div>
-                  <div style="font-size:10px; color:var(--accent); font-weight:900; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
+                  <div style="font-size:10px; color:var(--accent); font-weight:800; margin-bottom:5px;">${p.views || 0} VIEWS • ${p.category?.toUpperCase()}</div>
                   <div style="font-size:14px; line-height:1.4;">${p.description ? p.description.substring(0, 70) : ''}... <span style="color:var(--accent); font-weight:900; cursor:pointer;" onclick="openReadMore('${id}')">Read More</span></div>
-                  
                   ${sponsoredSection}
                 </div>`;
             });
@@ -1572,6 +1964,95 @@ function renderBatch() {
     displayedCount += batchSize;
 }
 
+
+/* ================= STORY LOGIC ================= */
+async function renderStorySection(container) {
+    try {
+        const snap = await get(ref(db, 'story'));
+        if (!snap.exists()) return container.remove();
+        
+        // Pick 3 random stories
+        let stories = Object.entries(snap.val()).sort(() => 0.5 - Math.random()).slice(0, 3);
+        
+        container.innerHTML = `<div style="padding:10px 16px; font-size:10px; font-weight:900; color:#888; letter-spacing:1px; text-transform:uppercase;">Suggested Stories</div>`;
+        
+        const list = document.createElement('div');
+        list.className = 'story-vertical-list';
+        
+        for (const [id, data] of stories) {
+            const uSnap = await get(ref(db, `users/${data.uid}`));
+            const u = uSnap.val() || {};
+            const fc = count(u.followers);
+            const isMe = auth.currentUser && auth.currentUser.uid === data.uid;
+            const isF = auth.currentUser && u.followers?.[auth.currentUser.uid];
+
+            // Verified Logic
+            const isVerified = fc >= 1000 || u.verified === true;
+            const badgeHTML = isVerified ? `<img src="https://img.icons8.com/stickers/100/verified-badge.png" class="story-verified-icon" style="width:12px;height:12px;">` : '';
+            
+            // Redirect Logic: Use /myprofile if it's the current user
+            const profileLink = isMe ? '/myprofile' : `/profile?user=${data.uid}`;
+
+            const item = document.createElement('div');
+            item.className = 'story-card-small';
+            
+            item.innerHTML = `
+                <img src="${data.image}" class="story-img">
+                
+                <div class="story-header-overlay">
+                    <img src="${u.profilePic || 'default-avatar.png'}" class="story-avatar" onclick="window.location.href='${profileLink}'">
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <div style="display:flex; align-items:center; gap:3px;">
+                            <span class="story-user-handle" onclick="window.location.href='${profileLink}'">@${u.handle || 'user'}</span>
+                            ${badgeHTML}
+                            ${!isMe ? `<button class="story-follow-btn follow-btn-${data.uid} ${isF ? 'following' : ''}" onclick="event.stopPropagation(); doFollow('${data.uid}')">${isF ? '✓' : 'FOLLOW'}</button>` : ''}
+                        </div>
+                        <span class="story-follower-count">${fc} Followers</span>
+                    </div>
+                </div>
+
+                <button class="story-report-btn" onclick="event.stopPropagation(); submitReport('${id}', 'story')">🚩</button>
+
+                <div class="story-bottom-overlay">
+                    <div class="story-title-text" style="white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px;">
+                        ${data.title || ''}
+                    </div>
+                    <button class="story-view-btn" onclick='openStoryModal(${JSON.stringify(data).replace(/'/g, "&apos;")})'>VIEW</button>
+                </div>
+            `;
+            list.appendChild(item);
+        }
+        container.appendChild(list);
+    } catch (e) { console.error("Story Error:", e); }
+}
+
+window.openStoryModal = (story) => {
+    const modal = document.getElementById('fullImageModal');
+    const img = document.getElementById('fullImgSrc');
+    if (!modal || !img) return;
+
+    img.src = story.image;
+    
+    const monetizationHTML = story.sponsored ? `
+        <div class="story-monetization-box" style="margin-top:15px; text-align:center;">
+            <button onclick="window.open('${story.link}', '_blank')" class="story-sponsor-btn" 
+                style="background:#fff; color:#000; padding:10px 20px; border-radius:8px; font-weight:900; border:none; cursor:pointer;">
+                VISIT SPONSORED
+            </button>
+            <p style="color:#00E052; font-size:10px; font-weight:800; margin-top:5px;">The creator monetized this story</p>
+        </div>
+    ` : '';
+
+    let detailBox = document.getElementById('modalDetailBox');
+    if (detailBox) {
+        detailBox.innerHTML = `
+            <h2 style="margin:0; font-size:18px; color:white; font-weight:900;">${story.title || ''}</h2>
+            ${monetizationHTML}
+        `;
+    }
+    
+    modal.style.display = 'flex';
+};
 
 
 
@@ -1710,15 +2191,27 @@ window.openReadMore = async (id) => {
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">👁️ ${p.views || 0} Views</div>
             <div style="background:var(--glass); padding:12px; border-radius:15px; text-align:center;">❤️ ${p.likeCount || 0} Likes</div>`;
         
-        // Added the Share Section here
+        // UI for Description + Integrated Share API and Copy
         document.getElementById('detDesc').innerHTML = `
-            <div>${p.description || ""}</div>
+            <div style="margin-bottom:20px; line-height:1.6;">${p.description || ""}</div>
             
-            <div class="share-container">
-                <div class="share-label">Share with friends</div>
-                <div class="share-link-row">
-                    <input type="text" class="share-input" value="${shareURL}" id="shareInput-${id}" readonly>
-                    <button class="btn-copy" onclick="window.copyPostLink('${id}')">COPY</button>
+            <div class="share-container" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
+                <div class="share-label" style="font-weight:900; font-size:12px; margin-bottom:10px; color:var(--accent);">SHARE THIS POST</div>
+                
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <button class="btn-action" style="flex:1; background:var(--accent); color:#000; font-weight:900;" 
+                        onclick="window.systemShare('${p.title}', '${shareURL}')">
+                        📲 SHARE NOW
+                    </button>
+                </div>
+
+                <div class="share-link-row" style="display:flex; gap:5px; background:#000; padding:5px; border-radius:8px;">
+                    <input type="text" class="share-input" value="${shareURL}" id="shareInput-${id}" readonly 
+                        style="background:transparent; border:none; color:#fff; font-size:11px; flex-grow:1; padding-left:5px; outline:none;">
+                    <button class="btn-copy" onclick="window.copyPostLink('${id}')" 
+                        style="background:#333; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:900; cursor:pointer; font-size:11px;">
+                        COPY
+                    </button>
                 </div>
             </div>
         `;
@@ -1732,6 +2225,7 @@ window.openReadMore = async (id) => {
         document.getElementById('detailsModal').classList.add('active');
     } catch(e) { console.error("Error opening details:", e); }
 };
+
 
 
 window.submitReport = async (tid, type) => {
@@ -2155,6 +2649,79 @@ async function showBanModal(reason, uid) {
     }
     window.stop(); 
 }
+// 1. Web Share API (System Share)
+window.systemShare = async (title, url) => {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: `Check out this post on our app!`,
+                url: url
+            });
+        } catch (err) {
+            console.log("Share cancelled or failed");
+        }
+    } else {
+        // Fallback if system share isn't supported (mostly desktop browsers)
+        window.copyPostLinkManual(url);
+    }
+};
+
+// 2. Manual Copy Logic
+window.copyPostLink = (id) => {
+    const copyText = document.getElementById(`shareInput-${id}`);
+    
+    // Select the text field
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        // Show success status
+        if (typeof showStatus === 'function') {
+            showStatus("Link copied to clipboard!", "success");
+        } else {
+            alert("Copied!");
+        }
+    }).catch(err => {
+        console.error("Could not copy text: ", err);
+    });
+};
+
+// 3. Fallback Manual Copy (Used by systemShare if API is missing)
+window.copyPostLinkManual = (url) => {
+    navigator.clipboard.writeText(url);
+    showStatus("System share not supported. Link copied to clipboard!", "success");
+};
+document.getElementById('uploadBtn').addEventListener('click', () => {
+    window.location.href = '/upload'; 
+});
+// Unique observer for the new black-and-white handle box
+function syncUniqueHandle() {
+    auth.onAuthStateChanged((user) => {
+        const display = document.getElementById('uniqueHandleDisplay');
+        if (!display) return;
+
+        if (user) {
+            // Reference to the current user's data in your 'users' node
+            const userRef = ref(db, `users/${user.uid}`);
+            
+            onValue(userRef, (snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.handle) {
+                    display.innerText = `@${userData.handle.replace('@', '')}`;
+                } else {
+                    display.innerText = `@user${user.uid.slice(0, 4)}`;
+                }
+            });
+        } else {
+            display.innerText = "@guest";
+        }
+    });
+}
+
+// Initialize the unique display
+syncUniqueHandle();
 
 </script>
 
