@@ -2,123 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Studio Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Creator Studio Pro</title>
     <style>
         :root {
-            --bg: #000;
-            --card: #121212;
+            --bg: #0a0a0a;
+            --card: #141414;
             --accent: #00E052;
             --border: #222;
-            --text-dim: #777;
+            --text-dim: #666;
+            --red: #ff453a;
         }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* Fixed Header */
-        .payout-header {
-            width: 100%; height: 40px; background: #111; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center; font-size: 10px; 
-            font-weight: 900; letter-spacing: 1px; color: var(--text-dim); position: sticky; top: 0; z-index: 100;
-        }
+        /* Loading Screen */
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #222; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; }
+        /* Fixed Top Bar */
+        .payout-status { width: 100%; height: 44px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--text-dim); position: sticky; top: 0; z-index: 100; }
 
-        /* Navigation Top */
-        .top-nav {
-            display: flex; background: var(--card); border-radius: 15px; padding: 5px; 
-            margin-bottom: 25px; border: 1px solid var(--border);
-        }
-        .nav-tab {
-            flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim);
-            font-size: 11px; font-weight: 800; cursor: pointer; display: flex; 
-            align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
-        }
-        .nav-tab.active { background: #1a1a1a; color: var(--accent); border-radius: 12px; }
+        .app-container { width: 100%; max-width: 480px; padding: 20px; padding-bottom: 100px; }
 
-        /* Cards */
+        /* Main Tabs */
+        .main-nav { display: flex; background: var(--card); border-radius: 20px; padding: 6px; margin-bottom: 30px; border: 1px solid var(--border); }
+        .nav-tab { flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .nav-tab.active { background: #1d1d1d; color: var(--accent); border-radius: 15px; }
+
+        /* Sub-Nav for Content Management */
+        .sub-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .sub-tab { padding: 8px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text-dim); font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .sub-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        /* Stats Cards */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        .stat-val { font-size: 22px; font-weight: 900; display: block; margin-top: 4px; }
         .balance-hero { text-align: center; padding: 40px 0; }
-        .bal-val { font-size: 55px; font-weight: 900; letter-spacing: -2px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
-        .s-card { 
-            background: var(--card); border: 1px solid var(--border); 
-            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 5px;
-        }
+        .balance-val { font-size: 50px; font-weight: 900; letter-spacing: -2px; }
 
-        /* Content Items */
-        .item { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-            padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;
-        }
-        .thumb { width: 55px; height: 55px; border-radius: 14px; object-fit: cover; }
+        /* Content Card */
+        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; animation: fadeIn 0.3s ease; }
+        .item-img { width: 50px; height: 50px; border-radius: 14px; object-fit: cover; background: #222; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Centered Neat Modal */
-        .modal-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .modal-box {
-            width: 90%; max-width: 350px; background: #161616; border: 1px solid #333;
-            border-radius: 30px; padding: 30px; text-align: center; animation: pop 0.3s ease;
-        }
-        .opt-img { width: 100%; border-radius: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; }
-        .opt-img:hover { border-color: var(--accent); }
+        /* Modal - Centered Neatly */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal { width: 100%; max-width: 360px; background: #181818; border: 1px solid #333; border-radius: 32px; padding: 30px; text-align: center; }
+        .ad-opt { width: 100%; border-radius: 16px; margin-bottom: 12px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .ad-opt:hover { border-color: var(--accent); }
         
-        @keyframes pop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        svg { width: 18px; height: 18px; }
+        .btn-p { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; margin-top: 10px; }
+        .btn-acc { background: var(--accent); color: #000; }
+        .btn-sec { background: #222; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="payout-header" id="top-payout-text">PAID MONTHLY</div>
+<div id="loader">
+    <div class="spinner"></div>
+    <p style="font-size: 10px; font-weight: 800; margin-top: 15px; color: #444; letter-spacing: 2px;">SYNCING DATA</p>
+</div>
 
-<div class="container">
-    <div class="top-nav">
-        <button class="nav-tab active" onclick="tab('analysis')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-            STATS
-        </button>
-        <button class="nav-tab" onclick="tab('content')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 3v18M3 9h18"/></svg>
-            MANAGE
-        </button>
-        <button class="nav-tab" onclick="tab('payout')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-            PAY
-        </button>
+<div class="payout-status" id="payout-banner">PAID MONTHLY</div>
+
+<div class="app-container">
+    <div class="main-nav">
+        <button class="nav-tab active" onclick="setView('analysis')">STATS</button>
+        <button class="nav-tab" onclick="setView('manage')">MANAGE</button>
+        <button class="nav-tab" onclick="setView('payout')">PAYOUT</button>
     </div>
 
-    <section id="sec-analysis" class="view active">
+    <section id="view-analysis">
         <div class="balance-hero">
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-dim);">TOTAL EARNINGS</div>
-            <div class="bal-val" id="bal-txt">$0.00</div>
+            <span style="font-size: 11px; font-weight: 800; color: var(--text-dim);">AVAILABLE BALANCE</span>
+            <div class="balance-val" id="total-bal">$0.00</div>
         </div>
-        <div class="grid">
-            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">VALID CLICKS</span><b id="v-clicks">0</b></div>
-            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">INVALID</span><b id="i-clicks" style="color:#FF453A;">0</b></div>
-            <div class="s-card" style="grid-column: span 2;"><span style="color:var(--text-dim); font-size:10px;">DYNAMIC CPM</span><b id="cpm-txt">$2.50</b></div>
-            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">CLICK REV</span><b id="c-rev">$0.00</b></div>
-            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">AD REV</span><b id="a-rev">$0.00</b></div>
+        <div class="stat-grid">
+            <div class="stat-box">
+                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">VALID CLICKS</span>
+                <span class="stat-val" id="stat-vc">0</span>
+            </div>
+            <div class="stat-box">
+                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">INVALID</span>
+                <span class="stat-val" id="stat-ic" style="color:var(--red)">0</span>
+            </div>
+            <div class="stat-box" style="grid-column: span 2;">
+                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">DYNAMIC CPM</span>
+                <span class="stat-val" id="stat-cpm">$2.50</span>
+            </div>
+            <div class="stat-box"><span style="font-size: 9px; color: var(--text-dim);">CLICK REV</span><span class="stat-val" id="stat-crev">$0.00</span></div>
+            <div class="stat-box"><span style="font-size: 9px; color: var(--text-dim);">AD REV</span><span class="stat-val" id="stat-arev">$0.00</span></div>
         </div>
     </section>
 
-    <section id="sec-content" class="view" style="display:none;"></section>
+    <section id="view-manage" style="display:none;">
+        <div class="sub-nav">
+            <button class="sub-tab active" onclick="setSubView('post')">POSTS</button>
+            <button class="sub-tab" onclick="setSubView('story')">STORIES</button>
+            <button class="sub-tab" onclick="setSubView('poll')">POLLS</button>
+        </div>
+        <div id="content-list"></div>
+    </section>
 
-    <section id="sec-payout" class="view" style="display:none; text-align: center;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 120px; margin: 40px 0 20px;">
-        <p style="font-size: 12px; color: var(--text-dim);">Earnings are sent to your PayPal email monthly.</p>
-        <input type="email" id="pp-email" placeholder="PayPal Email Address" style="width:100%; padding:15px; border-radius:15px; background:var(--card); border:1px solid var(--border); color:#fff; text-align:center; box-sizing:border-box; margin-bottom:15px;">
-        <button onclick="savePayment()" style="width:100%; padding:15px; border-radius:15px; background:var(--accent); color:#000; font-weight:900; border:none; cursor:pointer;">SAVE PAYMENT METHOD</button>
+    <section id="view-payout" style="display:none; text-align: center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 100px; margin: 40px 0;">
+        <input type="email" id="pp-mail" placeholder="PayPal Email" style="width:100%; background:var(--card); border:1px solid var(--border); padding:16px; border-radius:16px; color:#fff; text-align:center; font-weight:700; margin-bottom:15px;">
+        <button class="btn-p btn-acc" onclick="savePay()">SAVE PAYMENT METHOD</button>
     </section>
 </div>
 
-<div class="modal-bg" id="modal">
-    <div class="modal-box">
-        <h2 id="m-title" style="margin:0 0 10px 0; font-size:20px;"></h2>
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <h2 id="m-title" style="margin:0 0 10px 0; font-size:18px;"></h2>
         <p id="m-desc" style="font-size:12px; color:var(--text-dim); margin-bottom:20px;"></p>
-        <div id="m-content"></div>
-        <button onclick="closeM()" style="background:none; border:none; color:#FF453A; font-weight:800; margin-top:15px;">Dismiss</button>
+        <div id="m-body"></div>
+        <button onclick="hideModal()" style="background:none; border:none; color:var(--red); font-weight:800; margin-top:20px; cursor:pointer;">Close</button>
     </div>
 </div>
 
@@ -127,7 +128,7 @@
     import { getDatabase, ref, get, update, remove, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
+    const config = {
         apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
         authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
         databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
@@ -137,140 +138,147 @@
         appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    window.tab = (id) => {
-        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+    let currentType = 'post';
+
+    // UI Routing
+    window.setView = (v) => {
+        document.querySelectorAll('section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('sec-'+id).style.display = 'block';
+        document.getElementById(`view-${v}`).style.display = 'block';
         event.currentTarget.classList.add('active');
-        if(id === 'analysis') runAnalysis();
-        if(id === 'content') loadContent();
+        if(v === 'analysis') runStats();
+        if(v === 'manage') loadItems();
     };
 
-    window.closeM = () => document.getElementById('modal').style.display = 'none';
+    window.setSubView = (type) => {
+        currentType = type;
+        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        loadItems();
+    };
 
-    // Real-time Balance & Stats
-    async function runAnalysis() {
+    window.hideModal = () => document.getElementById('overlay').style.display = 'none';
+
+    // Stats Logic
+    async function runStats() {
         const u = auth.currentUser; if(!u) return;
-        let vc = 0, ic = 0, views = 0;
+        let vc=0, ic=0, vTotal=0;
         const types = ['post', 'story'];
-        
-        for(const t of types) {
+        for(let t of types) {
             const snap = await get(ref(db, t));
-            if(snap.exists()) {
-                Object.entries(snap.val()).forEach(([id, item]) => {
-                    if(item.uid === u.uid && item.sponsored) {
-                        views += (item.views || 0);
-                        get(ref(db, `clicks/${id}`)).then(cs => {
-                            if(cs.exists()) Object.values(cs.val()).forEach(c => c.valid ? vc++ : ic++);
-                            updateUI(vc, ic, views);
-                        });
+            if(snap.exists()){
+                for(let [id, item] of Object.entries(snap.val())){
+                    if(item.uid === u.uid && item.sponsored){
+                        vTotal += (item.views || 0);
+                        const cSnap = await get(ref(db, `clicks/${id}`));
+                        if(cSnap.exists()) Object.values(cSnap.val()).forEach(c => c.valid ? vc++ : ic++);
                     }
-                });
+                }
             }
         }
-        updateUI(vc, ic, views);
-    }
-
-    function updateUI(vc, ic, views) {
-        const cpm = Math.min(5, 2.5 + (vc * 0.05));
+        const cpm = Math.min(5, 2.5 + (vc*0.05));
         const crev = vc * 0.12;
-        const arev = (views/1000) * cpm;
-        const total = crev + arev;
+        const arev = (vTotal/1000) * cpm;
+        const bal = crev + arev;
+
+        document.getElementById('total-bal').innerText = `$${bal.toFixed(2)}`;
+        document.getElementById('stat-vc').innerText = vc;
+        document.getElementById('stat-ic').innerText = ic;
+        document.getElementById('stat-cpm').innerText = `$${cpm.toFixed(2)}`;
+        document.getElementById('stat-crev').innerText = `$${crev.toFixed(2)}`;
+        document.getElementById('stat-arev').innerText = `$${arev.toFixed(2)}`;
         
-        document.getElementById('v-clicks').innerText = vc;
-        document.getElementById('i-clicks').innerText = ic;
-        document.getElementById('cpm-txt').innerText = `$${cpm.toFixed(2)}`;
-        document.getElementById('c-rev').innerText = `$${crev.toFixed(2)}`;
-        document.getElementById('a-rev').innerText = `$${arev.toFixed(2)}`;
-        document.getElementById('bal-txt').innerText = `$${total.toFixed(2)}`;
-        
-        const header = document.getElementById('top-payout-text');
-        if(total > 5) {
-            header.innerText = "PAID MONTHLY (ELIGIBLE)";
-            header.style.color = "var(--accent)";
-        }
+        const banner = document.getElementById('payout-banner');
+        if(bal > 5) { banner.innerText = "ELIGIBLE FOR PAYOUT"; banner.style.color = "var(--accent)"; }
     }
 
-    window.loadContent = async () => {
-        const container = document.getElementById('sec-content');
-        container.innerHTML = "";
-        const types = ['post', 'story', 'poll'];
-        for(const t of types) {
-            const snap = await get(ref(db, t));
-            if(!snap.exists()) continue;
-            Object.entries(snap.val()).forEach(([id, item]) => {
-                if(item.uid === auth.currentUser.uid) {
-                    const el = document.createElement('div');
-                    el.className = 'item';
-                    el.innerHTML = `
-                        <img src="${item.image || ''}" class="thumb">
-                        <div style="flex:1;">
-                            <div style="font-size:13px; font-weight:800;">${(item.title || item.question || 'Post').substring(0,20)}</div>
-                            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase;">${t} • ${item.views||0} Views</div>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            ${t !== 'poll' ? `<button onclick="monOptions('${t}','${id}',${item.sponsored?true:false})" style="background:${item.sponsored?'var(--accent)':'#222'}; border:none; padding:8px 12px; border-radius:10px; font-size:10px; font-weight:900; color:${item.sponsored?'#000':'#fff'}">${item.sponsored?'ON':'MON'}</button>` : ''}
-                            <button onclick="delItem('${t}','${id}')" style="background:#FF453A11; border:none; padding:8px; border-radius:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#FF453A" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
-                        </div>
-                    `;
-                    container.appendChild(el);
-                }
-            });
-        }
+    // Manage Content Logic
+    window.loadItems = async () => {
+        const list = document.getElementById('content-list');
+        list.innerHTML = "";
+        const snap = await get(ref(db, currentType));
+        if(!snap.exists()) return;
+
+        Object.entries(snap.val()).forEach(([id, item]) => {
+            if(item.uid === auth.currentUser.uid){
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    ${currentType !== 'poll' ? `<img src="${item.image}" class="item-img">` : ''}
+                    <div style="flex:1">
+                        <div style="font-size:14px; font-weight:800;">${(item.title || item.question || '').substring(0,20)}</div>
+                        <div style="font-size:9px; color:var(--text-dim); margin-top:2px;">${item.views || 0} VIEWS</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${currentType !== 'poll' ? `<button onclick="openMon('${id}',${item.sponsored?true:false})" style="background:${item.sponsored?'var(--accent)':'#222'}; color:${item.sponsored?'#000':'#fff'}; border:none; padding:8px 12px; border-radius:10px; font-size:10px; font-weight:900;">${item.sponsored?'ON':'MON'}</button>` : ''}
+                        <button onclick="reqDel('${currentType}','${id}')" style="background:#ff453a11; border:none; padding:8px; border-radius:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#ff453a" stroke-width="2" style="width:14px; height:14px;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                `;
+                list.appendChild(card);
+            }
+        });
     };
 
-    window.monOptions = (t, id, isMon) => {
-        const m = document.getElementById('modal');
-        const cont = document.getElementById('m-content');
+    window.openMon = (id, isMon) => {
+        const m = document.getElementById('overlay');
+        const b = document.getElementById('m-body');
         document.getElementById('m-title').innerText = isMon ? "De-monetize" : "Choose Method";
-        document.getElementById('m-desc').innerText = isMon ? "Stop showing ads on this post?" : "Select how you want to earn:";
-        cont.innerHTML = "";
+        document.getElementById('m-desc').innerText = isMon ? "Ads will be removed." : "Average CPM $2-$5";
+        b.innerHTML = "";
         
-        if(isMon) {
+        if(isMon){
             const btn = document.createElement('button');
-            btn.innerText = "DISABLE AD REVENUE";
-            btn.style.cssText = "width:100%; padding:15px; border-radius:15px; background:#FF453A; color:#fff; border:none; font-weight:800;";
-            btn.onclick = async () => { await update(ref(db, `${t}/${id}`), {sponsored:null, monType:null}); closeM(); loadContent(); };
-            cont.appendChild(btn);
+            btn.className = "btn-p btn-sec"; btn.innerText = "REMOVE ADS";
+            btn.onclick = async () => { await update(ref(db, `${currentType}/${id}`), {sponsored:null}); hideModal(); loadItems(); };
+            b.appendChild(btn);
         } else {
-            const options = [
+            const opts = [
                 { id: 'link', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBmGOtkB5B62zpI-BJxLJ_i19LYofe6bYFcqFYXpByOg&s=10' },
                 { id: 'banner', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO2IObkVGuBws7oY_z87F8yEP_m9kCbQG9JwECJPvn4X8_3Zn1scdiU5w&s=10' },
                 { id: 'both', img: 'https://roiads.co/blog/assets/uploads/2025/05/top-15-cpm-ad-network-1.jpg' }
             ];
-            options.forEach(opt => {
-                const img = document.createElement('img');
-                img.src = opt.img; img.className = 'opt-img';
-                img.onclick = async () => { await update(ref(db, `${t}/${id}`), {sponsored:true, monType:opt.id}); closeM(); loadContent(); };
-                cont.appendChild(img);
+            opts.forEach(o => {
+                const i = document.createElement('img'); i.src = o.img; i.className = "ad-opt";
+                i.onclick = async () => { await update(ref(db, `${currentType}/${id}`), {sponsored:true, monType:o.id}); hideModal(); loadItems(); };
+                b.appendChild(i);
             });
         }
         m.style.display = 'flex';
     };
 
-    window.delItem = (t, id) => {
-        document.getElementById('m-title').innerText = "Delete Post?";
-        document.getElementById('m-desc').innerText = "Permanent action.";
-        const cont = document.getElementById('m-content');
-        cont.innerHTML = `<button onclick="confirmDel('${t}','${id}')" style="width:100%; padding:15px; border-radius:15px; background:#FF453A; color:#fff; border:none; font-weight:800;">CONFIRM DELETE</button>`;
-        document.getElementById('modal').style.display = 'flex';
+    window.reqDel = (t, id) => {
+        const m = document.getElementById('overlay');
+        const b = document.getElementById('m-body');
+        document.getElementById('m-title').innerText = "Delete Forever?";
+        document.getElementById('m-desc').innerText = "This cannot be undone.";
+        b.innerHTML = `<button class="btn-p btn-acc" style="background:var(--red); color:#fff;" onclick="doDel('${t}','${id}')">CONFIRM DELETE</button>`;
+        m.style.display = 'flex';
     };
 
-    window.confirmDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); closeM(); loadContent(); };
+    window.doDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); hideModal(); loadItems(); };
 
-    window.savePayment = async () => {
-        const email = document.getElementById('pp-email').value;
-        if(email.includes('@')) {
-            await set(ref(db, `paymentmethods/${auth.currentUser.uid}`), { email: email, timestamp: Date.now() });
-            alert("PayPal Method Saved!");
+    window.savePay = async () => {
+        const email = document.getElementById('pp-mail').value;
+        if(email.includes('@')){
+            await set(ref(db, `paymentmethods/${auth.currentUser.uid}`), { email });
+            alert("PayPal Saved");
         }
     };
 
-    onAuthStateChanged(auth, u => { if(u) { runAnalysis(); } });
+    // Global Load sequence
+    onAuthStateChanged(auth, async u => {
+        if(u){
+            await runStats();
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').remove(), 500);
+            }, 2000);
+        }
+    });
 </script>
 </body>
 </html>
