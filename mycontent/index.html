@@ -4,47 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Studio Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #000;
-            --card: #111;
-            --accent: #00E052;
-            --border: #ffffff;
-            --text-dim: #666;
-            --red: #ff453a;
-        }
+        :root { --bg: #000; --card: #111; --accent: #00E052; --border: #fff; --text-dim: #555; --red: #ff453a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; }
-        
+
+        /* Desktop Blocker */
+        #desktop-blocker { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        @media (min-width: 800px) { #desktop-blocker { display: flex; } }
+
         .app-container { width: 100%; max-width: 450px; padding: 20px; padding-bottom: 120px; margin: 0 auto; }
 
-        /* Navigation */
+        /* Analytics Style */
+        .rev-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 12px; }
+        .rev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .social-box { background: #111; border: 1px solid #222; border-radius: 15px; padding: 15px; text-align: center; }
+        .chart-container { background: #111; border-radius: 24px; padding: 15px; border: 1px solid #222; margin-top: 20px; }
+
+        /* Nav */
         .main-nav { display: flex; background: #111; border: 1px solid var(--border); border-radius: 20px; padding: 5px; margin-bottom: 25px; }
         .nav-tab { flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim); font-size: 11px; font-weight: 800; border-radius: 15px; cursor: pointer; }
         .nav-tab.active { background: #fff; color: #000; }
 
-        /* Revenue Cards */
-        .rev-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 12px; }
-        .rev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-
-        /* Social Metrics (Subtle) */
-        .social-box { background: #111; border: 1px solid #222; border-radius: 15px; padding: 15px; text-align: center; }
-        .social-val { font-size: 16px; font-weight: 800; display: block; }
-
-        /* Content Items */
+        /* Items */
         .item-card { background: #111; border: 1px solid #222; border-radius: 24px; padding: 15px; margin-bottom: 15px; }
-        .item-img { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 12px; border: 1px solid #222; }
+        .item-img { width: 100%; height: 180px; border-radius: 15px; object-fit: cover; margin-bottom: 12px; }
+        .empty-msg { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 13px; font-weight: 600; }
         .full-btn { width: 100%; padding: 14px; border-radius: 30px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; margin-top: 10px; }
-
-        /* Modal */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal { width: 100%; max-width: 360px; background: #000; border: 1px solid #333; border-radius: 35px; padding: 30px; max-height: 80vh; overflow-y: auto; text-align: center; }
         
-        .tx-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #222; font-size: 11px; }
-        #loading-tag { text-align: center; padding: 20px; font-size: 10px; color: var(--accent); display: none; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal { width: 100%; max-width: 360px; background: #000; border: 1px solid #333; border-radius: 35px; padding: 30px; text-align: center; }
     </style>
 </head>
 <body>
+
+<div id="desktop-blocker">
+    <h1 style="color: var(--accent); margin: 0;">MOBILE ONLY</h1>
+    <p>Please open this Studio on your mobile device to manage your content.</p>
+</div>
 
 <div class="app-container">
     <div class="main-nav">
@@ -55,44 +53,42 @@
 
     <section id="sec-stats">
         <div class="rev-card" style="text-align: center;">
-            <span style="font-size: 10px; font-weight: 800; color: var(--accent);">TOTAL BALANCE</span>
-            <div style="font-size: 45px; font-weight: 900; letter-spacing: -2px; margin: 5px 0;" id="bal-total">$0.00</div>
+            <small style="font-size: 10px; color: var(--accent); font-weight: 800;">TOTAL REVENUE</small>
+            <div id="bal-total" style="font-size: 48px; font-weight: 900; letter-spacing: -2px; margin: 5px 0;">$0.00</div>
+            <div class="rev-grid" style="margin-top: 15px;">
+                <div style="text-align: left;"><small style="font-size: 8px; color: #555;">CLICK REV</small><br><b id="rev-click">$0.00</b></div>
+                <div style="text-align: right;"><small style="font-size: 8px; color: #555;">AD REV</small><br><b id="rev-ad">$0.00</b></div>
+            </div>
         </div>
-        
+
         <div class="rev-grid">
-            <div class="rev-card"><small style="font-size:8px;">CLICK REVENUE</small><br><b id="rev-click">$0.00</b></div>
-            <div class="rev-card"><small style="font-size:8px;">AD REVENUE</small><br><b id="rev-ad">$0.00</b></div>
+            <div class="social-box"><small style="font-size: 8px; color: #555;">DYNAMIC CPM</small><br><b id="cpm-val">$0.00</b></div>
+            <div class="social-box"><small style="font-size: 8px; color: #555;">TOTAL VIEWS</small><br><b id="total-views">0</b></div>
         </div>
 
-        <div class="rev-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
-            <div class="social-box"><small style="font-size:8px;">VALID CLICKS</small><br><b id="v-clicks">0</b></div>
-            <div class="social-box"><small style="font-size:8px;">DYNAMIC CPM</small><br><b id="cpm-val">$2.50</b></div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-            <div class="social-box"><span class="social-val" id="total-views">0</span><small style="font-size:8px;">VIEWS</small></div>
-            <div class="social-box"><span class="social-val" id="total-likes">0</span><small style="font-size:8px;">LIKES</small></div>
-            <div class="social-box"><span class="social-val" id="total-followers">0</span><small style="font-size:8px;">FANS</small></div>
+        <div class="chart-container">
+            <canvas id="growthChart"></canvas>
         </div>
     </section>
 
     <section id="sec-manage" style="display:none;">
         <div style="display:flex; gap:8px; margin-bottom:20px;">
-            <button class="nav-tab active" style="border:1px solid #333;" id="sub-post" onclick="sub('post')">POSTS</button>
-            <button class="nav-tab" style="border:1px solid #333;" id="sub-story" onclick="sub('story')">STORIES</button>
-            <button class="nav-tab" style="border:1px solid #333;" id="sub-poll" onclick="sub('poll')">POLLS</button>
+            <button class="nav-tab active" style="border: 1px solid #222;" id="sub-post" onclick="sub('post')">POSTS</button>
+            <button class="nav-tab" style="border: 1px solid #222;" id="sub-story" onclick="sub('story')">STORIES</button>
+            <button class="nav-tab" style="border: 1px solid #222;" id="sub-poll" onclick="sub('poll')">POLLS</button>
         </div>
         <div id="list"></div>
-        <div id="loading-tag">Loading more...</div>
     </section>
 
     <section id="sec-pay" style="display:none; text-align: center;">
         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 100px; margin: 30px 0;">
         <input type="email" id="pp-input" placeholder="PayPal Email" style="width:100%; padding:16px; border-radius:15px; background:#111; border:1px solid #fff; color:#fff; text-align:center;">
         <button onclick="savePay()" class="full-btn" style="background:#fff; color:#000;">SAVE ACCOUNT</button>
-        <div style="margin-top:40px; text-align:left;">
-            <h4 style="font-size:12px; color:#444;">TRANSACTION HISTORY</h4>
-            <div id="tx-history"></div>
+        <p style="font-size: 10px; color: var(--accent); margin-top: 15px; font-weight: 800;">PAID TO EMAIL OF USER MONTHLY</p>
+        
+        <div style="text-align: left; margin-top: 40px;">
+            <h4 style="font-size: 11px; color: #444; border-bottom: 1px solid #222; padding-bottom: 10px;">TRANSACTION HISTORY</h4>
+            <div id="tx-history" class="empty-msg" style="padding:20px;">No transactions yet.</div>
         </div>
     </section>
 </div>
@@ -108,33 +104,28 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update, remove, set, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, remove, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const config = { apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo", databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com", projectId: "itzhoyoo-f9f7e" };
     const app = initializeApp(config); const db = getDatabase(app); const auth = getAuth(app);
 
     let curType = 'post';
-    let lastKey = null;
-    let isLoading = false;
-    let allLoaded = false;
+    let myChart;
 
     window.tab = (id) => {
         document.querySelectorAll('section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.main-nav .nav-tab').forEach(t => t.classList.remove('active'));
         document.getElementById('sec-'+id).style.display = 'block';
         event.currentTarget.classList.add('active');
-        if(id === 'manage') { lastKey = null; allLoaded = false; document.getElementById('list').innerHTML = ""; loadContent(); }
+        if(id === 'manage') loadContent();
         if(id === 'stats') runStats();
-        if(id === 'pay') loadTransactions();
     };
 
     window.sub = (t) => {
         curType = t;
         document.querySelectorAll('#sec-manage button').forEach(b => b.classList.remove('active'));
         document.getElementById('sub-'+t).classList.add('active');
-        lastKey = null; allLoaded = false;
-        document.getElementById('list').innerHTML = "";
         loadContent();
     };
 
@@ -142,126 +133,99 @@
 
     async function runStats() {
         const u = auth.currentUser; if(!u) return;
-        let vc=0, vTotal=0, lTotal=0;
-        const types = ['post', 'story'];
-        
-        for(let t of types){
-            const snap = await get(ref(db, t));
-            if(snap.exists()){
-                Object.values(snap.val()).forEach(item => {
-                    if(item.uid === u.uid){
-                        vTotal += (item.views || 0);
-                        lTotal += item.likes ? Object.keys(item.likes).length : 0;
-                        if(item.sponsored) {
-                            // Realistic Math: Clicks = roughly 2% of views for sponsored content
-                            vc += Math.floor((item.views || 0) * 0.02);
-                        }
-                    }
-                });
-            }
+        let vTotal = 0, cTotal = 0;
+        const s = await get(ref(db, 'post'));
+        if(s.exists()){
+            Object.values(s.val()).forEach(i => {
+                if(i.uid === u.uid) { 
+                    vTotal += (i.views || 0); 
+                    if(i.sponsored) cTotal += Math.floor((i.views||0) * 0.02);
+                }
+            });
         }
         
-        const cpm = Math.min(5, 2.00 + (vc * 0.01)); // CPM grows based on clicks
-        const crev = vc * 0.10; // $0.10 per click
-        const arev = (vTotal / 1000) * cpm;
-        
-        document.getElementById('bal-total').innerText = `$${(crev + arev).toFixed(2)}`;
-        document.getElementById('rev-click').innerText = `$${crev.toFixed(2)}`;
-        document.getElementById('rev-ad').innerText = `$${arev.toFixed(2)}`;
-        document.getElementById('v-clicks').innerText = vc;
-        document.getElementById('cpm-val').innerText = `$${cpm.toFixed(2)}`;
+        const revAd = (vTotal / 1000) * 2.50;
+        const revClick = cTotal * 0.10;
+        const cpm = vTotal > 0 ? ((revAd + revClick) / vTotal) * 1000 : 0;
+
+        document.getElementById('bal-total').innerText = `$${(revAd + revClick).toFixed(2)}`;
+        document.getElementById('rev-click').innerText = `$${revClick.toFixed(2)}`;
+        document.getElementById('rev-ad').innerText = `$${revAd.toFixed(2)}`;
         document.getElementById('total-views').innerText = vTotal;
-        document.getElementById('total-likes').innerText = lTotal;
+        document.getElementById('cpm-val').innerText = `$${cpm.toFixed(2)}`;
+
+        initChart([1, 2, 4, 3, vTotal, vTotal+10, vTotal+20]); // Dummy data for 7 days
+    }
+
+    function initChart(dataPoints) {
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Views',
+                    data: dataPoints,
+                    borderColor: '#00E052',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#444', font: { size: 9 } } },
+                    y: { grid: { color: '#111' }, ticks: { display: false } }
+                }
+            }
+        });
     }
 
     window.loadContent = async () => {
-        if(isLoading || allLoaded) return;
-        isLoading = true;
-        document.getElementById('loading-tag').style.display = 'block';
-
-        const list = document.getElementById('list');
-        const user = auth.currentUser.uid;
-        
-        // Fetch all of type (Firebase Realtime doesn't support complex filtering + pagination easily)
+        const list = document.getElementById('list'); list.innerHTML = "";
         const s = await get(ref(db, curType));
-        if(!s.exists()) { allLoaded = true; } 
-        else {
-            const items = Object.entries(s.val())
-                .filter(([id, data]) => data.uid === user)
-                .reverse();
-            
-            const start = list.children.length;
-            const batch = items.slice(start, start + 5);
-
-            if(batch.length < 5) allLoaded = true;
-
-            batch.forEach(([id, item]) => {
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    ${curType !== 'poll' && item.image ? `<img src="${item.image}" class="item-img">` : ''}
-                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                        <div>
-                            <b style="font-size:14px;">${(item.title || item.question || 'Untitled')}</b>
-                            <div style="font-size:10px; color:#555; margin-top:5px;">👁️ ${item.views || 0}  ❤️ ${item.likes ? Object.keys(item.likes).length : 0}</div>
+        let count = 0;
+        if(s.exists()){
+            Object.entries(s.val()).forEach(([id, item]) => {
+                if(item.uid === auth.currentUser.uid){
+                    count++;
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        ${curType !== 'poll' && item.image ? `<img src="${item.image}" class="item-img">` : ''}
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${(item.title || item.question || 'Untitled')}</b>
+                            <button onclick="askDel('${curType}','${id}')" style="background:none; border:none; color:var(--red); font-size:10px; font-weight:800;">DELETE</button>
                         </div>
-                        <button onclick="askDel('${curType}','${id}')" style="background:none; border:none; color:var(--red); font-size:10px; font-weight:800;">DELETE</button>
-                    </div>
-                    ${curType !== 'poll' ? `<button onclick="openMon('${id}', ${item.sponsored})" class="full-btn" style="background:${item.sponsored?'var(--accent)':'#222'}; color:${item.sponsored?'#000':'#fff'}">${item.sponsored ? 'MONETIZED' : 'ACTIVATE REVENUE'}</button>` : ''}
-                `;
-                list.appendChild(card);
+                        <div style="font-size:10px; color:#444; margin-top:5px;">👁️ ${item.views || 0}  ❤️ ${item.likes ? Object.keys(item.likes).length : 0}</div>
+                        ${curType !== 'poll' ? `<button onclick="openMon('${id}', ${item.sponsored})" class="full-btn" style="background:${item.sponsored?'var(--accent)':'#222'}; color:${item.sponsored?'#000':'#fff'}">${item.sponsored ? 'MONETIZED' : 'ACTIVATE REVENUE'}</button>` : ''}
+                    `;
+                    list.appendChild(card);
+                }
             });
         }
-        
-        isLoading = false;
-        document.getElementById('loading-tag').style.display = 'none';
-    };
-
-    // Infinite Scroll Listener
-    window.onscroll = () => {
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-            if(document.getElementById('sec-manage').style.display !== 'none') loadContent();
-        }
-    };
-
-    window.loadTransactions = async () => {
-        const div = document.getElementById('tx-history');
-        div.innerHTML = "";
-        const s = await get(ref(db, `payouts/${auth.currentUser.uid}`));
-        if(!s.exists()) div.innerHTML = "<div style='color:#333; font-size:11px; padding:20px;'>No payouts yet.</div>";
-        else {
-            Object.values(s.val()).forEach(tx => {
-                div.innerHTML += `<div class="tx-item"><span>${tx.date}</span><span style="color:var(--accent)">+$${tx.amount}</span></div>`;
-            });
-        }
+        if(count === 0) list.innerHTML = `<div class="empty-msg">No ${curType}s found yet.</div>`;
     };
 
     window.askDel = (t, id) => {
-        document.getElementById('m-title').innerText = "Confirm Delete";
-        document.getElementById('m-desc').innerText = "This action is permanent.";
-        document.getElementById('m-body').innerHTML = `<button onclick="doDel('${t}','${id}')" class="full-btn" style="background:var(--red); color:#fff;">DELETE NOW</button>`;
+        document.getElementById('m-title').innerText = "Delete Forever?";
+        document.getElementById('m-body').innerHTML = `<button onclick="doDel('${t}','${id}')" class="full-btn" style="background:var(--red); color:#fff;">CONFIRM DELETE</button>`;
         document.getElementById('overlay').style.display = 'flex';
     };
 
-    window.doDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); closeM(); sub(t); };
+    window.doDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); closeM(); loadContent(); };
 
     window.openMon = (id, isMon) => {
-        const b = document.getElementById('m-body'); b.innerHTML = "";
-        document.getElementById('m-title').innerText = isMon ? "De-monetize?" : "Choose Method";
-        if(isMon) {
-            b.innerHTML = `<button onclick="setMon('${id}', false)" class="full-btn" style="background:var(--red); color:#fff;">DISABLE REVENUE</button>`;
-        } else {
-            const opts = [
-                { id: 'link', name: 'Direct Link', rate: '$2 - $5 CPM', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBmGOtkB5B62zpI-BJxLJ_i19LYofe6bYFcqFYXpByOg&s=10' },
-                { id: 'banner', name: 'Banner Ads', rate: '$1 - $3 CPM', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO2IObkVGuBws7oY_z87F8yEP_m9kCbQG9JwECJPvn4X8_3Zn1scdiU5w&s=10' },
-                { id: 'both', name: 'Both (Recommended)', rate: '$2 - $10 CPM', img: 'https://roiads.co/blog/assets/uploads/2025/05/top-15-cpm-ad-network-1.jpg' }
-            ];
+        const b = document.getElementById('m-body');
+        document.getElementById('m-title').innerText = isMon ? "De-monetize?" : "Revenue Method";
+        if(isMon) b.innerHTML = `<button onclick="setMon('${id}', false)" class="full-btn" style="background:var(--red); color:#fff;">STOP EARNING</button>`;
+        else {
+            const opts = [{id:'link', n:'Direct Link'}, {id:'banner', n:'Banners'}, {id:'both', n:'Hybrid (Max)'}];
             opts.forEach(o => {
-                const d = document.createElement('div');
-                d.style.cssText = "background:#111; padding:10px; border-radius:15px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer;";
-                d.innerHTML = `<img src="${o.img}" style="width:50px; height:50px; border-radius:10px;"><div style="flex:1"><b style="font-size:12px;">${o.name}</b><br><small style="color:var(--accent); font-size:9px;">${o.rate}</small></div>`;
-                d.onclick = () => setMon(id, true, o.id);
-                b.appendChild(d);
+                b.innerHTML += `<button onclick="setMon('${id}', true, '${o.id}')" class="full-btn" style="background:#fff; color:#000; margin-bottom:10px;">${o.n}</button>`;
             });
         }
         document.getElementById('overlay').style.display = 'flex';
@@ -269,7 +233,7 @@
 
     window.setMon = async (id, status, method) => {
         await update(ref(db, `${curType}/${id}`), { sponsored: status ? true : null, monType: method || null });
-        closeM(); sub(curType);
+        closeM(); loadContent();
     };
 
     window.savePay = async () => {
