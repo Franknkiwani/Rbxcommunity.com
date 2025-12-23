@@ -6,120 +6,103 @@
     <title>Creator Studio Pro</title>
     <style>
         :root {
-            --bg: #0a0a0a;
-            --card: #141414;
+            --bg: #000;
+            --card: #111;
             --accent: #00E052;
-            --border: #222;
-            --text-dim: #666;
+            --border: #ffffff; /* White edges for contrast */
+            --text-dim: #999;
             --red: #ff453a;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
         
-        /* Loading Screen */
-        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
-        .spinner { width: 40px; height: 40px; border: 3px solid #222; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        #loader { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 30px; height: 30px; border: 2px solid #222; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Fixed Top Bar */
-        .payout-status { width: 100%; height: 44px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; letter-spacing: 1px; color: var(--text-dim); position: sticky; top: 0; z-index: 100; }
+        .app-container { width: 100%; max-width: 450px; padding: 20px; padding-bottom: 120px; }
 
-        .app-container { width: 100%; max-width: 480px; padding: 20px; padding-bottom: 100px; }
+        /* Navigation */
+        .main-nav { display: flex; background: #111; border: 1px solid var(--border); border-radius: 20px; padding: 5px; margin-bottom: 25px; }
+        .nav-tab { flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 15px; }
+        .nav-tab.active { background: #fff; color: #000; }
 
-        /* Main Tabs */
-        .main-nav { display: flex; background: var(--card); border-radius: 20px; padding: 6px; margin-bottom: 30px; border: 1px solid var(--border); }
-        .nav-tab { flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.2s; }
-        .nav-tab.active { background: #1d1d1d; color: var(--accent); border-radius: 15px; }
+        /* Stats Section */
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 15px; }
+        .bal-val { font-size: 48px; font-weight: 900; letter-spacing: -2px; text-align: center; display: block; margin: 10px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        /* Sub-Nav for Content Management */
-        .sub-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .sub-tab { padding: 8px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text-dim); font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .sub-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        /* Content Section */
+        .sub-nav { display: flex; gap: 8px; margin-bottom: 20px; }
+        .sub-tab { flex: 1; padding: 10px; border-radius: 12px; background: #111; border: 1px solid #333; color: #666; font-size: 10px; font-weight: 700; }
+        .sub-tab.active { border-color: #fff; color: #fff; }
 
-        /* Stats Cards */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
-        .stat-val { font-size: 22px; font-weight: 900; display: block; margin-top: 4px; }
-        .balance-hero { text-align: center; padding: 40px 0; }
-        .balance-val { font-size: 50px; font-weight: 900; letter-spacing: -2px; }
-
-        /* Content Card */
-        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; animation: fadeIn 0.3s ease; }
-        .item-img { width: 50px; height: 50px; border-radius: 14px; object-fit: cover; background: #222; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Modal - Centered Neatly */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal { width: 100%; max-width: 360px; background: #181818; border: 1px solid #333; border-radius: 32px; padding: 30px; text-align: center; }
-        .ad-opt { width: 100%; border-radius: 16px; margin-bottom: 12px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .ad-opt:hover { border-color: var(--accent); }
+        .item-card { background: #111; border: 1px solid #333; border-radius: 20px; padding: 15px; margin-bottom: 12px; }
+        .mon-btn { width: 100%; margin-top: 12px; padding: 12px; border-radius: 30px; border: none; font-weight: 800; font-size: 11px; cursor: pointer; }
         
-        .btn-p { width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: 800; cursor: pointer; margin-top: 10px; }
-        .btn-acc { background: var(--accent); color: #000; }
-        .btn-sec { background: #222; color: #fff; }
+        /* Modals */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal { width: 100%; max-width: 360px; background: #111; border: 1px solid #fff; border-radius: 30px; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        .ad-option { background: #222; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 12px; text-align: left; }
+        .ad-option img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+        
+        .empty-msg { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 13px; }
+
+        input { width: 100%; padding: 16px; border-radius: 15px; background: #111; border: 1px solid var(--border); color: #fff; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div class="spinner"></div>
-    <p style="font-size: 10px; font-weight: 800; margin-top: 15px; color: #444; letter-spacing: 2px;">SYNCING DATA</p>
-</div>
-
-<div class="payout-status" id="payout-banner">PAID MONTHLY</div>
+<div id="loader"><div class="spinner"></div></div>
 
 <div class="app-container">
     <div class="main-nav">
-        <button class="nav-tab active" onclick="setView('analysis')">STATS</button>
-        <button class="nav-tab" onclick="setView('manage')">MANAGE</button>
-        <button class="nav-tab" onclick="setView('payout')">PAYOUT</button>
+        <button class="nav-tab active" onclick="tab('stats')">ANALYSIS</button>
+        <button class="nav-tab" onclick="tab('manage')">CONTENT</button>
+        <button class="nav-tab" onclick="tab('pay')">PAYMENT</button>
     </div>
 
-    <section id="view-analysis">
-        <div class="balance-hero">
-            <span style="font-size: 11px; font-weight: 800; color: var(--text-dim);">AVAILABLE BALANCE</span>
-            <div class="balance-val" id="total-bal">$0.00</div>
+    <section id="sec-stats">
+        <div class="stat-card" style="text-align: center;">
+            <span style="font-size: 10px; font-weight: 800; color: var(--accent);">TOTAL REVENUE</span>
+            <span class="bal-val" id="bal-txt">$0.00</span>
+            <span id="payout-hint" style="font-size: 9px; color: var(--text-dim);">PAID MONTHLY BETWEEN 5-10</span>
         </div>
-        <div class="stat-grid">
-            <div class="stat-box">
-                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">VALID CLICKS</span>
-                <span class="stat-val" id="stat-vc">0</span>
-            </div>
-            <div class="stat-box">
-                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">INVALID</span>
-                <span class="stat-val" id="stat-ic" style="color:var(--red)">0</span>
-            </div>
-            <div class="stat-box" style="grid-column: span 2;">
-                <span style="font-size: 9px; font-weight: 800; color: var(--text-dim);">DYNAMIC CPM</span>
-                <span class="stat-val" id="stat-cpm">$2.50</span>
-            </div>
-            <div class="stat-box"><span style="font-size: 9px; color: var(--text-dim);">CLICK REV</span><span class="stat-val" id="stat-crev">$0.00</span></div>
-            <div class="stat-box"><span style="font-size: 9px; color: var(--text-dim);">AD REV</span><span class="stat-val" id="stat-arev">$0.00</span></div>
+        <div class="grid">
+            <div class="stat-card"><small>VALID CLICKS</small><br><b id="v-clicks">0</b></div>
+            <div class="stat-card"><small>INVALID</small><br><b id="i-clicks" style="color:var(--red)">0</b></div>
+            <div class="stat-card" style="grid-column: span 2;"><small>DYNAMIC CPM</small><br><b id="cpm-txt">$2.50</b></div>
         </div>
     </section>
 
-    <section id="view-manage" style="display:none;">
+    <section id="sec-manage" style="display:none;">
         <div class="sub-nav">
-            <button class="sub-tab active" onclick="setSubView('post')">POSTS</button>
-            <button class="sub-tab" onclick="setSubView('story')">STORIES</button>
-            <button class="sub-tab" onclick="setSubView('poll')">POLLS</button>
+            <button class="sub-tab active" onclick="sub('post')">POSTS</button>
+            <button class="sub-tab" onclick="sub('story')">STORIES</button>
+            <button class="sub-tab" onclick="sub('poll')">POLLS</button>
         </div>
-        <div id="content-list"></div>
+        <div id="list"></div>
     </section>
 
-    <section id="view-payout" style="display:none; text-align: center;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 100px; margin: 40px 0;">
-        <input type="email" id="pp-mail" placeholder="PayPal Email" style="width:100%; background:var(--card); border:1px solid var(--border); padding:16px; border-radius:16px; color:#fff; text-align:center; font-weight:700; margin-bottom:15px;">
-        <button class="btn-p btn-acc" onclick="savePay()">SAVE PAYMENT METHOD</button>
+    <section id="sec-pay" style="display:none; text-align: center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 100px; margin: 30px 0;">
+        <input type="email" id="pp-input" placeholder="Enter PayPal Email">
+        <button onclick="savePayment()" class="mon-btn" style="background:#fff; color:#000;">SAVE ACCOUNT</button>
+        <p style="font-size: 10px; color: var(--accent); margin-top: 15px;">PAID TO EMAIL OF USER MONTHLY</p>
+        
+        <div style="margin-top: 30px; text-align: left;">
+            <h4 style="font-size: 12px; border-bottom: 1px solid #222; padding-bottom: 10px;">TRANSACTIONS</h4>
+            <div id="tx-list" class="empty-msg">No transactions found</div>
+        </div>
     </section>
 </div>
 
 <div class="overlay" id="overlay">
     <div class="modal">
-        <h2 id="m-title" style="margin:0 0 10px 0; font-size:18px;"></h2>
-        <p id="m-desc" style="font-size:12px; color:var(--text-dim); margin-bottom:20px;"></p>
+        <h3 id="m-title"></h3>
+        <p id="m-desc" style="font-size: 11px; color: #666;"></p>
         <div id="m-body"></div>
-        <button onclick="hideModal()" style="background:none; border:none; color:var(--red); font-weight:800; margin-top:20px; cursor:pointer;">Close</button>
+        <button onclick="closeM()" style="background:none; border:none; color:var(--red); font-weight:800; margin-top:20px; width:100%;">CLOSE</button>
     </div>
 </div>
 
@@ -132,151 +115,144 @@
         apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
         authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
         databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-        projectId: "itzhoyoo-f9f7e",
-        storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-        messagingSenderId: "1094792075584",
-        appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+        projectId: "itzhoyoo-f9f7e"
     };
 
     const app = initializeApp(config);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let currentType = 'post';
+    let curType = 'post';
 
-    // UI Routing
-    window.setView = (v) => {
+    window.tab = (id) => {
         document.querySelectorAll('section').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`view-${v}`).style.display = 'block';
+        document.getElementById('sec-'+id).style.display = 'block';
         event.currentTarget.classList.add('active');
-        if(v === 'analysis') runStats();
-        if(v === 'manage') loadItems();
+        if(id === 'manage') loadContent();
+        if(id === 'stats') runStats();
     };
 
-    window.setSubView = (type) => {
-        currentType = type;
-        document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    window.sub = (t) => {
+        curType = t;
+        document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        loadItems();
+        loadContent();
     };
 
-    window.hideModal = () => document.getElementById('overlay').style.display = 'none';
+    window.closeM = () => document.getElementById('overlay').style.display = 'none';
 
-    // Stats Logic
     async function runStats() {
         const u = auth.currentUser; if(!u) return;
-        let vc=0, ic=0, vTotal=0;
+        let vc=0, ic=0, views=0;
         const types = ['post', 'story'];
-        for(let t of types) {
-            const snap = await get(ref(db, t));
-            if(snap.exists()){
-                for(let [id, item] of Object.entries(snap.val())){
+        for(let t of types){
+            const s = await get(ref(db, t));
+            if(s.exists()) {
+                for(let [id, item] of Object.entries(s.val())){
                     if(item.uid === u.uid && item.sponsored){
-                        vTotal += (item.views || 0);
-                        const cSnap = await get(ref(db, `clicks/${id}`));
-                        if(cSnap.exists()) Object.values(cSnap.val()).forEach(c => c.valid ? vc++ : ic++);
+                        views += (item.views || 0);
+                        const cs = await get(ref(db, `clicks/${id}`));
+                        if(cs.exists()) Object.values(cs.val()).forEach(c => c.valid ? vc++ : ic++);
                     }
                 }
             }
         }
-        const cpm = Math.min(5, 2.5 + (vc*0.05));
-        const crev = vc * 0.12;
-        const arev = (vTotal/1000) * cpm;
-        const bal = crev + arev;
-
-        document.getElementById('total-bal').innerText = `$${bal.toFixed(2)}`;
-        document.getElementById('stat-vc').innerText = vc;
-        document.getElementById('stat-ic').innerText = ic;
-        document.getElementById('stat-cpm').innerText = `$${cpm.toFixed(2)}`;
-        document.getElementById('stat-crev').innerText = `$${crev.toFixed(2)}`;
-        document.getElementById('stat-arev').innerText = `$${arev.toFixed(2)}`;
-        
-        const banner = document.getElementById('payout-banner');
-        if(bal > 5) { banner.innerText = "ELIGIBLE FOR PAYOUT"; banner.style.color = "var(--accent)"; }
+        const cpm = Math.min(5, 2.5 + (vc * 0.05));
+        const total = (vc * 0.12) + ((views/1000) * cpm);
+        document.getElementById('bal-txt').innerText = `$${total.toFixed(2)}`;
+        document.getElementById('v-clicks').innerText = vc;
+        document.getElementById('i-clicks').innerText = ic;
+        document.getElementById('cpm-txt').innerText = `$${cpm.toFixed(2)}`;
     }
 
-    // Manage Content Logic
-    window.loadItems = async () => {
-        const list = document.getElementById('content-list');
+    window.loadContent = async () => {
+        const list = document.getElementById('list');
         list.innerHTML = "";
-        const snap = await get(ref(db, currentType));
-        if(!snap.exists()) return;
+        const s = await get(ref(db, curType));
+        let count = 0;
 
-        Object.entries(snap.val()).forEach(([id, item]) => {
-            if(item.uid === auth.currentUser.uid){
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    ${currentType !== 'poll' ? `<img src="${item.image}" class="item-img">` : ''}
-                    <div style="flex:1">
-                        <div style="font-size:14px; font-weight:800;">${(item.title || item.question || '').substring(0,20)}</div>
-                        <div style="font-size:9px; color:var(--text-dim); margin-top:2px;">${item.views || 0} VIEWS</div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        ${currentType !== 'poll' ? `<button onclick="openMon('${id}',${item.sponsored?true:false})" style="background:${item.sponsored?'var(--accent)':'#222'}; color:${item.sponsored?'#000':'#fff'}; border:none; padding:8px 12px; border-radius:10px; font-size:10px; font-weight:900;">${item.sponsored?'ON':'MON'}</button>` : ''}
-                        <button onclick="reqDel('${currentType}','${id}')" style="background:#ff453a11; border:none; padding:8px; border-radius:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#ff453a" stroke-width="2" style="width:14px; height:14px;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
-                    </div>
-                `;
-                list.appendChild(card);
-            }
-        });
-    };
-
-    window.openMon = (id, isMon) => {
-        const m = document.getElementById('overlay');
-        const b = document.getElementById('m-body');
-        document.getElementById('m-title').innerText = isMon ? "De-monetize" : "Choose Method";
-        document.getElementById('m-desc').innerText = isMon ? "Ads will be removed." : "Average CPM $2-$5";
-        b.innerHTML = "";
-        
-        if(isMon){
-            const btn = document.createElement('button');
-            btn.className = "btn-p btn-sec"; btn.innerText = "REMOVE ADS";
-            btn.onclick = async () => { await update(ref(db, `${currentType}/${id}`), {sponsored:null}); hideModal(); loadItems(); };
-            b.appendChild(btn);
-        } else {
-            const opts = [
-                { id: 'link', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBmGOtkB5B62zpI-BJxLJ_i19LYofe6bYFcqFYXpByOg&s=10' },
-                { id: 'banner', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO2IObkVGuBws7oY_z87F8yEP_m9kCbQG9JwECJPvn4X8_3Zn1scdiU5w&s=10' },
-                { id: 'both', img: 'https://roiads.co/blog/assets/uploads/2025/05/top-15-cpm-ad-network-1.jpg' }
-            ];
-            opts.forEach(o => {
-                const i = document.createElement('img'); i.src = o.img; i.className = "ad-opt";
-                i.onclick = async () => { await update(ref(db, `${currentType}/${id}`), {sponsored:true, monType:o.id}); hideModal(); loadItems(); };
-                b.appendChild(i);
+        if(s.exists()){
+            Object.entries(s.val()).forEach(([id, item]) => {
+                if(item.uid === auth.currentUser.uid){
+                    count++;
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            ${curType !== 'poll' ? `<img src="${item.image}" style="width:40px; height:40px; border-radius:10px; object-fit:cover;">` : ''}
+                            <div style="flex:1">
+                                <b style="font-size:13px;">${(item.title || item.question || 'Untitled').substring(0,25)}</b>
+                                <div style="font-size:9px; color:#555;">${item.views || 0} VIEWS</div>
+                            </div>
+                            <button onclick="delItem('${curType}','${id}')" style="background:none; border:none; color:var(--red); font-weight:800;">DEL</button>
+                        </div>
+                        ${curType !== 'poll' ? `
+                        <button onclick="openAds('${id}', ${item.sponsored?true:false})" class="mon-btn" style="background:${item.sponsored? 'var(--accent)' : '#222'}; color:${item.sponsored?'#000':'#fff'}">
+                            ${item.sponsored ? 'MONETIZED' : 'START EARNING'}
+                        </button>` : ''}
+                    `;
+                    list.appendChild(card);
+                }
             });
         }
-        m.style.display = 'flex';
+        if(count === 0) list.innerHTML = `<div class="empty-msg">No ${curType}s found.</div>`;
     };
 
-    window.reqDel = (t, id) => {
-        const m = document.getElementById('overlay');
+    window.openAds = (id, isMon) => {
         const b = document.getElementById('m-body');
-        document.getElementById('m-title').innerText = "Delete Forever?";
-        document.getElementById('m-desc').innerText = "This cannot be undone.";
-        b.innerHTML = `<button class="btn-p btn-acc" style="background:var(--red); color:#fff;" onclick="doDel('${t}','${id}')">CONFIRM DELETE</button>`;
-        m.style.display = 'flex';
+        document.getElementById('m-title').innerText = isMon ? "De-monetize?" : "Select Ad Method";
+        b.innerHTML = "";
+        
+        if(isMon) {
+            b.innerHTML = `<button onclick="setMon('${id}', false)" class="mon-btn" style="background:var(--red); color:#fff;">STOP EARNING</button>`;
+        } else {
+            const opts = [
+                { id: 'link', name: 'Direct Link', rate: '$2 - $5 CPM', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBmGOtkB5B62zpI-BJxLJ_i19LYofe6bYFcqFYXpByOg&s=10' },
+                { id: 'banner', name: 'Banner Ads', rate: '$1 - $3 CPM', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO2IObkVGuBws7oY_z87F8yEP_m9kCbQG9JwECJPvn4X8_3Zn1scdiU5w&s=10' },
+                { id: 'both', name: 'Both (Recommended)', rate: '$2 - $10 CPM', img: 'https://roiads.co/blog/assets/uploads/2025/05/top-15-cpm-ad-network-1.jpg' }
+            ];
+            opts.forEach(o => {
+                const div = document.createElement('div');
+                div.className = 'ad-option';
+                div.innerHTML = `
+                    <img src="${o.img}">
+                    <div style="font-weight:900; font-size:14px;">${o.name}</div>
+                    <div style="font-size:10px; color:var(--accent); margin-bottom:10px;">${o.rate}</div>
+                    <button onclick="setMon('${id}', true, '${o.id}')" class="mon-btn" style="background:#fff; color:#000; margin-top:0;">SELECT</button>
+                `;
+                b.appendChild(div);
+            });
+        }
+        document.getElementById('overlay').style.display = 'flex';
     };
 
-    window.doDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); hideModal(); loadItems(); };
+    window.setMon = async (id, status, method) => {
+        await update(ref(db, `${curType}/${id}`), { sponsored: status ? true : null, monType: method || null });
+        closeM(); loadContent();
+    };
 
-    window.savePay = async () => {
-        const email = document.getElementById('pp-mail').value;
-        if(email.includes('@')){
-            await set(ref(db, `paymentmethods/${auth.currentUser.uid}`), { email });
-            alert("PayPal Saved");
+    window.delItem = async (t, id) => {
+        if(confirm("Permanently delete?")){
+            await remove(ref(db, `${t}/${id}`));
+            loadContent();
         }
     };
 
-    // Global Load sequence
+    window.savePayment = async () => {
+        const email = document.getElementById('pp-input').value;
+        if(email.includes('@')) {
+            await set(ref(db, `paymentmethods/${auth.currentUser.uid}`), { email });
+            alert("PayPal Account Updated");
+        }
+    };
+
     onAuthStateChanged(auth, async u => {
-        if(u){
+        if(u) {
+            const ps = await get(ref(db, `paymentmethods/${u.uid}`));
+            if(ps.exists()) document.getElementById('pp-input').value = ps.val().email;
             await runStats();
-            setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => document.getElementById('loader').remove(), 500);
-            }, 2000);
+            setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 2000);
         }
     });
 </script>
