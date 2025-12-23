@@ -3,104 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RBX Creator Studio</title>
+    <title>RBX Studio Pro</title>
     <style>
         :root {
-            --bg: #000000;
-            --card: #1C1C1E;
+            --bg: #000;
+            --card: #121212;
             --accent: #00E052;
-            --text-dim: #8E8E93;
-            --border: #2C2C2E;
-            --red: #FF453A;
+            --border: #222;
+            --text-dim: #777;
         }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; }
         
-        /* Dashboard Styling */
-        header { padding: 40px 20px 20px; }
-        .view-title { font-size: 32px; font-weight: 800; margin: 0; }
+        /* Fixed Header */
+        .payout-header {
+            width: 100%; height: 40px; background: #111; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; font-size: 10px; 
+            font-weight: 900; letter-spacing: 1px; color: var(--text-dim); position: sticky; top: 0; z-index: 100;
+        }
+
+        .container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; }
+
+        /* Navigation Top */
+        .top-nav {
+            display: flex; background: var(--card); border-radius: 15px; padding: 5px; 
+            margin-bottom: 25px; border: 1px solid var(--border);
+        }
+        .nav-tab {
+            flex: 1; padding: 12px; border: none; background: none; color: var(--text-dim);
+            font-size: 11px; font-weight: 800; cursor: pointer; display: flex; 
+            align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+        }
+        .nav-tab.active { background: #1a1a1a; color: var(--accent); border-radius: 12px; }
+
+        /* Cards */
+        .balance-hero { text-align: center; padding: 40px 0; }
+        .bal-val { font-size: 55px; font-weight: 900; letter-spacing: -2px; }
         
-        .mgmt-section { display: none; padding: 0 20px; animation: slideUp 0.4s ease; }
-        .active { display: block; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .s-card { 
+            background: var(--card); border: 1px solid var(--border); 
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 5px;
+        }
 
-        .balance-card { background: var(--accent); padding: 30px 20px; border-radius: 24px; color: #000; margin-bottom: 20px; position: relative; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .stat-card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
-        .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .stat-val { font-size: 19px; font-weight: 800; }
+        /* Content Items */
+        .item { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;
+        }
+        .thumb { width: 55px; height: 55px; border-radius: 14px; object-fit: cover; }
 
-        /* Content List Styling */
-        .content-card { background: var(--card); border-radius: 20px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-        .content-thumb { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: #222; }
-        .btn-icon { background: #2C2C2E; border: none; padding: 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* Custom Modal System */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
-        .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 28px; padding: 25px; width: 100%; max-width: 340px; text-align: center; }
-        .modal-btn { width: 100%; padding: 14px; border-radius: 15px; border: none; font-weight: 800; font-size: 13px; margin-top: 10px; cursor: pointer; background: #2C2C2E; color: #fff; }
-
-        /* Nav */
-        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); display: flex; border-top: 1px solid var(--border); z-index: 1000; }
-        .nav-btn { flex: 1; background: none; border: none; color: var(--text-dim); font-size: 9px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-        .nav-btn.active { color: var(--accent); }
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Centered Neat Modal */
+        .modal-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-box {
+            width: 90%; max-width: 350px; background: #161616; border: 1px solid #333;
+            border-radius: 30px; padding: 30px; text-align: center; animation: pop 0.3s ease;
+        }
+        .opt-img { width: 100%; border-radius: 15px; margin-bottom: 10px; border: 1px solid #333; cursor: pointer; }
+        .opt-img:hover { border-color: var(--accent); }
+        
+        @keyframes pop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        svg { width: 18px; height: 18px; }
     </style>
 </head>
 <body>
 
-<header>
-    <div id="view-indicator" style="color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Studio</div>
-    <h1 class="view-title" id="view-name">Analysis</h1>
-</header>
+<div class="payout-header" id="top-payout-text">PAID MONTHLY</div>
 
-<section id="view-analysis" class="mgmt-section active">
-    <div class="balance-card">
-        <div style="font-size: 11px; font-weight: 800; opacity: 0.6;">AVAILABLE BALANCE</div>
-        <div id="balance" style="font-size: 44px; font-weight: 900; letter-spacing: -1px;">$0.00</div>
-        <div id="payout-notice" style="display:none; margin-top:15px; font-size:10px; font-weight:900; background:rgba(0,0,0,0.1); padding:6px 10px; border-radius:8px; display:inline-block;">PAID MONTHLY BETWEEN 5-10</div>
+<div class="container">
+    <div class="top-nav">
+        <button class="nav-tab active" onclick="tab('analysis')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            STATS
+        </button>
+        <button class="nav-tab" onclick="tab('content')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M9 3v18M3 9h18"/></svg>
+            MANAGE
+        </button>
+        <button class="nav-tab" onclick="tab('payout')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            PAY
+        </button>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span class="stat-label">Valid Clicks</span>
-            <span id="valid-clicks" class="stat-val" style="color:var(--accent);">0</span>
+    <section id="sec-analysis" class="view active">
+        <div class="balance-hero">
+            <div style="font-size: 11px; font-weight: 800; color: var(--text-dim);">TOTAL EARNINGS</div>
+            <div class="bal-val" id="bal-txt">$0.00</div>
         </div>
-        <div class="stat-card">
-            <span class="stat-label">Invalid</span>
-            <span id="invalid-clicks" class="stat-val" style="color:var(--red);">0</span>
+        <div class="grid">
+            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">VALID CLICKS</span><b id="v-clicks">0</b></div>
+            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">INVALID</span><b id="i-clicks" style="color:#FF453A;">0</b></div>
+            <div class="s-card" style="grid-column: span 2;"><span style="color:var(--text-dim); font-size:10px;">DYNAMIC CPM</span><b id="cpm-txt">$2.50</b></div>
+            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">CLICK REV</span><b id="c-rev">$0.00</b></div>
+            <div class="s-card"><span style="color:var(--text-dim); font-size:10px;">AD REV</span><b id="a-rev">$0.00</b></div>
         </div>
-        <div class="stat-card" style="grid-column: span 2;">
-            <span class="stat-label">Dynamic CPM</span>
-            <span id="dynamic-cpm" class="stat-val">$2.50</span>
-        </div>
-        <div class="stat-card"><span class="stat-label">Click Rev</span><span id="click-rev" class="stat-val">$0.00</span></div>
-        <div class="stat-card"><span class="stat-label">Ad Rev</span><span id="ad-rev" class="stat-val">$0.00</span></div>
-    </div>
-</section>
+    </section>
 
-<section id="view-manage" class="mgmt-section">
-    <div id="content-list"></div>
-</section>
+    <section id="sec-content" class="view" style="display:none;"></section>
 
-<div id="custom-modal" class="modal-overlay">
+    <section id="sec-payout" class="view" style="display:none; text-align: center;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png" style="width: 120px; margin: 40px 0 20px;">
+        <p style="font-size: 12px; color: var(--text-dim);">Earnings are sent to your PayPal email monthly.</p>
+        <input type="email" id="pp-email" placeholder="PayPal Email Address" style="width:100%; padding:15px; border-radius:15px; background:var(--card); border:1px solid var(--border); color:#fff; text-align:center; box-sizing:border-box; margin-bottom:15px;">
+        <button onclick="savePayment()" style="width:100%; padding:15px; border-radius:15px; background:var(--accent); color:#000; font-weight:900; border:none; cursor:pointer;">SAVE PAYMENT METHOD</button>
+    </section>
+</div>
+
+<div class="modal-bg" id="modal">
     <div class="modal-box">
-        <h3 id="m-title" style="margin:0 0 8px 0;">Action</h3>
-        <p id="m-desc" style="font-size:13px; color:var(--text-dim); margin:0 0 20px 0;"></p>
-        <div id="m-input-area" style="display:none; margin-bottom:15px;">
-            <input type="text" id="m-input" placeholder="https://" style="width:100%; padding:12px; border-radius:12px; background:#2C2C2E; border:1px solid #444; color:#fff; box-sizing:border-box;">
-        </div>
-        <div id="m-actions"></div>
+        <h2 id="m-title" style="margin:0 0 10px 0; font-size:20px;"></h2>
+        <p id="m-desc" style="font-size:12px; color:var(--text-dim); margin-bottom:20px;"></p>
+        <div id="m-content"></div>
+        <button onclick="closeM()" style="background:none; border:none; color:#FF453A; font-weight:800; margin-top:15px;">Dismiss</button>
     </div>
 </div>
 
-<nav>
-    <button class="nav-btn active" onclick="switchTab('analysis')">ANALYSIS</button>
-    <button class="nav-btn" onclick="switchTab('manage')">MANAGE</button>
-</nav>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, remove, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -117,167 +141,136 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // --- MODAL SYSTEM ---
-    window.ui = {
-        show: (cfg) => {
-            document.getElementById('m-title').innerText = cfg.title;
-            document.getElementById('m-desc').innerText = cfg.desc;
-            document.getElementById('m-input-area').style.display = cfg.input ? 'block' : 'none';
-            const area = document.getElementById('m-actions');
-            area.innerHTML = "";
-            cfg.btns.forEach(b => {
-                const btn = document.createElement('button');
-                btn.className = 'modal-btn';
-                btn.innerText = b.text;
-                if(b.color) btn.style.color = b.color;
-                btn.onclick = b.cb;
-                area.appendChild(btn);
-            });
-            document.getElementById('custom-modal').style.display = 'flex';
-        },
-        close: () => document.getElementById('custom-modal').style.display = 'none'
-    };
-
-    window.switchTab = (tab) => {
-        document.querySelectorAll('.mgmt-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    window.tab = (id) => {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('sec-'+id).style.display = 'block';
         event.currentTarget.classList.add('active');
-        document.getElementById(`view-${tab}`).classList.add('active');
-        document.getElementById('view-name').innerText = tab.toUpperCase();
-        if(tab === 'analysis') runAnalysis();
+        if(id === 'analysis') runAnalysis();
+        if(id === 'content') loadContent();
     };
 
-    // --- ANALYSIS LOGIC ($2-$5 CPM) ---
-    async function runAnalysis() {
-        const user = auth.currentUser;
-        if (!user) return;
-        let vClicks = 0, iClicks = 0, totalViews = 0;
-        const types = ['post', 'story'];
-        const userIds = [];
+    window.closeM = () => document.getElementById('modal').style.display = 'none';
 
-        for (const t of types) {
+    // Real-time Balance & Stats
+    async function runAnalysis() {
+        const u = auth.currentUser; if(!u) return;
+        let vc = 0, ic = 0, views = 0;
+        const types = ['post', 'story'];
+        
+        for(const t of types) {
             const snap = await get(ref(db, t));
-            if (snap.exists()) {
+            if(snap.exists()) {
                 Object.entries(snap.val()).forEach(([id, item]) => {
-                    if (item.uid === user.uid && item.sponsored) {
-                        userIds.push(id);
-                        totalViews += (item.views || 0);
+                    if(item.uid === u.uid && item.sponsored) {
+                        views += (item.views || 0);
+                        get(ref(db, `clicks/${id}`)).then(cs => {
+                            if(cs.exists()) Object.values(cs.val()).forEach(c => c.valid ? vc++ : ic++);
+                            updateUI(vc, ic, views);
+                        });
                     }
                 });
             }
         }
-
-        for (const id of userIds) {
-            const cSnap = await get(ref(db, `clicks/${id}`));
-            if (cSnap.exists()) {
-                Object.values(cSnap.val()).forEach(c => { if(c.valid) vClicks++; else iClicks++; });
-            }
-        }
-
-        const cpm = Math.min(5.00, 2.00 + (vClicks * 0.05));
-        const cRev = vClicks * 0.12; 
-        const aRev = (totalViews / 1000) * cpm;
-        const total = cRev + aRev;
-
-        document.getElementById('valid-clicks').innerText = vClicks;
-        document.getElementById('invalid-clicks').innerText = iClicks;
-        document.getElementById('dynamic-cpm').innerText = `$${cpm.toFixed(2)}`;
-        document.getElementById('click-rev').innerText = `$${cRev.toFixed(2)}`;
-        document.getElementById('ad-rev').innerText = `$${aRev.toFixed(2)}`;
-        document.getElementById('balance').innerText = `$${total.toFixed(2)}`;
-        document.getElementById('payout-notice').style.display = total >= 10 ? 'block' : 'none';
+        updateUI(vc, ic, views);
     }
 
-    // --- MANAGEMENT LOGIC ---
-    async function loadManage() {
-        const list = document.getElementById('content-list');
-        list.innerHTML = "";
-        const types = ['post', 'story', 'poll'];
+    function updateUI(vc, ic, views) {
+        const cpm = Math.min(5, 2.5 + (vc * 0.05));
+        const crev = vc * 0.12;
+        const arev = (views/1000) * cpm;
+        const total = crev + arev;
+        
+        document.getElementById('v-clicks').innerText = vc;
+        document.getElementById('i-clicks').innerText = ic;
+        document.getElementById('cpm-txt').innerText = `$${cpm.toFixed(2)}`;
+        document.getElementById('c-rev').innerText = `$${crev.toFixed(2)}`;
+        document.getElementById('a-rev').innerText = `$${arev.toFixed(2)}`;
+        document.getElementById('bal-txt').innerText = `$${total.toFixed(2)}`;
+        
+        const header = document.getElementById('top-payout-text');
+        if(total > 5) {
+            header.innerText = "PAID MONTHLY (ELIGIBLE)";
+            header.style.color = "var(--accent)";
+        }
+    }
 
-        for (const t of types) {
+    window.loadContent = async () => {
+        const container = document.getElementById('sec-content');
+        container.innerHTML = "";
+        const types = ['post', 'story', 'poll'];
+        for(const t of types) {
             const snap = await get(ref(db, t));
-            if (!snap.exists()) continue;
+            if(!snap.exists()) continue;
             Object.entries(snap.val()).forEach(([id, item]) => {
-                if (item.uid === auth.currentUser.uid) {
-                    const isMon = item.sponsored === true;
-                    const canMon = t !== 'poll';
-                    const div = document.createElement('div');
-                    div.className = 'content-card';
-                    div.innerHTML = `
-                        <img src="${item.image || 'https://via.placeholder.com/50'}" class="content-thumb">
-                        <div style="flex:1">
-                            <div style="font-size:13px; font-weight:700;">${(item.title || item.question || 'Item').substring(0,18)}</div>
-                            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase;">${t} • ${item.views || 0} VIEWS</div>
+                if(item.uid === auth.currentUser.uid) {
+                    const el = document.createElement('div');
+                    el.className = 'item';
+                    el.innerHTML = `
+                        <img src="${item.image || ''}" class="thumb">
+                        <div style="flex:1;">
+                            <div style="font-size:13px; font-weight:800;">${(item.title || item.question || 'Post').substring(0,20)}</div>
+                            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase;">${t} • ${item.views||0} Views</div>
                         </div>
-                        <div style="display:flex; gap:8px;">
-                            ${canMon ? `<button id="mon-btn-${id}" style="background:${isMon?'var(--accent)':'#2C2C2E'}; color:${isMon?'#000':'#fff'}; border:none; padding:8px 10px; border-radius:10px; font-size:10px; font-weight:800;">${isMon?'ON':'MONETIZE'}</button>` : ''}
-                            <button class="btn-icon" id="del-btn-${id}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#FF453A" stroke-width="2" style="width:14px; height:14px;"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                            </button>
+                        <div style="display:flex; gap:10px;">
+                            ${t !== 'poll' ? `<button onclick="monOptions('${t}','${id}',${item.sponsored?true:false})" style="background:${item.sponsored?'var(--accent)':'#222'}; border:none; padding:8px 12px; border-radius:10px; font-size:10px; font-weight:900; color:${item.sponsored?'#000':'#fff'}">${item.sponsored?'ON':'MON'}</button>` : ''}
+                            <button onclick="delItem('${t}','${id}')" style="background:#FF453A11; border:none; padding:8px; border-radius:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="#FF453A" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
                         </div>
                     `;
-                    list.appendChild(div);
-                    if(canMon) div.querySelector(`#mon-btn-${id}`).onclick = () => openMonFlow(t, id, isMon);
-                    div.querySelector(`#del-btn-${id}`).onclick = () => openDeleteFlow(t, id);
+                    container.appendChild(el);
                 }
             });
         }
-    }
+    };
 
-    function openDeleteFlow(t, id) {
-        ui.show({
-            title: "Delete Content?",
-            desc: "This action cannot be undone.",
-            btns: [
-                { text: "DELETE", color: "var(--red)", cb: async () => { await remove(ref(db, `${t}/${id}`)); ui.close(); loadManage(); }},
-                { text: "CANCEL", cb: ui.close }
-            ]
-        });
-    }
-
-    function openMonFlow(t, id, isMon) {
+    window.monOptions = (t, id, isMon) => {
+        const m = document.getElementById('modal');
+        const cont = document.getElementById('m-content');
+        document.getElementById('m-title').innerText = isMon ? "De-monetize" : "Choose Method";
+        document.getElementById('m-desc').innerText = isMon ? "Stop showing ads on this post?" : "Select how you want to earn:";
+        cont.innerHTML = "";
+        
         if(isMon) {
-            ui.show({
-                title: "Disable Ads?",
-                desc: "Stop earning from this post.",
-                btns: [
-                    { text: "DISABLE", color: "var(--red)", cb: async () => { await update(ref(db, `${t}/${id}`), { sponsored: null, monType: null, link: null }); ui.close(); loadManage(); }},
-                    { text: "CANCEL", cb: ui.close }
-                ]
-            });
+            const btn = document.createElement('button');
+            btn.innerText = "DISABLE AD REVENUE";
+            btn.style.cssText = "width:100%; padding:15px; border-radius:15px; background:#FF453A; color:#fff; border:none; font-weight:800;";
+            btn.onclick = async () => { await update(ref(db, `${t}/${id}`), {sponsored:null, monType:null}); closeM(); loadContent(); };
+            cont.appendChild(btn);
         } else {
-            ui.show({
-                title: "Monetize Method",
-                desc: "Choose how you want to earn ($2-$5 CPM).",
-                btns: [
-                    { text: "BOTH (RECOMMENDED)", color: "var(--accent)", cb: () => collectLink(t, id, 'both') },
-                    { text: "BANNER ADS ONLY", cb: async () => { await update(ref(db, `${t}/${id}`), { sponsored: true, monType: 'banner' }); ui.close(); loadManage(); }},
-                    { text: "DIRECT LINK ONLY", cb: () => collectLink(t, id, 'link') },
-                    { text: "CANCEL", cb: ui.close }
-                ]
+            const options = [
+                { id: 'link', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBmGOtkB5B62zpI-BJxLJ_i19LYofe6bYFcqFYXpByOg&s=10' },
+                { id: 'banner', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO2IObkVGuBws7oY_z87F8yEP_m9kCbQG9JwECJPvn4X8_3Zn1scdiU5w&s=10' },
+                { id: 'both', img: 'https://roiads.co/blog/assets/uploads/2025/05/top-15-cpm-ad-network-1.jpg' }
+            ];
+            options.forEach(opt => {
+                const img = document.createElement('img');
+                img.src = opt.img; img.className = 'opt-img';
+                img.onclick = async () => { await update(ref(db, `${t}/${id}`), {sponsored:true, monType:opt.id}); closeM(); loadContent(); };
+                cont.appendChild(img);
             });
         }
-    }
+        m.style.display = 'flex';
+    };
 
-    function collectLink(t, id, method) {
-        ui.show({
-            title: "Destination Link",
-            desc: "Enter the link for your ad button.",
-            input: true,
-            btns: [
-                { text: "ACTIVATE", color: "var(--accent)", cb: async () => {
-                    const val = document.getElementById('m-input').value;
-                    if(val.includes('http')) {
-                        await update(ref(db, `${t}/${id}`), { sponsored: true, monType: method, link: val });
-                        ui.close(); loadManage();
-                    }
-                }},
-                { text: "BACK", cb: () => openMonFlow(t, id, false) }
-            ]
-        });
-    }
+    window.delItem = (t, id) => {
+        document.getElementById('m-title').innerText = "Delete Post?";
+        document.getElementById('m-desc').innerText = "Permanent action.";
+        const cont = document.getElementById('m-content');
+        cont.innerHTML = `<button onclick="confirmDel('${t}','${id}')" style="width:100%; padding:15px; border-radius:15px; background:#FF453A; color:#fff; border:none; font-weight:800;">CONFIRM DELETE</button>`;
+        document.getElementById('modal').style.display = 'flex';
+    };
 
-    onAuthStateChanged(auth, u => { if(u) { runAnalysis(); loadManage(); } });
+    window.confirmDel = async (t, id) => { await remove(ref(db, `${t}/${id}`)); closeM(); loadContent(); };
+
+    window.savePayment = async () => {
+        const email = document.getElementById('pp-email').value;
+        if(email.includes('@')) {
+            await set(ref(db, `paymentmethods/${auth.currentUser.uid}`), { email: email, timestamp: Date.now() });
+            alert("PayPal Method Saved!");
+        }
+    };
+
+    onAuthStateChanged(auth, u => { if(u) { runAnalysis(); } });
 </script>
 </body>
 </html>
