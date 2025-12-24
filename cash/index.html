@@ -8,165 +8,168 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
-        body { background-color: #030303; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); }
+        body { background-color: #030303; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); backdrop-filter: blur(15px); }
         .hologram { background: linear-gradient(135deg, #3b82f6 0%, #9333ea 50%, #3b82f6 100%); background-size: 200% 200%; animation: glow 5s linear infinite; }
         @keyframes glow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        .tap-zone { position: relative; width: 220px; height: 220px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.1s; cursor: pointer; }
-        .tap-zone:active { transform: scale(0.94); }
-        .inner-circle { width: 85%; height: 85%; border-radius: 50%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .boost-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .boost-card:active { transform: translateY(-4px); border-color: #3b82f6; }
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 100; transition: 0.5s; opacity: 0; pointer-events: none; }
-        .toast.show { opacity: 1; bottom: 120px; }
+        .tap-zone { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.1s; cursor: pointer; }
+        .tap-zone:active { transform: scale(0.92); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.4s; pointer-events: none; }
+        .toast.show { opacity: 1; top: 40px; }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen pb-24">
+<body class="flex flex-col items-center min-h-screen pb-28">
 
-    <div id="toast" class="toast glass px-6 py-3 rounded-full text-xs font-bold flex items-center gap-2">
-        <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+    <div id="toast" class="toast glass px-6 py-3 rounded-full text-xs font-bold flex items-center gap-2 z-[2000]">
+        <i data-lucide="bell" class="w-4 h-4 text-blue-500"></i>
         <span id="toast-msg">Reward Added</span>
     </div>
 
-    <nav class="w-full max-w-md px-6 pt-10 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 hologram rounded-lg flex items-center justify-center">
-                <i data-lucide="diamond" class="w-4 h-4 text-white"></i>
+    <header class="w-full max-w-md px-6 pt-8 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff" class="w-10 h-10 rounded-full border border-white/10 p-0.5">
+            <div>
+                <p class="text-[10px] font-bold text-zinc-500 uppercase">Welcome back,</p>
+                <h2 id="user-name" class="text-sm font-black tracking-tight">Active Member</h2>
             </div>
-            <span class="font-black tracking-tighter text-lg uppercase">GlowCash</span>
         </div>
-        <div class="glass px-4 py-1.5 rounded-full flex items-center gap-2">
-            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-bold text-zinc-400">SERVER ONLINE</span>
+        <div class="w-10 h-10 glass rounded-full flex items-center justify-center relative">
+            <i data-lucide="bell" class="w-4 h-4 text-zinc-400"></i>
+            <div class="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-black"></div>
         </div>
-    </nav>
+    </header>
 
-    <header class="w-full max-w-md px-6 mt-8">
-        <div class="glass rounded-[2.5rem] p-8 text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 hologram opacity-50"></div>
-            <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-2">Available Balance</p>
+    <section class="w-full max-w-md px-6 mt-6">
+        <div class="glass rounded-[2rem] p-8 text-center relative overflow-hidden">
+            <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Current Earnings</p>
             <h1 class="text-5xl font-extrabold tracking-tighter">$<span id="bal">0.00</span></h1>
-            
-            <div class="mt-8 space-y-2">
-                <div class="flex justify-between text-[9px] font-black uppercase tracking-widest text-zinc-500">
-                    <span>Withdraw Progress</span>
+            <div class="mt-6 space-y-2">
+                <div class="flex justify-between text-[9px] font-black uppercase text-zinc-500 tracking-tighter">
+                    <span>Target: $5.00</span>
                     <span id="prog-txt">0%</span>
                 </div>
-                <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                     <div id="prog-bar" class="h-full hologram w-0 transition-all duration-700"></div>
                 </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <section class="flex flex-col items-center py-12">
+    <main class="flex-1 flex flex-col items-center justify-center py-8">
         <div id="tap-btn" class="tap-zone hologram">
-            <div class="inner-circle">
-                <i data-lucide="zap" class="w-10 h-10 text-white mb-2"></i>
-                <span class="text-[10px] font-black tracking-[0.3em] text-zinc-400">TAP TO MINE</span>
+            <div class="w-[90%] h-[90%] bg-black rounded-full flex flex-col items-center justify-center">
+                <i data-lucide="zap" class="w-10 h-10 text-white mb-1"></i>
+                <span class="text-[9px] font-black tracking-[0.2em] text-blue-500">TAP TO EARN</span>
             </div>
         </div>
-        <p class="mt-6 text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Mining Reward: +$0.01 / Tap</p>
+        <p class="mt-6 text-[10px] font-bold text-zinc-700 uppercase tracking-[0.3em]">Rate: +$0.01 / Tap</p>
+    </main>
+
+    <section class="w-full max-w-md px-6 grid grid-cols-2 gap-3 mb-12">
+        <a href="https://otieu.com/4/8784016" target="_blank" onclick="addBonus(0.15)" class="glass p-4 rounded-3xl flex flex-col gap-2">
+            <i data-lucide="rocket" class="w-4 h-4 text-blue-500"></i>
+            <p class="text-[10px] font-bold text-zinc-500 uppercase">Flash Boost</p>
+            <p class="text-sm font-black text-white">+$0.15</p>
+        </a>
+        <a href="https://otieu.com/4/7216382" target="_blank" onclick="addBonus(0.10)" class="glass p-4 rounded-3xl flex flex-col gap-2">
+            <i data-lucide="zap" class="w-4 h-4 text-purple-500"></i>
+            <p class="text-[10px] font-bold text-zinc-500 uppercase">Quick Earn</p>
+            <p class="text-sm font-black text-white">+$0.10</p>
+        </a>
     </section>
 
-    <section class="w-full max-w-md px-6 space-y-4">
-        <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] ml-2">Premium Boosters</h3>
-        <div class="grid grid-cols-2 gap-3">
-            <a href="https://otieu.com/4/8784016" target="_blank" onclick="addBonus(0.15)" class="boost-card glass p-4 rounded-3xl flex flex-col gap-3">
-                <i data-lucide="trending-up" class="w-5 h-5 text-blue-500"></i>
-                <div>
-                    <p class="text-[10px] font-bold text-zinc-500">BOOST 1</p>
-                    <p class="text-xs font-black">+$0.15</p>
-                </div>
-            </a>
-            <a href="https://otieu.com/4/7216382" target="_blank" onclick="addBonus(0.10)" class="boost-card glass p-4 rounded-3xl flex flex-col gap-3">
-                <i data-lucide="video" class="w-5 h-5 text-purple-500"></i>
-                <div>
-                    <p class="text-[10px] font-bold text-zinc-500">BOOST 2</p>
-                    <p class="text-xs font-black">+$0.10</p>
-                </div>
-            </a>
-            <a href="https://otieu.com/4/7197806" target="_blank" onclick="addBonus(0.12)" class="boost-card glass p-4 rounded-3xl flex flex-col gap-3">
-                <i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i>
-                <div>
-                    <p class="text-[10px] font-bold text-zinc-500">BOOST 3</p>
-                    <p class="text-xs font-black">+$0.12</p>
-                </div>
-            </a>
-            <a href="https://otieu.com/4/8272145" target="_blank" onclick="addBonus(0.20)" class="boost-card glass p-4 rounded-3xl flex flex-col gap-3">
-                <i data-lucide="layers" class="w-5 h-5 text-green-500"></i>
-                <div>
-                    <p class="text-[10px] font-bold text-zinc-500">BOOST 4</p>
-                    <p class="text-xs font-black">+$0.20</p>
-                </div>
-            </a>
-        </div>
-    </section>
-
-    <footer class="w-full max-w-md px-6 mt-12 mb-10 text-center">
-        <p class="text-[9px] text-zinc-700 font-bold uppercase tracking-[0.4em]">Withdraw Limit: $5.00 • 24h Payouts</p>
-    </footer>
-
-    <div class="fixed bottom-8 w-full max-w-md px-6">
-        <button id="wd-btn" disabled class="w-full py-5 rounded-[2rem] bg-zinc-900 text-zinc-700 font-black uppercase text-xs tracking-[0.3em] border border-white/5 shadow-2xl">
-            Withdraw Funds
+    <div class="fixed bottom-10 w-full max-w-md px-6">
+        <button id="withdraw-trigger" disabled class="w-full py-5 rounded-[2rem] bg-zinc-900 text-zinc-700 font-black uppercase text-xs tracking-[0.2em] border border-white/5 shadow-2xl transition-all">
+            Unlock Withdraw
         </button>
     </div>
 
-    <script>
-        lucide.createIcons();
+    <div id="modal" class="modal-overlay">
+        <div class="glass w-full max-w-xs rounded-[2.5rem] p-8 text-center animate-in zoom-in-95 duration-300">
+            <div class="w-16 h-16 hologram rounded-2xl mx-auto flex items-center justify-center mb-4">
+                <i data-lucide="send" class="w-8 h-8 text-white"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2">PayPal Withdraw</h3>
+            <p class="text-xs text-zinc-500 mb-6 leading-relaxed">Enter your business email to release your <span class="text-white font-bold">$5.00</span> transfer.</p>
+            
+            <input type="email" id="paypal-email" placeholder="paypal@example.com" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-sm text-center outline-none focus:border-blue-500 mb-4 transition-colors">
+            
+            <button onclick="processWithdraw()" class="w-full py-4 hologram rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20">
+                Confirm Transfer
+            </button>
+            <button onclick="closeModal()" class="mt-4 text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Maybe later</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         
-        let balance = parseFloat(localStorage.getItem('gc_bal')) || 0;
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+        };
+        const app = initializeApp(firebaseConfig);
+        lucide.createIcons();
+
+        let balance = parseFloat(localStorage.getItem('gc_bal_v2')) || 0;
         const target = 5.00;
 
-        const balEl = document.getElementById('bal');
-        const progBar = document.getElementById('prog-bar');
-        const progTxt = document.getElementById('prog-txt');
-        const wdBtn = document.getElementById('wd-btn');
-        const toast = document.getElementById('toast');
-
         function updateUI() {
-            balEl.innerText = balance.toFixed(2);
+            document.getElementById('bal').innerText = balance.toFixed(2);
             let percent = Math.min((balance / target) * 100, 100);
-            progBar.style.width = percent + '%';
-            progTxt.innerText = Math.floor(percent) + '%';
+            document.getElementById('prog-bar').style.width = percent + '%';
+            document.getElementById('prog-txt').innerText = Math.floor(percent) + '%';
             
+            const wdBtn = document.getElementById('withdraw-trigger');
             if (balance >= target) {
                 wdBtn.disabled = false;
-                wdBtn.classList.remove('bg-zinc-900', 'text-zinc-700');
+                wdBtn.innerText = "Withdraw Funds";
                 wdBtn.classList.add('hologram', 'text-white');
             }
-            localStorage.setItem('gc_bal', balance);
+            localStorage.setItem('gc_bal_v2', balance);
         }
 
-        document.getElementById('tap-btn').addEventListener('click', () => {
+        document.getElementById('tap-btn').onclick = () => {
             balance += 0.01;
             updateUI();
-            if(navigator.vibrate) navigator.vibrate(15);
-        });
+            if(navigator.vibrate) navigator.vibrate(10);
+        };
 
-        function addBonus(amt) {
-            // Note: In real production, you'd verify this via postback, 
-            // but for a viral tool, rewarding the click keeps them coming back.
-            setTimeout(() => {
-                balance += amt;
-                updateUI();
-                showToast(`+$${amt} Reward Added!`);
-            }, 2000);
+        window.addBonus = (amt) => {
+            balance += amt;
+            updateUI();
+            showToast(`+$${amt} Bonus Released!`);
         }
 
         function showToast(msg) {
+            const t = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        wdBtn.onclick = () => {
-            showToast("Verify Link Copied!");
-            setTimeout(() => {
-                alert("FINAL STEP: Share your referral code with 3 people to verify you are a human and release the $5.00 PayPal transfer.");
-            }, 500);
+        document.getElementById('withdraw-trigger').onclick = () => {
+            document.getElementById('modal').classList.add('active');
         };
+
+        window.closeModal = () => {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        window.processWithdraw = () => {
+            const email = document.getElementById('paypal-email').value;
+            if(!email.includes('@')) return alert("Enter a valid email");
+            
+            showToast("Transferring...");
+            setTimeout(() => {
+                alert("FINAL STEP: To prevent botting, please share your invite link with 3 people. Your payout will be released as soon as they tap!");
+            }, 2000);
+        }
 
         updateUI();
     </script>
